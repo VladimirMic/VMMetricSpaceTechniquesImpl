@@ -22,7 +22,8 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
-    public static final Integer BATCH_SIZE = 50000;
+    public static final Integer BATCH_SIZE = 100000;
+    public static final Integer PARALELISM = 23;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
@@ -47,7 +48,6 @@ public class GroundTruthEvaluator {
      * @param queryObjects
      * @param k
      * @param range
-     * @param paramsToExtractDataFromMetricObject
      * @param storage Interface used to storeMetricObject the computed PCA
      * transformation
      */
@@ -62,7 +62,7 @@ public class GroundTruthEvaluator {
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
         TreeSet<Entry<Object, Float>>[] queryResults = initKNNResultingMaps(queryObjectsData.size());
         int counter = 0;
         while (itOverMetricObjects.hasNext()) {

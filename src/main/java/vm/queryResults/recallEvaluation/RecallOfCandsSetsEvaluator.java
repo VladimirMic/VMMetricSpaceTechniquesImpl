@@ -57,12 +57,12 @@ public class RecallOfCandsSetsEvaluator {
         }
         int limit = count == null ? Integer.MAX_VALUE : count;
         Iterator<Map.Entry<Object, Float>> it = evaluatedQuery.iterator();
-        for (int i = 0; i < limit && it.hasNext(); i++) {
+        while (it.hasNext() &&  ret.size() < limit) {
             Map.Entry<Object, Float> nn = it.next();
             ret.add(nn.getKey().toString());
         }
         if (count != null && count > ret.size()) {
-            throw new IllegalArgumentException("The candidate set evaluated for this dataset does not contain so many objects. Required: " + count + ", found: " + ret.size());
+            throw new IllegalArgumentException("The candidate set evaluated the query " + queryID + " does not contain so many objects. Required: " + count + ", found: " + ret.size());
         }
         return ret;
     }
