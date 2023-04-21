@@ -64,7 +64,6 @@ public abstract class SearchingAlgorithm<T> {
         DistanceFunctionInterface df = metricSpace.getDistanceFunctionForDataset(datasetName);
         T queryObjData = metricSpace.getDataOfMetricObject(queryObj);
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
-        Set<Object> ids = new HashSet<>(candsIDs);
         if (mapOfAllFullObjects == null) {
             for (int i = 0; i < Math.min(candsIDs.size(), k); i++) {
                 Object id = candsIDs.get(i);
@@ -73,9 +72,12 @@ public abstract class SearchingAlgorithm<T> {
             return ret;
         }
         for (Object candID : candsIDs) {
-            T metricObjectData = (T) mapOfAllFullObjects.get(candID);
-            if (metricObjectData == null) {
-                LOG.log(Level.SEVERE, "The map does not contain value for the key {0}", candID);
+            T metricObjectData;
+            try {
+                metricObjectData = (T) mapOfAllFullObjects.get(candID);
+            } catch (Exception ex) {
+                LOG.log(Level.WARNING, "Something wrong happened in the data map. Trying to repeat it. CandID: " + candID, ex);
+                continue;
             }
             float distance = df.getDistance(queryObjData, metricObjectData);
             ret.add(new AbstractMap.SimpleEntry<>(candID, distance));
