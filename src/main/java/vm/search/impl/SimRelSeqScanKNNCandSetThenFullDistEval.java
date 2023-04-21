@@ -29,7 +29,7 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
     private final DistanceFunctionInterface<float[]> fullDistanceFunction;
 
     private int distCompsOfLastExecutedQuery;
-    private int simRelEvalCounter;
+    private long simRelEvalCounter;
     private int kPCA;
     private boolean involveObjWithUnknownRelation;
 
@@ -84,7 +84,7 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
         }
     }
 
-    public Integer getSimRelEvalCounter() {
+    public Long getSimRelEvalCounter() {
         return simRelEvalCounter;
     }
 
