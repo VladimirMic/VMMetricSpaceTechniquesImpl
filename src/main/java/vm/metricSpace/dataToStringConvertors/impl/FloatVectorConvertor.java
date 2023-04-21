@@ -1,5 +1,7 @@
 package vm.metricSpace.dataToStringConvertors.impl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.metricSpace.dataToStringConvertors.MetricObjectDataToStringInterface;
 
@@ -13,7 +15,12 @@ public class FloatVectorConvertor implements MetricObjectDataToStringInterface<f
 
     @Override
     public float[] parseString(String dbString) {
-        return DataTypeConvertor.stringToFloats(dbString, columnDelimiter);
+        try {
+            return DataTypeConvertor.stringToFloats(dbString, columnDelimiter);
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(FloatVectorConvertor.class.getName()).log(Level.SEVERE, "Wrong string: " + dbString);
+            throw ex;
+        }
     }
 
     @Override
