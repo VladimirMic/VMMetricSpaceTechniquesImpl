@@ -12,7 +12,13 @@ import java.util.logging.Logger;
 public abstract class AbstractPrecomputedDistancesMatrixLoader {
 
     private final static Logger LOG = Logger.getLogger(AbstractPrecomputedDistancesMatrixLoader.class.getName());
+    /*
+    Mapping of object IDs to column indexes
+     */
     protected Map<String, Integer> columnHeaders;
+    /*
+    Mapping of object IDs to row indexes
+     */
     protected Map<String, Integer> rowHeaders;
 
     public AbstractPrecomputedDistancesMatrixLoader() {
@@ -20,6 +26,15 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
         this.columnHeaders = new HashMap<>();
     }
 
+    /**
+     *
+     * @param datasetName
+     * @param pivotSetName
+     * @param pivotCount if -1 then all pivots are used (pivots correspond to
+     * columns)
+     * @return map of distances (for instance, rows correspond to the objects
+     * from the dataset, columns correspod to the pivots)
+     */
     public abstract float[][] loadPrecomPivotsToObjectsDists(String datasetName, String pivotSetName, int pivotCount);
 
     public float[][] loadPrecomPivotsToObjectsDists(String datasetName, String pivotSetName) {

@@ -23,6 +23,7 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
      * @param origFloatVectorSpace metric space that extracts the float vector
      * from the metric object, and encapsulates the resulting vector as a metric
      * object with the same ID
+     * @param pcaMetricSpace
      */
     public PCAMetricObjectTransformer(float[][] pcaMatrix, float[] meansOverColumns, AbstractMetricSpace<float[]> origFloatVectorSpace, AbstractMetricSpace<float[]> pcaMetricSpace) {
         this.meansOverColumns = meansOverColumns;

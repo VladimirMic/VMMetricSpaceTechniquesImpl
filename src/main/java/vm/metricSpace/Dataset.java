@@ -64,6 +64,10 @@ public abstract class Dataset<T> {
         return datasetName;
     }
 
+    public String getQuerySettName() {
+        return datasetName;
+    }
+
     public AbstractMetricSpace<T> getMetricSpace() {
         return metricSpace;
     }

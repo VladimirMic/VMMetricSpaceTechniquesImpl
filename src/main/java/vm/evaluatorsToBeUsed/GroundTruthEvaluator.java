@@ -23,7 +23,7 @@ public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
     public static final Integer BATCH_SIZE = 100000;
-    public static final Integer PARALELISM = 23;
+    public static final Integer PARALELISM = 16;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
