@@ -6,7 +6,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  *
  * @author xmic
  */
-public class DotProductOnFloatsArray implements DistanceFunctionInterface<float[]> {
+public class DotProductOnNormalisedFloatVectors implements DistanceFunctionInterface<float[]> {
 
     @Override
     public float getDistance(float[] o1, float[] o2) {
@@ -17,7 +17,7 @@ public class DotProductOnFloatsArray implements DistanceFunctionInterface<float[
         for (int i = 0; i < o1.length; i++) {
             ret += o1[i] * o2[i];
         }
-        return ret;
+        return 1 - ret;
     }
 
 }
