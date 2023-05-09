@@ -12,11 +12,11 @@ import vm.simRel.SimRelInterface;
 public class SimRelEuclideanPCAImpl implements SimRelInterface<float[]> {
 
     protected final float[] diffThresholdsPerCoords;
-    protected final int[] earlyStopsOnCoordsCounts;
+    protected final long[] earlyStopsOnCoordsCounts;
 
     public SimRelEuclideanPCAImpl(float[] diffThresholdsPerCoords) {
         this.diffThresholdsPerCoords = diffThresholdsPerCoords;
-        earlyStopsOnCoordsCounts = new int[diffThresholdsPerCoords.length + 1];
+        earlyStopsOnCoordsCounts = new long[diffThresholdsPerCoords.length + 1];
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SimRelEuclideanPCAImpl implements SimRelInterface<float[]> {
         return 0;
     }
 
-    public int[] getEarlyStopsOnCoordsCounts() {
+    public long[] getEarlyStopsOnCoordsCounts() {
         return earlyStopsOnCoordsCounts;
     }
 

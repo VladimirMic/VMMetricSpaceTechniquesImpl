@@ -11,7 +11,8 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
 
     private final float[] meansOverColumns;
     private final float[][] pcaMatrix;
-    private final AbstractMetricSpace<float[]> floatVectorSpace;
+    private final AbstractMetricSpace<float[]> origFloatVectorSpace;
+    private final AbstractMetricSpace<float[]> pcaMetricSpace;
 
     /**
      *
@@ -19,20 +20,21 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
      * vtMatrix from the SVD
      * @param meansOverColumns means that are subtracted from the vector before
      * the multiplication with the matrix
-     * @param floatVectorSpace metric space that extracts the float vector from
-     * the metric object, and encapsulates the resulting vector as a metric
+     * @param origFloatVectorSpace metric space that extracts the float vector
+     * from the metric object, and encapsulates the resulting vector as a metric
      * object with the same ID
      */
-    public PCAMetricObjectTransformer(float[][] pcaMatrix, float[] meansOverColumns, AbstractMetricSpace<float[]> floatVectorSpace) {
+    public PCAMetricObjectTransformer(float[][] pcaMatrix, float[] meansOverColumns, AbstractMetricSpace<float[]> origFloatVectorSpace, AbstractMetricSpace<float[]> pcaMetricSpace) {
         this.meansOverColumns = meansOverColumns;
         this.pcaMatrix = pcaMatrix;
-        this.floatVectorSpace = floatVectorSpace;
+        this.origFloatVectorSpace = origFloatVectorSpace;
+        this.pcaMetricSpace = pcaMetricSpace;
     }
 
     @Override
     public Object transformMetricObject(Object obj, Object... params) {
-        Object objID = floatVectorSpace.getIDOfMetricObject(obj);
-        float[] vector = floatVectorSpace.getDataOfMetricObject(obj);
+        Object objID = origFloatVectorSpace.getIDOfMetricObject(obj);
+        float[] vector = origFloatVectorSpace.getDataOfMetricObject(obj);
         int length = pcaMatrix.length;
         if (params.length > 0) {
             length = Math.min(length, (int) params[0]);
@@ -45,7 +47,7 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
                 ret[i] += v * matrixRow[j];
             }
         }
-        return floatVectorSpace.createMetricObject(objID, ret);
+        return pcaMetricSpace.createMetricObject(objID, ret);
     }
 
     @Override

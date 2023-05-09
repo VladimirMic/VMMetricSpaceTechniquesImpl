@@ -45,23 +45,23 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects) {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             euclid.resetEarlyStopsOnCoordsCounts();
         }
-        float[] pcaQueryObjData = metricSpace.getDataOfMetricObject(queryObject);
+        float[] pcaQueryObjData = pcaMetricSpace.getDataOfMetricObject(pcaQueryObject);
         List<Object> ansOfSimRel = new ArrayList<>();
         Set<Object> objIdUnknownRelation = new HashSet<>();
         Map<Object, float[]> candSet = new HashMap<>();
         distCompsOfLastExecutedQuery = 0;
         simRelEvalCounter = 0;
-        sequentilScanWithSimRel(metricSpace, objects, k, pcaQueryObjData, ansOfSimRel, candSet, objIdUnknownRelation);
+        sequentilScanWithSimRel(pcaMetricSpace, objects, k, pcaQueryObjData, ansOfSimRel, candSet, objIdUnknownRelation);
         if (involveObjWithUnknownRelation) {
             ansOfSimRel.addAll(objIdUnknownRelation);
         }
         distCompsOfLastExecutedQuery = ansOfSimRel.size();
-        Object qID = metricSpace.getIDOfMetricObject(queryObject);
+        Object qID = pcaMetricSpace.getIDOfMetricObject(pcaQueryObject);
         incDistsComps(qID, ansOfSimRel.size());
         LOG.log(Level.INFO, "distancesCounter;{0}; simRelCounter;{1}", new Object[]{distCompsOfLastExecutedQuery, simRelEvalCounter});
         return ansOfSimRel;
@@ -93,7 +93,7 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             return euclid.getEarlyStopsOnCoordsCounts();
         }
-        return null;
+        throw new RuntimeException("No simRel stats for the last query");
     }
 
     private boolean addOToAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData) {

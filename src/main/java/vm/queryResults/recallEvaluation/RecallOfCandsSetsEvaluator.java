@@ -33,6 +33,12 @@ public class RecallOfCandsSetsEvaluator {
         Map<String, Float> ret = new HashMap<>();
         Set<String> queryIDs = groundTruthForDataset.keySet();
         for (String queryID : queryIDs) {
+            if (!groundTruthForDataset.containsKey(queryID)) {
+                Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the ground truth", queryID);
+            }
+            if (!candidateSets.containsKey(queryID)) {
+                Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the candidates", queryID);
+            }
             Set<String> groundTruthForQuery = getFirstIDs(queryID, groundTruthForDataset.get(queryID), groundTruthNNCount);
             Set<String> candidatesForQuery = getFirstIDs(queryID, candidateSets.get(queryID), candidateNNCount);
             int hits = 0;
@@ -52,12 +58,11 @@ public class RecallOfCandsSetsEvaluator {
     private Set<String> getFirstIDs(String queryID, TreeSet<Map.Entry<Object, Float>> evaluatedQuery, Integer count) {
         Set<String> ret = new HashSet<>();
         if (evaluatedQuery == null) {
-            Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the results", queryID);
             return ret;
         }
         int limit = count == null ? Integer.MAX_VALUE : count;
         Iterator<Map.Entry<Object, Float>> it = evaluatedQuery.iterator();
-        while (it.hasNext() &&  ret.size() < limit) {
+        while (it.hasNext() && ret.size() < limit) {
             Map.Entry<Object, Float> nn = it.next();
             ret.add(nn.getKey().toString());
         }

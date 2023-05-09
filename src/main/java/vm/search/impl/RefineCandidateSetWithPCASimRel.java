@@ -38,22 +38,22 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
 
     private int objectCheckedFromSet;
 
-    public RefineCandidateSetWithPCASimRel(AbstractMetricSpace<float[]> pcaMetricSpace, DistanceFunctionInterface<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
+    public RefineCandidateSetWithPCASimRel(AbstractMetricSpace<float[]> originalMetricSpace, AbstractMetricSpace<float[]> pcaMetricSpace, DistanceFunctionInterface<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
         this.pcaPreffixLength = pcaPreffixLength;
         this.fullDistanceFunction = fullDistanceFunction;
         this.simRel = simRel;
         tZero = 0.5f * simRel.getTOmega(0);
-        pcaTransformer = initPCA(pcaMetricSpace, svdStorage, pcaFullLength);
+        pcaTransformer = initPCA(originalMetricSpace, pcaMetricSpace, svdStorage, pcaFullLength, pcaPreffixLength);
         sortedPCAPreffixesForDataset = initSortedMapOfPCAPrefixes();
         mapIDpca = new HashMap<>();
         loadPCAPrefixesForSimRel(pcaMetricSpace, sortedPCAPreffixesForDataset, mapIDpca, pcaDatasetIterator);
     }
 
-    private PCAMetricObjectTransformer initPCA(AbstractMetricSpace<float[]> metricSpace, SVDStoreInterface svdStorage, int pcaFullLength) {
+    private static PCAMetricObjectTransformer initPCA(AbstractMetricSpace<float[]> originalMetricSpace, AbstractMetricSpace<float[]> pcaMetricSpace, SVDStoreInterface svdStorage, int pcaFullLength, int pcaPreffixLength) {
         LOG.log(Level.INFO, "Start loading instance of the PCA with length {0}", pcaPreffixLength);
         float[][] vtMatrixFull = svdStorage.getVTMatrix();
-        float[][] vtMatrix = Tools.shrinkMatrix(vtMatrixFull, pcaFullLength, vtMatrixFull[0].length);
-        return new PCAMetricObjectTransformer(vtMatrix, svdStorage.getMeansOverColumns(), metricSpace);
+        float[][] vtMatrix = Tools.shrinkMatrix(vtMatrixFull, pcaPreffixLength, vtMatrixFull[0].length);
+        return new PCAMetricObjectTransformer(vtMatrix, svdStorage.getMeansOverColumns(), originalMetricSpace, pcaMetricSpace);
     }
 
     private TreeSet<AbstractMap.SimpleEntry<Object, float[]>> initSortedMapOfPCAPrefixes() {
