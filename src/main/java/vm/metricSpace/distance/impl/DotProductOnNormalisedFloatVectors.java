@@ -10,6 +10,9 @@ public class DotProductOnNormalisedFloatVectors implements DistanceFunctionInter
 
     @Override
     public float getDistance(float[] o1, float[] o2) {
+        if (o1 == o2) {
+            return 0;
+        }
         if (o2.length != o1.length) {
             throw new IllegalArgumentException("Cannot compute distance on different vector dimensions (" + o1.length + ", " + o2.length + ")");
         }
@@ -17,8 +20,7 @@ public class DotProductOnNormalisedFloatVectors implements DistanceFunctionInter
         for (int i = 0; i < o1.length; i++) {
             ret += o1[i] * o2[i];
         }
-        ret =  1 - ret;
-        return Math.max(0, ret);
+        return 1 - ret;
     }
 
 }

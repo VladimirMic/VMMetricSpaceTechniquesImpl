@@ -22,8 +22,8 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
-    public static final Integer BATCH_SIZE = 100000;
-    public static final Integer PARALELISM = 14;
+    public static final Integer BATCH_SIZE = 50000;
+    public static final Integer PARALELISM = 1;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
