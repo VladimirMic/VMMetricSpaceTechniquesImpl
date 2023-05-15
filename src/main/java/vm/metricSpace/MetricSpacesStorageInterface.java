@@ -99,7 +99,8 @@ public abstract class MetricSpacesStorageInterface {
      * @return list of sample objects from a specific dataset
      */
     public List<Object> getSampleOfDataset(String datasetName, int objectCount, Object... params) {
-        Iterator<Object> it = getObjectsFromDataset(datasetName, objectCount, params);
+        params = Tools.concatArrays(params, new Object[]{objectCount});
+        Iterator<Object> it = getObjectsFromDataset(datasetName, params);
         List<Object> ret = Tools.getObjectsFromIterator(it);
         if (ret.size() != objectCount && objectCount > 0) {
             throw new IllegalArgumentException("I was not able to find " + objectCount + " objects in the dataset. Found just " + ret.size() + " objects");
