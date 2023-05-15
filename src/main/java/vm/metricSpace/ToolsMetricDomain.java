@@ -69,35 +69,35 @@ public class ToolsMetricDomain {
      * @return
      */
     public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, float basicInterval, List<Object[]> pairsOfExaminedIDs) {
-        SortedMap<Float, Float> histogram = new TreeMap<>();
+        SortedMap<Float, Float> absoluteCounts = new TreeMap<>();
         Random r = new Random();
-        for (int i = 0; i < distCount; i++) {
+        int counter = 0;
+        while (counter < distCount) {
             Object o1 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
             Object o2 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
             Object id1 = metricSpace.getIDOfMetricObject(o1);
             Object id2 = metricSpace.getIDOfMetricObject(o2);
+            if (id1.equals(id2)) {
+                continue;
+            }
             if (pairsOfExaminedIDs != null) {
                 pairsOfExaminedIDs.add(new Object[]{id1, id2});
             }
             o1 = metricSpace.getDataOfMetricObject(o1);
             o2 = metricSpace.getDataOfMetricObject(o2);
             float distance = distanceFunction.getDistance(o1, o2);
-            distance = Tools.round(distance, basicInterval, true);
-            if (!histogram.containsKey(distance)) {
-                histogram.put(distance, 1f);
+            distance = Tools.round(distance, basicInterval, false);
+            if (!absoluteCounts.containsKey(distance)) {
+                absoluteCounts.put(distance, 1f);
             } else {
-                Float count = histogram.get(distance);
-                histogram.put(distance, count + 1);
+                Float count = absoluteCounts.get(distance);
+                absoluteCounts.put(distance, count + 1);
             }
+            counter++;
         }
-        Float lastKey = histogram.lastKey();
-        while (lastKey >= 0) {
-            if (!histogram.containsKey(lastKey)) {
-                histogram.put(lastKey, 0f);
-            } else {
-                histogram.put(lastKey, histogram.get(lastKey) / distCount);
-            }
-            lastKey -= basicInterval;
+        SortedMap<Float, Float> histogram = new TreeMap<>();
+        for (Float key : absoluteCounts.keySet()) {
+            histogram.put(key, absoluteCounts.get(key) / distCount);
         }
         return histogram;
     }

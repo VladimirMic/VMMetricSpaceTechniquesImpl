@@ -17,7 +17,8 @@ public class DotProductOnNormalisedFloatVectors implements DistanceFunctionInter
         for (int i = 0; i < o1.length; i++) {
             ret += o1[i] * o2[i];
         }
-        return 1 - ret;
+        ret =  1 - ret;
+        return Math.max(0, ret);
     }
 
 }
