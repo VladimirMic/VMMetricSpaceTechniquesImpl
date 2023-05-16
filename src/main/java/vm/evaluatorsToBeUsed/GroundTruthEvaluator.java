@@ -22,8 +22,8 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
-    public static final Integer BATCH_SIZE = 50000;
-    public static final Integer PARALELISM = 1;
+    public static final Integer BATCH_SIZE = 50000000;
+    public static final Integer PARALELISM = 14;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
@@ -31,7 +31,7 @@ public class GroundTruthEvaluator {
     private final List<Object> queryObjectsIDs;
     private final List<Object> queryObjectsData;
     private final int k;
-    private final float range;
+    private float range;
 
     public GroundTruthEvaluator(AbstractMetricSpace metricSpace, DistanceFunctionInterface distanceFunction, List<Object> queryObjects, int k, QueryNearestNeighboursStoreInterface storage) {
         this(metricSpace, distanceFunction, queryObjects, k, Float.MAX_VALUE, storage);
@@ -61,8 +61,16 @@ public class GroundTruthEvaluator {
         this.distanceFunction = distanceFunction;
     }
 
+    public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
+        return evaluateIterator(null, itOverMetricObjects, paramsToStoreWithGroundTruth);
+    }
+
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
+        return evaluateIterator(threadPool, itOverMetricObjects, paramsToStoreWithGroundTruth);
+    }
+
+    public TreeSet<Entry<Object, Float>>[] evaluateIterator(ExecutorService threadPool, Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
         TreeSet<Entry<Object, Float>>[] queryResults = initKNNResultingMaps(queryObjectsData.size());
         int counter = 0;
         while (itOverMetricObjects.hasNext()) {
@@ -80,7 +88,9 @@ public class GroundTruthEvaluator {
             }
             storage.storeQueryResults(queryObjectsIDs, queryResults, datasetName, querySetName, "ground_truth");
         }
-        threadPool.shutdown();
+        if (threadPool != null) {
+            threadPool.shutdown();
+        }
         return queryResults;
     }
 
@@ -89,22 +99,20 @@ public class GroundTruthEvaluator {
             LOG.log(Level.INFO, "Start parallel evaluation of queries. Batch size: {0} metric objects", batch.size());
             CountDownLatch latch = new CountDownLatch(queryObjectsData.size());
             for (int i = 0; i < queryObjectsData.size(); i++) {
-                final Object queryObject = queryObjectsData.get(i);
+                final Object queryObjectData = queryObjectsData.get(i);
+                final Object qID = queryObjectsIDs.get(i);
                 final TreeSet<Entry<Object, Float>> queryResult = queryResults[i];
-                threadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (final Object obj : batch) {
-                            updateSimQueryAnswer(queryObject, obj, queryResult);
-                        }
-                        latch.countDown();
-                    }
-                });
+                UpdateAnswers updateAnswers = new UpdateAnswers(batch, latch, queryObjectData, qID, queryResult);
+                if (threadPool != null) {
+                    threadPool.execute(updateAnswers);
+                } else {
+                    updateAnswers.run();
+                }
             }
             latch.await();
             LOG.log(Level.INFO, "Batch processed");
             return queryResults;
-        } catch (InterruptedException ex) {
+        } catch (Throwable ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         return null;
@@ -151,6 +159,40 @@ public class GroundTruthEvaluator {
             ret.add(metricSpace.getIDOfMetricObject(queryObject));
         }
         return ret;
+    }
+
+    private class UpdateAnswers implements Runnable {
+
+        private final List<Object> batch;
+        private final CountDownLatch latch;
+        private final Object qData;
+        private final Object qID;
+        private final TreeSet<Entry<Object, Float>> queryResult;
+
+        public UpdateAnswers(List<Object> batch, CountDownLatch latch, Object qData, Object qID, TreeSet<Entry<Object, Float>> queryResult) {
+            this.batch = batch;
+            this.latch = latch;
+            this.qData = qData;
+            this.qID = qID;
+            this.queryResult = queryResult;
+        }
+
+        @Override
+        public void run() {
+            long t = -System.currentTimeMillis();
+            for (int i1 = 0; i1 < batch.size(); i1++) {
+                final Object obj = batch.get(i1);
+                updateSimQueryAnswer(qData, obj, queryResult);
+            }
+            t += System.currentTimeMillis();
+            if (t > 10000) {
+                LOG.log(Level.WARNING, "Long query!: {2}, Latch: {0}, time: {1}", new Object[]{latch.getCount(), t, qID});
+            } else {
+                LOG.log(Level.INFO, "Latch: {0}, time: {1}, {2}", new Object[]{latch.getCount(), t, qID});
+            }
+            latch.countDown();
+        }
+
     }
 
 }
