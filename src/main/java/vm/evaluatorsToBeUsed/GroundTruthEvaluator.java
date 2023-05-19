@@ -186,7 +186,7 @@ public class GroundTruthEvaluator {
             }
             t += System.currentTimeMillis();
             if (t > 10000) {
-                LOG.log(Level.WARNING, "Long query!: {2}, Latch: {0}, time: {1}", new Object[]{latch.getCount(), t, qID});
+                LOG.log(Level.INFO, "Latch: {0}, time: {1}, {2}", new Object[]{latch.getCount(), t, qID});
             } else {
                 LOG.log(Level.INFO, "Latch: {0}, time: {1}, {2}", new Object[]{latch.getCount(), t, qID});
             }
