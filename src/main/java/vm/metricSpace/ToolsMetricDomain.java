@@ -68,7 +68,7 @@ public class ToolsMetricDomain {
      * @param pairsOfExaminedIDs if not null, adds all examined pairs of objects
      * @return
      */
-    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, float basicInterval, List<Object[]> pairsOfExaminedIDs) {
+    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, float basicInterval, List<Object[]> pairsOfExaminedIDs) {
         SortedMap<Float, Float> absoluteCounts = new TreeMap<>();
         Random r = new Random();
         int counter = 0;
