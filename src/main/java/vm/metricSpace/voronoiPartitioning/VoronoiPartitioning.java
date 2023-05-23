@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -14,6 +18,8 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vlada
  */
 public class VoronoiPartitioning {
+
+    public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface df;
@@ -25,9 +31,9 @@ public class VoronoiPartitioning {
         this.pivots = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
     }
 
-    public Map<Object, List<Object>> splitByVoronoi(Iterator<Object> dataObjects) {
-        Map<Object, List<Object>> ret = new HashMap<>();
-        while (dataObjects.hasNext()) {
+    public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, int pivotCountUsedInTheFileName, StorageLearnedVoronoiPartitioningInterface storage) {
+        Map<Object, SortedSet<Object>> ret = new HashMap<>();
+        for (int i = 0; dataObjects.hasNext(); i++) {
             Object o = dataObjects.next();
             Object oData = metricSpace.getDataOfMetricObject(o);
             Object oID = metricSpace.getIDOfMetricObject(o);
@@ -41,9 +47,15 @@ public class VoronoiPartitioning {
                 }
             }
             if (!ret.containsKey(pivotID)) {
-                ret.put(pivotID, new ArrayList<>());
+                ret.put(pivotID, new TreeSet<>());
             }
             ret.get(pivotID).add(oID);
+            if (i % 50000 == 0) {
+                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects", i);
+            }
+        }
+        if (storage != null) {
+            storage.store(ret, datasetName, pivotCountUsedInTheFileName);
         }
         return ret;
     }

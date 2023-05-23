@@ -40,23 +40,14 @@ public abstract class Dataset<T> {
     /**
      * Query objects stored under the same name as the dataset
      *
-     * @return
+     * @return uses method getQuerySetName and returns associated query objects
      */
-    public List<Object> getMetricQueryObjectsForTheSameDataset() {
-        return metricSpacesStorage.getQueryObjects(datasetName);
+    public List<Object> getMetricQueryObjects() {
+        return metricSpacesStorage.getQueryObjects(getQuerySetName());
     }
 
-    /**
-     * Query objects stored under the same name as the dataset
-     *
-     * @return uses method getQuerySettName and returns associated query objects
-     */
-    public List<Object> getMetricQueryObjectsOfAQuerySetName() {
-        return metricSpacesStorage.getQueryObjects(getQuerySettName());
-    }
-
-    public List<Object> getPivotsForTheSameDataset(int objCount) {
-        return metricSpacesStorage.getPivots(datasetName, objCount);
+    public List<Object> getPivots(int objCount) {
+        return metricSpacesStorage.getPivots(getPivotSetName(), objCount);
     }
 
     /**
@@ -73,7 +64,11 @@ public abstract class Dataset<T> {
         return datasetName;
     }
 
-    public String getQuerySettName() {
+    public String getQuerySetName() {
+        return datasetName;
+    }
+
+    public String getPivotSetName() {
         return datasetName;
     }
 

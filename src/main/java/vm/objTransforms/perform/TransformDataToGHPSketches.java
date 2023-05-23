@@ -34,15 +34,15 @@ public class TransformDataToGHPSketches {
     }
 
     public void createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths) {
-        List pivots = dataset.getPivotsForTheSameDataset(pivotCount);
+        List pivots = dataset.getPivots(pivotCount);
         for (int sketchLength : sketchesLengths) {
             AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(dataset.getDistanceFunction(), dataset.getMetricSpace(), pivots, false);
             String sketchesName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
             sketchingTechnique.setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
 
             MetricObjectsParallelTransformerImpl parallelTransformer = new MetricObjectsParallelTransformerImpl(sketchingTechnique, storageForSketches, sketchesName);
-            Iterator pivotsIt = dataset.getPivotsForTheSameDataset(-1).iterator();
-            Iterator queriesIt = dataset.getMetricQueryObjectsForTheSameDataset().iterator();
+            Iterator pivotsIt = dataset.getPivots(-1).iterator();
+            Iterator queriesIt = dataset.getMetricQueryObjects().iterator();
             Iterator dataIt = dataset.getMetricObjectsFromDataset();
             parallelTransformer.processIteratorSequentially(pivotsIt, MetricSpacesStorageInterface.OBJECT_TYPE.PIVOT_OBJECT);
             parallelTransformer.processIteratorSequentially(queriesIt, MetricSpacesStorageInterface.OBJECT_TYPE.QUERY_OBJECT);

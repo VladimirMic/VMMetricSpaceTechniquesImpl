@@ -1,5 +1,6 @@
 package vm.metricSpace;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.math.Tools;
@@ -140,7 +143,7 @@ public class ToolsMetricDomain {
 
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects, boolean valuesAsMetricObjectData) {
         Map<Object, Object> ret = new HashMap();
-        for (int i = 0; metricObjects.hasNext(); i++) {
+        for (int i = 1; metricObjects.hasNext(); i++) {
             Object metricObject = metricObjects.next();
             Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
             Object value = valuesAsMetricObjectData ? metricSpace.getDataOfMetricObject(metricObject) : metricObject;
@@ -157,6 +160,31 @@ public class ToolsMetricDomain {
         Object[] ret = new Object[fourObjects.length];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = metricSpace.getDataOfMetricObject(fourObjects[i]);
+        }
+        return ret;
+    }
+
+    public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength) {
+        Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
+        Object referentData = metricSpace.getDataOfMetricObject(referent);
+        return getPivotPermutation(df, pivotsMap, referentData, prefixLength);
+    }
+
+    public static Object[] getPivotPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
+        if (prefixLength < 0) {
+            prefixLength = Integer.MAX_VALUE;
+        }
+        TreeSet<Map.Entry<Object, Float>> map = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
+        for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
+            Float dist = df.getDistance(referentData, pivot.getValue());
+            Map.Entry<Object, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);
+            map.add(entry);
+        }
+        Object[] ret = new Object[Math.min(pivotsMap.size(), prefixLength)];
+        Iterator<Map.Entry<Object, Float>> it = map.iterator();
+        for (int i = 0; it.hasNext() && i < prefixLength; i++) {
+            Map.Entry<Object, Float> next = it.next();
+            ret[i] = next.getKey();
         }
         return ret;
     }
