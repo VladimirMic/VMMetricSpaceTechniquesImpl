@@ -152,7 +152,7 @@ public class ToolsMetricDomain {
                 LOG.log(Level.INFO, "Loaded {0} objects into map", i);
             }
         }
-        LOG.log(Level.INFO, "Finished loading map os size {0} objects", ret.size());
+        LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
         return ret;
     }
 

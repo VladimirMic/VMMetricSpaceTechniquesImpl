@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -19,6 +22,8 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class VoronoiPartitioning {
 
+    public static final Integer PARALELISATION = 8;
+    public static final Integer BATCH_SIZE = 50000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     private final AbstractMetricSpace metricSpace;
@@ -33,31 +38,84 @@ public class VoronoiPartitioning {
 
     public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, int pivotCountUsedInTheFileName, StorageLearnedVoronoiPartitioningInterface storage) {
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
-        for (int i = 0; dataObjects.hasNext(); i++) {
-            Object o = dataObjects.next();
-            Object oData = metricSpace.getDataOfMetricObject(o);
-            Object oID = metricSpace.getIDOfMetricObject(o);
-            float minDist = Float.MAX_VALUE;
-            Object pivotID = null;
-            for (Map.Entry<Object, Object> pivot : pivots.entrySet()) {
-                float dist = df.getDistance(oData, pivot.getValue());
-                if (dist < minDist) {
-                    minDist = dist;
-                    pivotID = pivot.getKey();
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISATION);
+        int batchCounter = 0;
+        while (dataObjects.hasNext()) {
+            try {
+                CountDownLatch latch = new CountDownLatch(PARALELISATION);
+                ProcessBatch[] processes = new ProcessBatch[PARALELISATION];
+                for (int j = 0; j < PARALELISATION; j++) {
+                    batchCounter++;
+                    List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
+                    processes[j] = new ProcessBatch(batch, metricSpace, latch);
+                    threadPool.execute(processes[j]);
                 }
-            }
-            if (!ret.containsKey(pivotID)) {
-                ret.put(pivotID, new TreeSet<>());
-            }
-            ret.get(pivotID).add(oID);
-            if (i % 50000 == 0) {
-                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects", i);
+                latch.await();
+                for (int j = 0; j < PARALELISATION; j++) {
+                    Map<Object, SortedSet<Object>> partial = processes[j].getRet();
+                    for (Map.Entry<Object, SortedSet<Object>> partialEntry : partial.entrySet()) {
+                        Object key = partialEntry.getKey();
+                        if (!ret.containsKey(key)) {
+                            SortedSet<Object> set = new TreeSet<>();
+                            ret.put(key, set);
+                        }
+                        ret.get(key).addAll(partialEntry.getValue());
+                    }
+                }
+                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects", (batchCounter * BATCH_SIZE));
+            } catch (InterruptedException ex) {
+                Logger.getLogger(VoronoiPartitioning.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        threadPool.shutdown();
         if (storage != null) {
             storage.store(ret, datasetName, pivotCountUsedInTheFileName);
         }
         return ret;
     }
 
+    private class ProcessBatch implements Runnable {
+
+        private final List batch;
+        private final Map<Object, SortedSet<Object>> ret;
+        private final AbstractMetricSpace metricSpace;
+
+        private final CountDownLatch latch;
+
+        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch) {
+            this.batch = batch;
+            this.ret = new HashMap<>();
+            this.metricSpace = metricSpace;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            Iterator dataObjects = batch.iterator();
+            for (int i = 0; dataObjects.hasNext(); i++) {
+                Object o = dataObjects.next();
+                Object oData = metricSpace.getDataOfMetricObject(o);
+                Object oID = metricSpace.getIDOfMetricObject(o);
+                float minDist = Float.MAX_VALUE;
+                Object pivotID = null;
+                for (Map.Entry<Object, Object> pivot : pivots.entrySet()) {
+                    float dist = df.getDistance(oData, pivot.getValue());
+                    if (dist < minDist) {
+                        minDist = dist;
+                        pivotID = pivot.getKey();
+                    }
+                }
+                if (!ret.containsKey(pivotID)) {
+                    ret.put(pivotID, new TreeSet<>());
+                }
+                ret.get(pivotID).add(oID);
+            }
+            latch.countDown();
+        }
+
+        public Map<Object, SortedSet<Object>> getRet() {
+            return ret;
+        }
+
+    }
 }

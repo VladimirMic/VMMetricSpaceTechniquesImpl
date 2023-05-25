@@ -38,8 +38,8 @@ public class AuxiliaryLearnSketching {
         CountDownLatch latch = new CountDownLatch(end - start);
         while (end < columnWiseSketches.size()) {
             try {
-                for (int i = start; i < end; i++) {
-                    CorrelationThreadCounter thread = new CorrelationThreadCounter(columnWiseSketches, i + 1, end + 1, sampleSetSize, absoluteValues, sketchesCardSizeAvg, ret, latch);
+                for (int i = start; i < end; i++) {                    
+                    CorrelationThreadCounter thread = new CorrelationThreadCounter(columnWiseSketches, i + 1, end + 1, sampleSetSize, absoluteValues, sketchesCardSizeAvg, ret, latch); // jak dlouho toto trvá?
                     threadPool.execute(thread);
                     if (i % 100 == 0) {
                         LOG.log(Level.INFO, "Evaluating correlations of sketches. Primary index: {0} out of {1}", new Object[]{i, end});
