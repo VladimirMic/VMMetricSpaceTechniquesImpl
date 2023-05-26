@@ -21,9 +21,12 @@ import vm.search.SearchingAlgorithm;
 import vm.simRel.impl.SimRelEuclideanPCAImpl;
 
 /**
+ * Experiments with this class did not outperform original proposal in
+ * SimRelSeqScanKNNCandSetThenFullDistEval
  *
  * @author Vlada
  */
+@Deprecated
 public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]> {
 
     private static final Logger LOG = Logger.getLogger(RefineCandidateSetWithPCASimRel.class.getName());

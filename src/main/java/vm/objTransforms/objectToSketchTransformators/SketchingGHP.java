@@ -102,7 +102,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     @Override
     public List<BitSet> createColumnwiseSketches(AbstractMetricSpace<Object> metricSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df) {
-        LOG.log(Level.INFO, "Start creating inverted sketches for: {0} sample objects", sampleObjects.size());
+        LOG.log(Level.INFO, "Start creating inverted sketches for {0} sample objects", sampleObjects.size());
         try {
             List<BitSet> ret = new ArrayList<>();
             int invertedSketchesCount = getSketchLength();
@@ -146,6 +146,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
                     long count = latch.getCount();
                     if (count % 500 == 0) {
                         LOG.log(Level.INFO, "Creating inverted sketches. Remains {0}", count);
+                        System.gc();
                     }
                 });
             }

@@ -13,7 +13,6 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.search.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.OnePivotFiltering;
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.

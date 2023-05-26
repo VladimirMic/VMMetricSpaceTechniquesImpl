@@ -167,10 +167,18 @@ public class ToolsMetricDomain {
     public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength) {
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
         Object referentData = metricSpace.getDataOfMetricObject(referent);
-        return getPivotPermutation(df, pivotsMap, referentData, prefixLength);
+        return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength);
     }
 
-    public static Object[] getPivotPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
+    /**
+     *
+     * @param df
+     * @param pivotsMap
+     * @param referentData
+     * @param prefixLength
+     * @return ids of the closest pivots
+     */
+    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
