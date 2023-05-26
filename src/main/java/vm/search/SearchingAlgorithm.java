@@ -28,7 +28,6 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
-    public static final Integer PARALELISATION = 14;
     public static final Integer BATCH_SIZE = 100000;
 
     private final Map<Object, AtomicInteger> distCompsPerQueries = new HashMap<>();
@@ -104,7 +103,7 @@ public abstract class SearchingAlgorithm<T> {
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
         }
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISATION);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         int batchCounter = 0;
         while (objects.hasNext()) {
             try {

@@ -23,7 +23,6 @@ public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
     public static final Integer BATCH_SIZE = 50000000;
-    public static final Integer PARALELISM = 14;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
@@ -66,7 +65,7 @@ public class GroundTruthEvaluator {
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         return evaluateIterator(threadPool, itOverMetricObjects, paramsToStoreWithGroundTruth);
     }
 

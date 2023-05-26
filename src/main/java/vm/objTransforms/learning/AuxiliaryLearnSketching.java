@@ -34,7 +34,7 @@ public class AuxiliaryLearnSketching {
         long timeStart = System.currentTimeMillis();
         int start = 0;
         int end = blockSize - 1;
-        ExecutorService threadPool = end - start > 5000 ? Tools.initExecutor(MetricObjectsParallelTransformerImpl.PARALLELISATION) : Tools.initExecutor(1);
+        ExecutorService threadPool = end - start > 5000 ? Tools.initExecutor(Tools.PARALELISATION) : Tools.initExecutor(1);
         CountDownLatch latch = new CountDownLatch(end - start);
         while (end < columnWiseSketches.size()) {
             try {

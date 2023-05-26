@@ -13,7 +13,6 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.objTransforms.MetricObjectsParallelTransformerImpl;
 import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
 
 /**
@@ -110,7 +109,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
                 ret.add(new BitSet());
             }
             if (threadPool == null) {
-                threadPool = vm.javatools.Tools.initExecutor(MetricObjectsParallelTransformerImpl.PARALLELISATION);
+                threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
             }
             CountDownLatch latch = new CountDownLatch(invertedSketchesCount);
             Map<Object, Map<Object, Float>> distsCache = new ConcurrentHashMap<>();

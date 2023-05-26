@@ -22,7 +22,6 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class VoronoiPartitioning {
 
-    public static final Integer PARALELISATION = 8;
     public static final Integer BATCH_SIZE = 50000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
@@ -38,20 +37,20 @@ public class VoronoiPartitioning {
 
     public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, int pivotCountUsedInTheFileName, StorageLearnedVoronoiPartitioningInterface storage) {
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISATION);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         int batchCounter = 0;
         while (dataObjects.hasNext()) {
             try {
-                CountDownLatch latch = new CountDownLatch(PARALELISATION);
-                ProcessBatch[] processes = new ProcessBatch[PARALELISATION];
-                for (int j = 0; j < PARALELISATION; j++) {
+                CountDownLatch latch = new CountDownLatch(vm.javatools.Tools.PARALELISATION);
+                ProcessBatch[] processes = new ProcessBatch[vm.javatools.Tools.PARALELISATION];
+                for (int j = 0; j < vm.javatools.Tools.PARALELISATION; j++) {
                     batchCounter++;
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
                     processes[j] = new ProcessBatch(batch, metricSpace, latch);
                     threadPool.execute(processes[j]);
                 }
                 latch.await();
-                for (int j = 0; j < PARALELISATION; j++) {
+                for (int j = 0; j < vm.javatools.Tools.PARALELISATION; j++) {
                     Map<Object, SortedSet<Object>> partial = processes[j].getRet();
                     for (Map.Entry<Object, SortedSet<Object>> partialEntry : partial.entrySet()) {
                         Object key = partialEntry.getKey();
