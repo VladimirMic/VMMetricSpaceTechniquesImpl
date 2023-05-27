@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.Dataset;
 import vm.metricSpace.MetricSpacesStorageInterface;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
@@ -29,32 +30,31 @@ public class LearnSketchingGHP {
     private static final Logger LOG = Logger.getLogger(LearnSketchingGHP.class.getName());
     public static final Float BALANCE_TOLERATION = 0.05f;
 
-    private final AbstractMetricSpace<Object> metricSpace;
-    private final MetricSpacesStorageInterface metricSpaceStorage;
+    private final Dataset dataset;
     private final int numberOfPivotsForMakingAllPairs;
     private final int maxNumberOfBalancedForGeneticHeuristic;
 
     private final GHPSketchingPivotPairsStoreInterface storage;
 
-    public LearnSketchingGHP(AbstractMetricSpace<Object> metricSpace, MetricSpacesStorageInterface metricSpaceStorage, GHPSketchingPivotPairsStoreInterface sketchingStorage) {
-        this(metricSpace, metricSpaceStorage, sketchingStorage, 512, 15000);
+    public LearnSketchingGHP(Dataset dataset, GHPSketchingPivotPairsStoreInterface sketchingStorage) {
+        this(dataset, sketchingStorage, 512, 15000);
     }
 
-    public LearnSketchingGHP(AbstractMetricSpace<Object> metricSpace, MetricSpacesStorageInterface metricSpaceStorage, GHPSketchingPivotPairsStoreInterface sketchingStorage, int numberOfPivotsForMakingAllPairs, int maxNumberOfBalancedForGeneticHeuristic) {
-        this.metricSpace = metricSpace;
-        this.metricSpaceStorage = metricSpaceStorage;
+    public LearnSketchingGHP(Dataset dataset, GHPSketchingPivotPairsStoreInterface sketchingStorage, int numberOfPivotsForMakingAllPairs, int maxNumberOfBalancedForGeneticHeuristic) {
+        this.dataset = dataset;
         this.storage = sketchingStorage;
         this.numberOfPivotsForMakingAllPairs = numberOfPivotsForMakingAllPairs;
         this.maxNumberOfBalancedForGeneticHeuristic = maxNumberOfBalancedForGeneticHeuristic;
     }
 
-    public void evaluate(String datasetName, String pivotSetName, int sampleSetSize, int[] sketchLengths, float balance, Object... additionalInfoForDistF) {
+    public void evaluate(Dataset dataset, int sampleSetSize, int[] sketchLengths, float balance, Object... additionalInfoForDistF) {
         if (balance < 0 || balance > 1) {
             throw new IllegalArgumentException("Set balanced from range (0, 1).");
         }
-        DistanceFunctionInterface<Object> df = metricSpace.getDistanceFunctionForDataset(datasetName);
-        List<Object> sampleOfDataset = metricSpaceStorage.getSampleOfDataset(datasetName, sampleSetSize);
-        List<Object> pivots = metricSpaceStorage.getPivots(pivotSetName, numberOfPivotsForMakingAllPairs);
+        AbstractMetricSpace metricSpace = dataset.getMetricSpace();
+        DistanceFunctionInterface<Object> df = dataset.getDistanceFunction();
+        List<Object> sampleOfDataset = dataset.getSampleOfDataset(sampleSetSize);
+        List<Object> pivots = dataset.getPivots(numberOfPivotsForMakingAllPairs);
 
         AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(df, metricSpace, pivots, true, additionalInfoForDistF);
 
@@ -79,7 +79,7 @@ public class LearnSketchingGHP {
         }
         for (int sketchLength : sketchLengths) {
             LOG.log(Level.INFO, "\n\nStarting learning of sketches of length {0} bits.", new Object[]{sketchLength});
-            String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(datasetName, sketchLength, balance);
+            String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
             int[] lowCorrelatedBits = selectLowCorrelatedBits(sketchLength, columnWiseSketches, sketchesCorrelations);
             sketchingTechnique.preserveJustGivenBits(lowCorrelatedBits);
             storage.storeSketching(resultName, metricSpace, Tools.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);

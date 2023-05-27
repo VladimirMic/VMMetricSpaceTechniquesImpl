@@ -47,6 +47,9 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
         int sketchLength = (int) params[0];
         float balance = (float) params[1];
         int balanceInt = (int) (balance * 100);
+        if (datasetDescription.contains("laion2B-en-clip768v2")) {
+            datasetDescription = "laion2B-en-clip768v2-n=1M_sample.h5";
+        }
         return datasetDescription + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;
     }
 
