@@ -12,13 +12,13 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  *
  * @author Vlada
  */
-public class SimRelEuclideanPCALearn implements SimRelInterface<float[]> {
+public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
 
     private int simRelCounter;
     private int[] errorsPerCoord;
     private List<Float>[] diffsWhenWrongPerCoords;
 
-    public SimRelEuclideanPCALearn(int prefixLength) {
+    public SimRelEuclideanPCAForLearning(int prefixLength) {
         resetLearning(prefixLength);
     }
 

@@ -15,11 +15,10 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
-import vm.metricSpace.MetricSpacesStorageInterface;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
-import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
 import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
 
 /**
  *
@@ -56,7 +55,7 @@ public class LearnSketchingGHP {
         List<Object> sampleOfDataset = dataset.getSampleOfDataset(sampleSetSize);
         List<Object> pivots = dataset.getPivots(numberOfPivotsForMakingAllPairs);
 
-        AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(df, metricSpace, pivots, true, additionalInfoForDistF);
+        AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(df, metricSpace, pivots, true, true, additionalInfoForDistF);
 
         List<BitSet> columnWiseSketches = sketchingTechnique.createColumnwiseSketches(metricSpace, sampleOfDataset, df);
         int[] balancedIndexes = getIndexesOfProperlyBalanced(columnWiseSketches, balance, sampleOfDataset.size(), sketchingTechnique);
@@ -79,11 +78,11 @@ public class LearnSketchingGHP {
         }
         for (int sketchLength : sketchLengths) {
             LOG.log(Level.INFO, "\n\nStarting learning of sketches of length {0} bits.", new Object[]{sketchLength});
-            String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
+            String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), true, sketchLength, balance);
             int[] lowCorrelatedBits = selectLowCorrelatedBits(sketchLength, columnWiseSketches, sketchesCorrelations);
             sketchingTechnique.preserveJustGivenBits(lowCorrelatedBits);
             storage.storeSketching(resultName, metricSpace, Tools.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
-            sketchingTechnique = new SketchingGHP(df, metricSpace, pivotsBalancedBackup, false);
+            sketchingTechnique = new SketchingGHP(df, metricSpace, pivotsBalancedBackup, false, true);
         }
     }
 

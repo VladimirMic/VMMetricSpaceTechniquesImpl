@@ -8,8 +8,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import vm.datatools.DataTypeConvertor;
 import vm.metricSpace.ToolsMetricDomain;
-import vm.objTransforms.storeLearned.SVDStoreInterface;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.objTransforms.storeLearned.SVDStoreInterface;
 
 /**
  *

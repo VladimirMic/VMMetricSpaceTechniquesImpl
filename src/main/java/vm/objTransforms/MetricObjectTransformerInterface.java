@@ -6,9 +6,9 @@ package vm.objTransforms;
  */
 public interface MetricObjectTransformerInterface {
 
-    public Object transformMetricObject(Object obj, Object ... params);
+    public Object transformMetricObject(Object obj, Object... params);
 
-    public String getNameOfTransformedSetOfObjects(String origSetName, Object... otherParams);
+    public String getNameOfTransformedSetOfObjects(String origSetName, boolean learning, Object... otherParams);
 
     public String getTechniqueAbbreviation();
 

@@ -23,16 +23,18 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
     protected Object[] pivots;
     protected final DistanceFunctionInterface distanceFunc;
     protected final Object[] additionalInfo;
+    protected final boolean learning;
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray());
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean learning, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), learning);
     }
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, Object... additionalInfo) {
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean learning, Object... additionalInfo) {
         this.metricSpace = metricSpace;
         this.pivots = pivots;
         this.distanceFunc = distanceFunc;
         this.additionalInfo = additionalInfo;
+        this.learning = learning;
     }
 
     /**
@@ -43,11 +45,11 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
      * @return
      */
     @Override
-    public final String getNameOfTransformedSetOfObjects(String datasetDescription, Object... params) {
+    public final String getNameOfTransformedSetOfObjects(String datasetDescription, boolean learning, Object... params) {
         int sketchLength = (int) params[0];
         float balance = (float) params[1];
         int balanceInt = (int) (balance * 100);
-        if (datasetDescription.contains("laion2B-en-clip768v2")) {
+        if (learning && datasetDescription.contains("laion2B-en-clip768v2")) {
             datasetDescription = "laion2B-en-clip768v2-n=1M_sample.h5";
         }
         return datasetDescription + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;

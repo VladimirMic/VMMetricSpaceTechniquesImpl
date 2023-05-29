@@ -22,13 +22,13 @@ import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
 public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
-
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, additionalInfo);
+    
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, boolean learning, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, learning, additionalInfo);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
-        super(distanceFunc, metricSpace, pivots, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, boolean learning, Object... additionalInfo) {
+        super(distanceFunc, metricSpace, pivots, learning, additionalInfo);
         if (makeAllPivotPairs) {
             makeAllPivotsPairs();
         }
