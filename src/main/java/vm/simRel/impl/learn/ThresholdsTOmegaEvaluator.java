@@ -43,9 +43,9 @@ public class ThresholdsTOmegaEvaluator {
             alg.candSetKnnSearch(pcaDataset.getMetricSpace(), queryObj, kPCA, sampleOfDataset.iterator());
             LOG.log(Level.INFO, "Learning tresholds with the query obj {0}", new Object[]{i + 1});
         }
-        float[] ret = simRelLearn.getDiffWhenWrong(percentileWrong, -1);
+        float[][] ret = simRelLearn.getDiffWhenWrong(percentileWrong);
         storage.store(ret, pcaDataset.getDatasetName(), querySampleCount, dataSampleCount, pcaLength, kPCA);
-        return ret;
+        return ret[0];
     }
 
 }

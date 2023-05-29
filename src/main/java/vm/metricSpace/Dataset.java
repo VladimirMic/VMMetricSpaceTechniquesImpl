@@ -2,6 +2,7 @@ package vm.metricSpace;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -83,4 +84,11 @@ public abstract class Dataset<T> {
     public int getPrecomputedDatasetSize() {
         return metricSpacesStorage.getPrecomputedDatasetSize(datasetName);
     }
+
+    /**
+     * Return (usually disk stored) map of IDs of objects and their data
+     *
+     * @return
+     */
+    public abstract Map<Object, Object> getKeyValueStorage();
 }
