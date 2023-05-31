@@ -1,6 +1,7 @@
 package vm.search.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +43,15 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     /**
      *
      * @param metricSpace
-     * @param fullQueryObj
+     * @param fullQueryObject
      * @param k
      * @param objects ignored!
      * @return
      */
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects) {
-        Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, queryObject, -1);
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> objects) {
+        T qData = metricSpace.getDataOfMetricObject(fullQueryObject);
+        Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1);
         List<Object> ret = new ArrayList<>();
         int idxOfNext = 0;
         TreeSet<Object> nextCell = null;
