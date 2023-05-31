@@ -91,7 +91,8 @@ public abstract class SearchingAlgorithm<T> {
      * @param k
      * @param objects
      * @param paramsToExtractDataFromMetricObject
-     * @return
+     * @return evaluates all query objects in parallel. Parallelisation is done
+     * over the query objects
      */
     public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... paramsToExtractDataFromMetricObject) {
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];

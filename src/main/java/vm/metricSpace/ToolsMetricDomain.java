@@ -148,7 +148,7 @@ public class ToolsMetricDomain {
             Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
             Object value = valuesAsMetricObjectData ? metricSpace.getDataOfMetricObject(metricObject) : metricObject;
             ret.put(idOfMetricObject, value);
-            if (i % 10000 == 0) {
+            if (i % 100000 == 0) {
                 LOG.log(Level.INFO, "Loaded {0} objects into map", i);
             }
         }
@@ -182,17 +182,22 @@ public class ToolsMetricDomain {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
-        TreeSet<Map.Entry<Object, Float>> map = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
-        for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
-            Float dist = df.getDistance(referentData, pivot.getValue());
-            Map.Entry<Object, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);
-            map.add(entry);
-        }
+        TreeSet<Map.Entry<Object, Float>> map = getPivotIDsPermutationWithDists(df, pivotsMap, referentData, prefixLength);
         Object[] ret = new Object[Math.min(pivotsMap.size(), prefixLength)];
         Iterator<Map.Entry<Object, Float>> it = map.iterator();
         for (int i = 0; it.hasNext() && i < prefixLength; i++) {
             Map.Entry<Object, Float> next = it.next();
             ret[i] = next.getKey();
+        }
+        return ret;
+    }
+
+    public static TreeSet<Map.Entry<Object, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
+        for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
+            Float dist = df.getDistance(referentData, pivot.getValue());
+            Map.Entry<Object, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);
+            ret.add(entry);
         }
         return ret;
     }

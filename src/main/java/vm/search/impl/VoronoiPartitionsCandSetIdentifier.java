@@ -39,6 +39,14 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         throw new UnsupportedOperationException("Not supported and will not be.");
     }
 
+    /**
+     *
+     * @param metricSpace
+     * @param fullQueryObj
+     * @param k
+     * @param objects ignored!
+     * @return
+     */
     @Override
     public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects) {
         Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, queryObject, -1);
@@ -47,13 +55,17 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         TreeSet<Object> nextCell = null;
         while ((nextCell == null || ret.size() + nextCell.size() < k) && idxOfNext < voronoiPartitioning.size() - 1) {
             if (nextCell != null) {
-                ret.addAll(nextCell);
-            }
+                    ret.addAll(nextCell);
+                        }
             nextCell = voronoiPartitioning.get(pivotPerm[idxOfNext]);
             idxOfNext++;
         }
-        LOG.log(Level.INFO, "Returning the cand set with {0} objects", ret.size());
+        LOG.log(Level.FINE, "Returning the cand set with {0} objects. It is made of {1} cells", new Object[]{ret.size(), idxOfNext});
         return ret;
+    }
+
+    public int getNumberOfPivots() {
+        return pivotsMap.size();
     }
 
 }

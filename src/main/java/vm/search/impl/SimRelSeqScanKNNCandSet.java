@@ -1,6 +1,5 @@
 package vm.search.impl;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,35 +10,31 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.search.SearchingAlgorithm;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
-import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
  *
  * @author Vlada
  */
-public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<float[]> {
+public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
 
-    private static final Logger LOG = Logger.getLogger(SimRelSeqScanKNNCandSetThenFullDistEval.class.getName());
+    private static final Logger LOG = Logger.getLogger(SimRelSeqScanKNNCandSet.class.getName());
     private final SimRelInterface<float[]> simRelFunc;
-    private final DistanceFunctionInterface<float[]> fullDistanceFunction;
 
     private int distCompsOfLastExecutedQuery;
     private long simRelEvalCounter;
     private int kPCA;
     private boolean involveObjWithUnknownRelation;
 
-    public SimRelSeqScanKNNCandSetThenFullDistEval(SimRelInterface simRelFunc, int kPCA, DistanceFunctionInterface<float[]> fullDistanceFunction) {
-        this(simRelFunc, kPCA, fullDistanceFunction, true);
+    public SimRelSeqScanKNNCandSet(SimRelInterface simRelFunc, int kPCA) {
+        this(simRelFunc, kPCA, true);
     }
 
-    public SimRelSeqScanKNNCandSetThenFullDistEval(SimRelInterface simRelFunc, int kPCA, DistanceFunctionInterface<float[]> fullDistanceFunction, boolean involveObjWithUnknownRelation) {
+    public SimRelSeqScanKNNCandSet(SimRelInterface simRelFunc, int kPCA, boolean involveObjWithUnknownRelation) {
         this.simRelFunc = simRelFunc;
-        this.fullDistanceFunction = fullDistanceFunction;
         this.kPCA = kPCA;
         this.involveObjWithUnknownRelation = involveObjWithUnknownRelation;
     }
@@ -77,9 +72,6 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
             boolean knownRelation = addOToAnswer(k, queryObjectData, oData, oID, ansOfSimRel, mapOfData);
             if (!knownRelation) {
                 objIdUnknownRelation.add(oID);
-            }
-            if (i % 1000000 == 0) {
-                LOG.log(Level.INFO, "Processed {0} objects, evaluated {1} distances", new Object[]{i, distCompsOfLastExecutedQuery});
             }
         }
     }
@@ -131,18 +123,18 @@ public class SimRelSeqScanKNNCandSetThenFullDistEval extends SearchingAlgorithm<
         return false;
     }
 
-    private TreeSet<Map.Entry<Object, Float>> merge(int k, float[] queryObjectData, List<Object> objIDsToCheck, Map<Object, float[]> allObjData) {
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
-        for (Object oID : objIDsToCheck) {
-            float[] oData = allObjData.get(oID);
-            float distance = fullDistanceFunction.getDistance(queryObjectData, oData);
-            ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
-            if (ret.size() == k + 1) {
-                ret.remove(ret.last());
-            }
-        }
-        return ret;
-    }
+//    private TreeSet<Map.Entry<Object, Float>> merge(int k, float[] queryObjectData, List<Object> objIDsToCheck, Map<Object, float[]> allObjData) {
+//        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+//        for (Object oID : objIDsToCheck) {
+//            float[] oData = allObjData.get(oID);
+//            float distance = fullDistanceFunction.getDistance(queryObjectData, oData);
+//            ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
+//            if (ret.size() == k + 1) {
+//                ret.remove(ret.last());
+//            }
+//        }
+//        return ret;
+//    }
 
     private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
         while (ret.size() >= k && !indexesToRemove.isEmpty()) {

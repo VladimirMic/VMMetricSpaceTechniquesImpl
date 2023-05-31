@@ -53,7 +53,7 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
             for (int i = 0; i < lastIndex && it.hasNext(); i++) {
                 Map.Entry dist = it.next();
                 T[] oqData = (T[]) dist.getKey();
-                float c = (float) dist.getValue();
+                float c = Math.max(0, (float) dist.getValue());
                 float dPO = df.getDistance(pivotData, oqData[0]);
                 float dPQ = df.getDistance(pivotData, oqData[1]);
                 if (dPO == 0 || dPQ == 0 || c == 0) {
