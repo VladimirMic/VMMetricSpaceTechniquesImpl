@@ -86,7 +86,8 @@ public abstract class Dataset<T> {
     }
 
     /**
-     * Return (usually disk stored) map of IDs of objects and their data
+     * Return (usually disk stored) map of IDs of objects and their data. Feel
+     * free to skip this method if not needed
      *
      * @return
      */
