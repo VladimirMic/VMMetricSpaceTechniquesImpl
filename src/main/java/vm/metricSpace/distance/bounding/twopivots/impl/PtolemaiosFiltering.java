@@ -1,12 +1,12 @@
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
+import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 
 /**
  *
  * @author Vlada
  */
-public class PtolemaiosFiltering extends TwoPivotsFiltering {
+public class PtolemaiosFiltering extends TwoPivotsFilter {
 
     public PtolemaiosFiltering(String resultNamePrefix) {
         super(resultNamePrefix);

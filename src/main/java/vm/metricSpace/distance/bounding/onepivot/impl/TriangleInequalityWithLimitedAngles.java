@@ -1,13 +1,13 @@
 package vm.metricSpace.distance.bounding.onepivot.impl;
 
 import java.util.Map;
-import vm.metricSpace.distance.bounding.onepivot.OnePivotFiltering;
+import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
 
 /**
  *
  * @author Vlada
  */
-public class TriangleInequalityWithLimitedAngles extends OnePivotFiltering {
+public class TriangleInequalityWithLimitedAngles extends OnePivotFilter {
 
     private final Map<String, Float> pivotToCoefMapping;
 

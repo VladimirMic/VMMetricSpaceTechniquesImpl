@@ -12,7 +12,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.search.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
+import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -24,7 +24,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(KNNSearchWithTwoPivotFiltering.class.getName());
 
-    private final TwoPivotsFiltering filter;
+    private final TwoPivotsFilter filter;
     private final String[] pivotIDs;
     private final List<T> pivotsData;
     private final float[][] poDists;
@@ -33,7 +33,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     private final float[][] pivotPivotDists;
     private final DistanceFunctionInterface<T> df;
 
-    public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFiltering filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
         this.pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);

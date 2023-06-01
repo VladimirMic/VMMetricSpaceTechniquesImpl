@@ -148,7 +148,7 @@ public class ToolsMetricDomain {
             Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
             Object value = valuesAsMetricObjectData ? metricSpace.getDataOfMetricObject(metricObject) : metricObject;
             ret.put(idOfMetricObject, value);
-            if (i % 100000 == 0) {
+            if (i % 500000 == 0) {
                 LOG.log(Level.INFO, "Loaded {0} objects into map", i);
             }
         }

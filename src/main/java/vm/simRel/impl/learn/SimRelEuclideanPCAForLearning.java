@@ -30,26 +30,36 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
         return errorsPerCoord;
     }
 
-    public float[][] getDiffWhenWrong(float percentile) {
-        return getDiffWhenWrong(percentile, -1);
+    public float[][] getDiffWhenWrong(float... percentiles) {
+        return getDiffWhenWrong(-1, percentiles);
     }
 
-    public float[][] getDiffWhenWrong(float percentile, int numberOfCoordinates) {
+    public float[][] getDiffWhenWrong(int numberOfCoordinates, float... percentiles) {
         if (numberOfCoordinates < 0) {
             numberOfCoordinates = diffsWhenWrongPerCoords.length;
+        } else {
+            numberOfCoordinates = Math.min(diffsWhenWrongPerCoords.length, numberOfCoordinates);
         }
-        float[] retThresholds = new float[numberOfCoordinates];
-        float[] retMax = new float[numberOfCoordinates];
-        for (int i = 0; i < retThresholds.length; i++) {
+        float[][] ret = new float[percentiles.length][numberOfCoordinates];
+        for (int i = 0; i < numberOfCoordinates; i++) {
             if (!diffsWhenWrongPerCoords[i].isEmpty()) {
                 Collections.sort(diffsWhenWrongPerCoords[i]);
-                int idx = Math.round(diffsWhenWrongPerCoords[i].size() * percentile) - 1;
-                retThresholds[i] = diffsWhenWrongPerCoords[i].get(idx);
-                retMax[i] = diffsWhenWrongPerCoords[i].get(diffsWhenWrongPerCoords[i].size() - 1);
+                for (int j = 0; j < percentiles.length; j++) {
+                    float percentile = percentiles[j];
+                    int idx;
+                    if (percentile == 1f) {
+                        idx = diffsWhenWrongPerCoords[i].size() - 1;
+                    } else {
+                        idx = (int) (Math.floor(diffsWhenWrongPerCoords[i].size() * percentile) - 1);
+                    }
+                    idx = Math.min(idx, diffsWhenWrongPerCoords[i].size() - 1);
+                    idx = Math.max(0, idx);
+                    ret[j][i] = diffsWhenWrongPerCoords[i].get(idx);
+                    System.out.println("Percentile: " + percentile + ",cord: " + i + ", idx: " + idx + ", threshold: " + ret[j][i] + ", number of errors: " + diffsWhenWrongPerCoords[i].size());
+                }
             }
-            System.out.println("idx: " + i + ", threshold: " + retThresholds[i] + ", max error: " + retMax[i] + ", number of errors: " + diffsWhenWrongPerCoords[i].size());
         }
-        return new float[][]{retThresholds, retMax};
+        return ret;
     }
 
     @Override
@@ -88,6 +98,7 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
         for (int i = 0; i < pcaLength; i++) {
             diffsWhenWrongPerCoords[i] = new ArrayList();
         }
+        resetCounters(pcaLength);
     }
 
 }

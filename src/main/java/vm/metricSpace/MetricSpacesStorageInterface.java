@@ -103,7 +103,7 @@ public abstract class MetricSpacesStorageInterface {
         Iterator<Object> it = getObjectsFromDataset(datasetName, params);
         List<Object> ret = Tools.getObjectsFromIterator(it, objectCount);
         if (ret.size() != objectCount && objectCount > 0) {
-            throw new IllegalArgumentException("I was not able to find " + objectCount + " objects in the dataset. Found just " + ret.size() + " objects");
+            LOG.log(Level.SEVERE, "I was not able to find {0} objects in the dataset. Found just {1} objects", new Object[]{objectCount, ret.size()});
         }
         return ret;
     }

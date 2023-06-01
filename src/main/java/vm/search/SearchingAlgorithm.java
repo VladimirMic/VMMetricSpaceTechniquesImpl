@@ -25,7 +25,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public abstract class SearchingAlgorithm<T> {
 
-    private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
+    private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 100000;
 
     private final Map<Object, AtomicInteger> distCompsPerQueries = new HashMap<>();

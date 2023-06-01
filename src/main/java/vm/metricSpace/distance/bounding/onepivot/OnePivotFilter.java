@@ -6,9 +6,9 @@ import vm.metricSpace.distance.bounding.BoundsOnDistanceEstimation;
  *
  * @author Vlada
  */
-public abstract class OnePivotFiltering extends BoundsOnDistanceEstimation {
+public abstract class OnePivotFilter extends BoundsOnDistanceEstimation {
 
-    public OnePivotFiltering(String resultNamePreffixNumberOfPivotsPlusPivots) {
+    public OnePivotFilter(String resultNamePreffixNumberOfPivotsPlusPivots) {
         super(resultNamePreffixNumberOfPivotsPlusPivots);
     }
 

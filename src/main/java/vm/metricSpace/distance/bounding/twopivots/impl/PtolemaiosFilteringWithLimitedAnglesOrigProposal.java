@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
+import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 
 /**
  *
  * @author Vlada
  */
-public class PtolemaiosFilteringWithLimitedAnglesOrigProposal extends TwoPivotsFiltering {
+public class PtolemaiosFilteringWithLimitedAnglesOrigProposal extends TwoPivotsFilter {
 
     private final Map<String, List<Point2D.Double>> hullsForPivotPairs;
     private static final Logger LOGGER = Logger.getLogger(PtolemaiosFilteringWithLimitedAnglesOrigProposal.class.getName());

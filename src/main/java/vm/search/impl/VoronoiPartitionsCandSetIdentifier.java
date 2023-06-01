@@ -57,8 +57,8 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         TreeSet<Object> nextCell = null;
         while ((nextCell == null || ret.size() + nextCell.size() < k) && idxOfNext < voronoiPartitioning.size() - 1) {
             if (nextCell != null) {
-                    ret.addAll(nextCell);
-                        }
+                ret.addAll(nextCell);
+            }
             nextCell = voronoiPartitioning.get(pivotPerm[idxOfNext]);
             idxOfNext++;
         }

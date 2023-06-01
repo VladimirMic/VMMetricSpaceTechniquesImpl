@@ -1,6 +1,6 @@
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
+import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 
 /**
  * Filtering that assumes the 4-pointproperty. See: Fig 1 and Equation 1 in
@@ -11,7 +11,7 @@ import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
  *
  * @author Vlada based on the work of Lucia Vadicamo et al.
  */
-public class FourPointBasedFiltering extends TwoPivotsFiltering {
+public class FourPointBasedFiltering extends TwoPivotsFilter {
 
     public FourPointBasedFiltering(String resultNamePrefix) {
         super(resultNamePrefix);

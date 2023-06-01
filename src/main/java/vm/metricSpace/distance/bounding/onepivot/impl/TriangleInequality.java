@@ -1,12 +1,12 @@
 package vm.metricSpace.distance.bounding.onepivot.impl;
 
-import vm.metricSpace.distance.bounding.onepivot.OnePivotFiltering;
+import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
 
 /**
  *
  * @author Vlada
  */
-public class TriangleInequality extends OnePivotFiltering {
+public class TriangleInequality extends OnePivotFilter {
 
     public TriangleInequality(String namePrefix) {
         super(namePrefix);

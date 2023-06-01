@@ -3,14 +3,14 @@ package vm.metricSpace.distance.bounding.twopivots.impl;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFiltering;
+import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 import static vm.search.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETAILS;
 
 /**
  *
  * @author xmic
  */
-public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFiltering {
+public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFilter {
 
     private final Map<String, float[]> coefs;
     private static final Logger LOGGER = Logger.getLogger(PtolemaiosFilteringWithLimitedAnglesSimpleCoef.class.getName());
