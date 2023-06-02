@@ -1,7 +1,6 @@
 package vm.search.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +27,11 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     private final DistanceFunctionInterface<T> df;
     private final Map<Object, TreeSet<Object>> voronoiPartitioning;
 
-    public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageLearnedVoronoiPartitioningInterface voronoiPartitioningStorage, int pivotCountUsedForTheVoronoiPartitioning) {
+    public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageLearnedVoronoiPartitioningInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
         List pivots = dataset.getPivots(-1);
         pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(dataset.getMetricSpace(), pivots, true);
         df = dataset.getDistanceFunction();
-        voronoiPartitioning = voronoiPartitioningStorage.load(dataset.getDatasetName(), pivotCountUsedForTheVoronoiPartitioning);
+        voronoiPartitioning = voronoiPartitioningStorage.load(dataset.getDatasetName(), pivotCountUsedForVoronoiLearning);
     }
 
     @Override

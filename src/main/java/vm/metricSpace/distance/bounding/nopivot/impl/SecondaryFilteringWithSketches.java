@@ -55,16 +55,8 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         this.hamDistsThresholds = hamDistsThresholds;
     }
 
-    private float lastSearchRadius = -1;
-    private int lastPos = -1;
-
     public float lowerBound(long[] querySketch, Object oID, float searchRadius) {
-        int pos;
-        if (lastSearchRadius != searchRadius) {
-            lastSearchRadius = searchRadius;
-            lastPos = Arrays.binarySearch(primDistsThreshold, searchRadius);
-        }
-        pos = lastPos;
+        int pos = Arrays.binarySearch(primDistsThreshold, searchRadius);
         if (pos < 0) {
             pos = -pos - 1;
         }

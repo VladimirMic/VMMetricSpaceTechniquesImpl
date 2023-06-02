@@ -22,7 +22,13 @@ import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
 public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
-    
+
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean learning, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), false, learning, additionalInfo);
+        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, learning, sketchLength, balance);
+        setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
+    }
+
     public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, boolean learning, Object... additionalInfo) {
         this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, learning, additionalInfo);
     }
@@ -40,11 +46,11 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
      * constructor
      *
      * @param storage
-     * @param csvFileName
+     * @param sketchingTechniqueName
      */
     @Override
-    public final void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String csvFileName) {
-        List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(csvFileName);
+    public final void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String sketchingTechniqueName) {
+        List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(sketchingTechniqueName);
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots), false);
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];
         for (int i = 0; i < pivotPairsIDs.size(); i++) {

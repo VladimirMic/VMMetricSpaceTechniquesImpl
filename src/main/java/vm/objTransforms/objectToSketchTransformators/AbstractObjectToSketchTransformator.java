@@ -39,20 +39,20 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
 
     /**
      *
-     * @param datasetDescription
+     * @param fullDatasetName
      * @param params params[0] is the length of sketches, params[1] is the float
      * between 0 and 1 denoting the balance of bits
      * @return
      */
     @Override
-    public final String getNameOfTransformedSetOfObjects(String datasetDescription, boolean learning, Object... params) {
+    public final String getNameOfTransformedSetOfObjects(String fullDatasetName, boolean learning, Object... params) {
         int sketchLength = (int) params[0];
         float balance = (float) params[1];
         int balanceInt = (int) (balance * 100);
-        if (learning && datasetDescription.contains("laion2B-en-clip768v2")) {
-            datasetDescription = "laion2B-en-clip768v2-n=1M_sample.h5";
+        if (fullDatasetName.contains("laion2B-en-clip768v2")) {
+            fullDatasetName = "laion2B-en-clip768v2-n=1M_sample.h5";
         }
-        return datasetDescription + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;
+        return fullDatasetName + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;
     }
 
     public Object[] getPivots() {

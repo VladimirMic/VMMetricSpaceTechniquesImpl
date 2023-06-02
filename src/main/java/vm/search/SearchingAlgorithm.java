@@ -26,7 +26,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public abstract class SearchingAlgorithm<T> {
 
     private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
-    public static final Integer BATCH_SIZE = 100000;
+    public static final Integer BATCH_SIZE = 10000000;
 
     private final Map<Object, AtomicInteger> distCompsPerQueries = new HashMap<>();
     private final Map<Object, AtomicLong> timesPerQueries = new HashMap<>();
@@ -109,6 +109,9 @@ public abstract class SearchingAlgorithm<T> {
                 batch.clear();
                 for (int i = 0; i < BATCH_SIZE && objects.hasNext(); i++) {
                     batch.add(objects.next());
+                    if (i % 500000 == 0) {
+                        LOG.log(Level.INFO, "Loading objects into the batch. {0} Loaded", i);
+                    }
                 }
                 if (batch.isEmpty()) {
                     break;
@@ -119,11 +122,9 @@ public abstract class SearchingAlgorithm<T> {
                 final int batchFinal = batchCounter;
                 for (int i = 0; i < queryObjects.size(); i++) {
                     final Object queryObject = queryObjects.get(i);
-                    Object qId = metricSpace.getIDOfMetricObject(queryObject);
                     final TreeSet<Map.Entry<Object, Float>> map = ret[i];
                     final int iFinal = i + 1;
                     threadPool.execute(() -> {
-                        AtomicLong time = timesPerQueries.get(qId);
                         TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), map);
                         map.addAll(completeKnnSearch);
                         latch.countDown();
@@ -164,7 +165,8 @@ public abstract class SearchingAlgorithm<T> {
         if (ai != null) {
             ai.addAndGet(byValue);
         } else {
-            distCompsPerQueries.put(qId, new AtomicInteger(byValue));
+            ai = new AtomicInteger(byValue);
+            distCompsPerQueries.put(qId, ai);
         }
     }
 

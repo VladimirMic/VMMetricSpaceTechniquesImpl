@@ -35,8 +35,7 @@ public class PxEvaluator {
         this(fullDataset, sketchesDataset, objCount, sketchLength, distInterval, IMPLICIT_MIN_BUCKET_SIZE);
     }
 
-    @Deprecated
-    public PxEvaluator(Dataset fullDataset, Dataset<float[]> sketchesDataset, int objCount, int sketchLength, float distInterval, int minNumberOfExampleForBitToCount) {
+    protected PxEvaluator(Dataset fullDataset, Dataset<float[]> sketchesDataset, int objCount, int sketchLength, float distInterval, int minNumberOfExampleForBitToCount) {
         this.fullDataset = fullDataset;
         this.sampleObjects = fullDataset.getSampleOfDataset(objCount);
         this.distInterval = distInterval;

@@ -73,7 +73,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
             float distanceCheck = df.getDistance(qData, oData);
-            if (range < Float.MAX_VALUE && range > 0) {
+            if (range < Float.MAX_VALUE) {
                 for (int p = 0; p < pivotIDs.length; p++) {
                     PRINT_DETAILS = false;
                     String p1ID = pivotIDs[p];

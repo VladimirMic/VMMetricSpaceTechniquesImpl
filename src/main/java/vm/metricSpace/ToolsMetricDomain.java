@@ -143,13 +143,15 @@ public class ToolsMetricDomain {
 
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects, boolean valuesAsMetricObjectData) {
         Map<Object, Object> ret = new HashMap();
+        long t = -System.currentTimeMillis();
         for (int i = 1; metricObjects.hasNext(); i++) {
             Object metricObject = metricObjects.next();
             Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
             Object value = valuesAsMetricObjectData ? metricSpace.getDataOfMetricObject(metricObject) : metricObject;
             ret.put(idOfMetricObject, value);
-            if (i % 500000 == 0) {
+            if (i % 100000 == 0 && t + System.currentTimeMillis() > 5000) {
                 LOG.log(Level.INFO, "Loaded {0} objects into map", i);
+                t = -System.currentTimeMillis();
             }
         }
         LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
