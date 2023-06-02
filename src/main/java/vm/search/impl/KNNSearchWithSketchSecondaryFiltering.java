@@ -54,9 +54,9 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         Object qId = hammingSpace.getIDOfMetricObject(qSketch);
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
         AtomicInteger distComps = new AtomicInteger();
-        boolean justIDsProvided = params.length > 0;
+        boolean justIDsProvided = params.length > 0  && params[0] instanceof Map;
         Map fullObjectsStorage = null;
-        if (justIDsProvided && params[0] instanceof Map) {
+        if (justIDsProvided) {
             fullObjectsStorage = (Map) params[0];
             LOG.log(Level.INFO, "Going to use the provioded storage of objects");
         }

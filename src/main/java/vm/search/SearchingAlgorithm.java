@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,8 +29,8 @@ public abstract class SearchingAlgorithm<T> {
     private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 10000000;
 
-    private final Map<Object, AtomicInteger> distCompsPerQueries = new HashMap<>();
-    private final Map<Object, AtomicLong> timesPerQueries = new HashMap<>();
+    private final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
+    private final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
 
     public abstract TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
@@ -107,10 +108,12 @@ public abstract class SearchingAlgorithm<T> {
         while (objects.hasNext()) {
             try {
                 batch.clear();
+                long t = -System.currentTimeMillis();
                 for (int i = 0; i < BATCH_SIZE && objects.hasNext(); i++) {
                     batch.add(objects.next());
-                    if (i % 500000 == 0) {
+                    if (i % 50000 == 0 && t + System.currentTimeMillis() > 5000) {
                         LOG.log(Level.INFO, "Loading objects into the batch. {0} Loaded", i);
+                        t = -System.currentTimeMillis();
                     }
                 }
                 if (batch.isEmpty()) {
