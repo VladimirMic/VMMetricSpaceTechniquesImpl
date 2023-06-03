@@ -43,7 +43,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> hammingSpace, Object fullQuery, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Object, Float>> currAnswer = null;
-        if (params.length > 0) {
+        if (params.length > 0 && params[0] instanceof TreeSet) {
             currAnswer = (TreeSet<Map.Entry<Object, Float>>) params[0];
         }
         DistanceFunctionInterface fullDF = fullDataset.getDistanceFunction();
@@ -54,11 +54,10 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         Object qId = hammingSpace.getIDOfMetricObject(qSketch);
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
         AtomicInteger distComps = new AtomicInteger();
-        boolean justIDsProvided = params.length > 0  && params[0] instanceof Map;
+        boolean justIDsProvided = params.length > 0 && params[0] instanceof Map;
         Map fullObjectsStorage = null;
         if (justIDsProvided) {
             fullObjectsStorage = (Map) params[0];
-            LOG.log(Level.INFO, "Going to use the provioded storage of objects");
         }
         while (objects.hasNext()) {
             Object fullO = objects.next();

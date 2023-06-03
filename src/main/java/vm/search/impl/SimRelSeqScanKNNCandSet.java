@@ -64,11 +64,9 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
 
     private void sequentilScanWithSimRel(AbstractMetricSpace<float[]> metricSpace, Iterator<Object> objects, int k, float[] queryObjectData, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData, Set<Object> objIdUnknownRelation, Object... paramsToExtractDataFromMetricObject) {
         for (int i = 1; objects.hasNext(); i++) {
-            Object oID;
-            float[] oData;
             Object metricObject = objects.next();
-            oID = metricSpace.getIDOfMetricObject(metricObject);
-            oData = metricSpace.getDataOfMetricObject(metricObject);
+            Object oID = metricSpace.getIDOfMetricObject(metricObject);
+            float[] oData = metricSpace.getDataOfMetricObject(metricObject);
             boolean knownRelation = addOToAnswer(k, queryObjectData, oData, oID, ansOfSimRel, mapOfData);
             if (!knownRelation) {
                 objIdUnknownRelation.add(oID);
@@ -122,19 +120,6 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
         mapOfData.put(idOfO, oData);
         return false;
     }
-
-//    private TreeSet<Map.Entry<Object, Float>> merge(int k, float[] queryObjectData, List<Object> objIDsToCheck, Map<Object, float[]> allObjData) {
-//        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
-//        for (Object oID : objIDsToCheck) {
-//            float[] oData = allObjData.get(oID);
-//            float distance = fullDistanceFunction.getDistance(queryObjectData, oData);
-//            ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
-//            if (ret.size() == k + 1) {
-//                ret.remove(ret.last());
-//            }
-//        }
-//        return ret;
-//    }
 
     private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
         while (ret.size() >= k && !indexesToRemove.isEmpty()) {
