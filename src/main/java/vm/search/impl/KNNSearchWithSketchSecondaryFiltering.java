@@ -86,16 +86,11 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         }
 
         adjustAndReturnSearchRadius(ret, k);
-        t
-                += System.currentTimeMillis();
-
+        t += System.currentTimeMillis();
         incTime(qId, t);
 
         incDistsComps(qId, distComps.get());
-        try {
-            LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
-        } catch (Throwable e) {// ignore
-        }
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{distComps.get(), t, qId.toString()});
         return ret;
     }
 
