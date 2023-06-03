@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -16,6 +18,8 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
  * @author Vlada
  */
 public class SecondaryFilteringWithSketches extends NoPivotFilter {
+
+    private static final Logger LOG = Logger.getLogger(SecondaryFilteringWithSketches.class.getName());
 
     private final Map<Object, Object> sketches;
     private final DistanceFunctionInterface hamDistFunc;
@@ -35,6 +39,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             hamDistsThresholds[i] = entry.getValue();
         }
         Iterator sketchesIt = sketchingDataset.getMetricObjectsFromDataset();
+        LOG.log(Level.INFO, "Going to load SKETCHES for the secondary filtering with sketches");
         sketches = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(sketchingDataset.getMetricSpace(), sketchesIt, true);
     }
 

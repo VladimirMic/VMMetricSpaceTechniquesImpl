@@ -1,18 +1,12 @@
 package vm.simRel.impl.learn;
 
-import java.util.AbstractMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
-import vm.metricSpace.ToolsMetricDomain;
 import vm.search.SearchingAlgorithm;
 import vm.search.impl.SimRelSeqScanKNNCandSet;
-import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.impl.learn.storeLearnt.SimRelEuclidThresholdsTOmegaStorage;
 
 /**
