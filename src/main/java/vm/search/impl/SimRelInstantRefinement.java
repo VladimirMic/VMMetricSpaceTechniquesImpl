@@ -42,11 +42,13 @@ public class SimRelInstantRefinement<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQueryObject, int k, Iterator<Object> pcaObjects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQueryObject, int k, Iterator<Object> pcaOfCandidates, Object... additionalParams) {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Object, Float>> currAnswer = null;
+        int paramIDX = 0;
         if (additionalParams.length > 0 && additionalParams[0] instanceof TreeSet) {
             currAnswer = (TreeSet<Map.Entry<Object, Float>>) additionalParams[0];
+            paramIDX++;
         }
         T qData = fullMetricSpace.getDataOfMetricObject(fullQueryObject);
         Object qId = fullMetricSpace.getIDOfMetricObject(fullQueryObject);
@@ -57,10 +59,10 @@ public class SimRelInstantRefinement<T> extends SearchingAlgorithm<T> {
             euclid.resetEarlyStopsOnCoordsCounts();
         }
 
-        AbstractMetricSpace<float[]> pcaMetricSpace = (AbstractMetricSpace<float[]>) additionalParams[0];
-        Object pcaQueryObject = additionalParams[1];
+        Map<Object, Object> mapOfAllFullObjects = (Map<Object, Object>) additionalParams[paramIDX++];
+        AbstractMetricSpace<float[]> pcaMetricSpace = (AbstractMetricSpace<float[]>) additionalParams[paramIDX++];
+        Object pcaQueryObject = additionalParams[paramIDX++];
 
-        Map<Object, Object> fullObjectsMap = (Map<Object, Object>) additionalParams[2];
 
         float[] pcaQueryObjData = pcaMetricSpace.getDataOfMetricObject(pcaQueryObject);
 
@@ -68,13 +70,13 @@ public class SimRelInstantRefinement<T> extends SearchingAlgorithm<T> {
         Map<Object, float[]> candSetData = new HashMap<>();
         simRelEvalCounter = 0;
 
-        for (int i = 1; pcaObjects.hasNext(); i++) {
-            Object oPCA = pcaObjects.next();
+        for (int i = 1; pcaOfCandidates.hasNext(); i++) {
+            Object oPCA = pcaOfCandidates.next();
             Object oPCAID = pcaMetricSpace.getIDOfMetricObject(oPCA);
             float[] oPCAData = pcaMetricSpace.getDataOfMetricObject(oPCA);
             boolean toBeAdded = addOToAnswer(k, pcaQueryObjData, oPCAData, oPCAID, ansOfSimRel, candSetData);
             if (toBeAdded) {
-                T fullOData = (T) fullObjectsMap.get(oPCAID);
+                T fullOData = (T) mapOfAllFullObjects.get(oPCAID);
                 float distance = fullDF.getDistance(qData, fullOData);
                 distCompsOfLastExecutedQuery++;
                 ret.add(new AbstractMap.SimpleEntry<>(oPCAID, distance));
