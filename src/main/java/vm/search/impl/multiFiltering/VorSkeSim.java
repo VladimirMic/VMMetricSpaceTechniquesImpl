@@ -99,6 +99,8 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         List<Object> simRelAns = new ArrayList<>();
         Set<Object> objIdUnknownRelation = new HashSet<>();
         Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
+        
+        // sketch preparation
         Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
         float range = Float.MAX_VALUE;
