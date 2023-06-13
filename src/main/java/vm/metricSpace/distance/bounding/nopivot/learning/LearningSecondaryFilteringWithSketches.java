@@ -25,8 +25,7 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
  */
 public class LearningSecondaryFilteringWithSketches<T> {
 
-//    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
-    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.55f, 0.65f, 0.85f};
+    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
     public static final Logger LOG = Logger.getLogger(LearningSecondaryFilteringWithSketches.class.getName());
 
     private final SecondaryFilteringWithSketchesStoreInterface storage;
@@ -96,6 +95,9 @@ public class LearningSecondaryFilteringWithSketches<T> {
             long[] sk2Data = metricSpaceOfSketches.getDataOfMetricObject(sk2);
             float distance = hammingDF.getDistance(sk1Data, sk2Data);
             distances[i] = distance;
+            if (i % (DISTS_COMPS_FOR_SK_IDIM_AND_PX / 10) == 0) {
+                LOG.log(Level.INFO, "iDim evaluation: {0} distances", i);
+            }
             i++;
         }
         double iDim = Tools.getIDim(distances, true);

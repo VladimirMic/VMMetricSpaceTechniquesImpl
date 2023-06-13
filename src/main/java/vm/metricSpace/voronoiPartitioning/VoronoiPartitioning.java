@@ -1,6 +1,5 @@
 package vm.metricSpace.voronoiPartitioning;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +21,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class VoronoiPartitioning {
 
-    public static final Integer BATCH_SIZE = 50000;
+    public static final Integer BATCH_SIZE = 14000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     private final AbstractMetricSpace metricSpace;

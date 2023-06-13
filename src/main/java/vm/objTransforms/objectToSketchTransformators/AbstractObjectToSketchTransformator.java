@@ -45,11 +45,11 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
      * @return
      */
     @Override
-    public final String getNameOfTransformedSetOfObjects(String fullDatasetName, boolean learning, Object... params) {
+    public final String getNameOfTransformedSetOfObjects(String fullDatasetName, boolean rename, Object... params) {
         int sketchLength = (int) params[0];
         float balance = (float) params[1];
         int balanceInt = (int) (balance * 100);
-        if (fullDatasetName.contains("laion2B-en-clip768v2")) {
+        if (fullDatasetName.contains("laion2B-en-clip768v2") && rename) {
             fullDatasetName = "laion2B-en-clip768v2-n=1M_sample.h5";
         }
         return fullDatasetName + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;
