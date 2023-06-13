@@ -23,9 +23,9 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean learning, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), false, learning, additionalInfo);
-        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, learning, sketchLength, balance);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean renameFile, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), false, renameFile, additionalInfo);
+        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, renameFile, sketchLength, balance);
         setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
     }
 
@@ -33,8 +33,8 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
         this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, learning, additionalInfo);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, boolean learning, Object... additionalInfo) {
-        super(distanceFunc, metricSpace, pivots, learning, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, boolean renameFile, Object... additionalInfo) {
+        super(distanceFunc, metricSpace, pivots, renameFile, additionalInfo);
         if (makeAllPivotPairs) {
             makeAllPivotsPairs();
         }

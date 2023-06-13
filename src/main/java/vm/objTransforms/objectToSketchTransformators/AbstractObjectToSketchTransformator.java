@@ -40,6 +40,7 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
     /**
      *
      * @param fullDatasetName
+     * @param rename
      * @param params params[0] is the length of sketches, params[1] is the float
      * between 0 and 1 denoting the balance of bits
      * @return
