@@ -1,6 +1,7 @@
 package vm.metricSpace.distance.bounding.nopivot.impl;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +36,8 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     private final DistanceFunctionInterface hamDistFunc;
     private final double[] primDistsThreshold;
     private final int[] hamDistsThresholds;
+
+    private ExecutorService threadPool = null;
 
     public SecondaryFilteringWithSketches(String namePrefix, String fullDatasetName, Dataset<long[]> sketchingDataset, SecondaryFilteringWithSketchesStoreInterface storage, float thresholdPcum, int iDimSketchesSampleCount, int iDimDistComps, float distIntervalForPX) {
         super(namePrefix);
@@ -116,17 +119,20 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         return "Secondary_filtering_with_sketches";
     }
 
-    public TreeSet<AbstractMap.SimpleEntry<Object, Integer>> evaluateHammingDistances(long[] qSketch, List candSetIDs) {
+    public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistances(long[] qSketch, List candSetIDs) {
         try {
-            TreeSet<AbstractMap.SimpleEntry<Object, Integer>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueIntComparator());
-            int batchCount = 5;
-            ExecutorService threadPool = Tools.initExecutor(batchCount);
+            long x0 = -System.currentTimeMillis();
+            int batchCount = Tools.PARALELISATION;
             float batchSize = candSetIDs.size() / (float) batchCount + 0.5f;
             batchSize = vm.math.Tools.round(batchSize, 1f, false);
 
             CountDownLatch latch = new CountDownLatch(batchCount);
             Iterator it = candSetIDs.iterator();
             DistEvaluationThread[] threads = new DistEvaluationThread[batchCount];
+            if (threadPool == null) {
+                threadPool = Tools.initExecutor(batchCount);
+            }
+            long x1 = -System.currentTimeMillis();
             for (int i = 0; i < batchCount; i++) {
                 final Set batch = new HashSet();
                 while (batch.size() < batchSize && it.hasNext()) {
@@ -136,10 +142,19 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
                 threadPool.execute(threads[i]);
             }
             latch.await();
+            x1 += System.currentTimeMillis();
+            long x2 = -System.currentTimeMillis();
+            List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new List[batchCount];
             for (int i = 0; i < batchCount; i++) {
-                ret.addAll(threads[i].getThreadRet());
+                SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = threads[i].getThreadRet();
+                ret[i] = new ArrayList<>(threadRet);
             }
-            threadPool.shutdown();
+            x2 += System.currentTimeMillis();
+            x0 += System.currentTimeMillis();
+            System.out.println("x0 " + x0);
+            System.out.println("x1 " + x1);
+            System.out.println("x2 " + x2);
+            System.out.println("batchCount " + batchCount);
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);

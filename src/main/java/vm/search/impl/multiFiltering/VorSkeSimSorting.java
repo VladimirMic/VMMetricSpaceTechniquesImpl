@@ -93,7 +93,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
 
         // first phase: voronoi
+        long t1 = -System.currentTimeMillis();
         List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
+        t1 += System.currentTimeMillis();
 
         // simRel preparation
         List<Object> simRelAns = new ArrayList<>();
@@ -101,15 +103,38 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
+        long t2 = -System.currentTimeMillis();
         Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
+        t2 += System.currentTimeMillis();
         float range = Float.MAX_VALUE;
 
-        TreeSet<AbstractMap.SimpleEntry<Object, Integer>> hammingDists = sketchSecondaryFilter.evaluateHammingDistances(qSketchData, candSetIDs);
+        long t3 = -System.currentTimeMillis();
+        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistances(qSketchData, candSetIDs);
+        t3 += System.currentTimeMillis();
 
-        Iterator<AbstractMap.SimpleEntry<Object, Integer>> candidatesIterator = hammingDists.iterator();
-        for (int i = 1; candidatesIterator.hasNext(); i++) {
-            AbstractMap.SimpleEntry<Object, Integer> next = candidatesIterator.next();
+        SortedSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
+        int[] curIndexes = new int[hammingDists.length];
+        for (int i = 0; i < hammingDists.length; i++) {
+            AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[i].get(curIndexes[i]);
+            mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(i, next.getValue()));
+        }
+        long t4 = 0;
+        long t5 = 0;
+        int counter = 0;
+        while (true) {
+            AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
+            mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
+
+            int candSetRunIndex = candSetRunIndexAndHamDist.getKey();
+            int indexInTheRun = curIndexes[candSetRunIndex];
+            AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[candSetRunIndex].get(indexInTheRun);
+            curIndexes[candSetRunIndex]++;
+            if (curIndexes[candSetRunIndex] < hammingDists[candSetRunIndex].size()) {
+                AbstractMap.SimpleEntry<Object, Integer> nextCandWithHamDist = hammingDists[candSetRunIndex].get(curIndexes[candSetRunIndex]);
+                mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(candSetRunIndex, nextCandWithHamDist.getValue()));
+            }
+
             Object candID = next.getKey();
             int hamDist = next.getValue();
             // zkusit skece pokud je ret plna
@@ -122,17 +147,16 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             } else {
                 float lowerBound = sketchSecondaryFilter.lowerBound(hamDist, range);
                 if (lowerBound == Float.MAX_VALUE) {
-                    continue;
+                    break;
                 }
             }
-            //; smazat
-//            distComps++;
-//            addToRet(ret, candID, fullQData);
-            //; smazat
-//
 //            //jinak simRel
+            t4 -= System.currentTimeMillis();
             float[] oPCAData = pcaPrefixesMap.get(candID);
+            t4 += System.currentTimeMillis();
+            t5 -= System.currentTimeMillis();
             boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap);
+            t5 += System.currentTimeMillis();
             if (!knownRelation) {
                 objIdUnknownRelation.add(candID);
             }
@@ -141,13 +165,14 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 range = adjustAndReturnSearchRadius(ret, k);
                 objIdUnknownRelation.clear();
             }
-            if (i > 200 && (i < 1000 && i % 100 == 0)) {
+            if (counter > 200 && (counter < 1000 && counter % 100 == 0)) {
                 distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator());
                 range = adjustAndReturnSearchRadius(ret, k);
             }
         }
         simRelAns.addAll(objIdUnknownRelation);
 
+        long t6 = -System.currentTimeMillis();
         // check by sketches again
         for (Object candID : simRelAns) {
             float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
@@ -157,12 +182,20 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             addToRet(ret, candID, fullQData);
             range = adjustAndReturnSearchRadius(ret, k);
         }
+        t6 += System.currentTimeMillis();
 
         t += System.currentTimeMillis();
         incDistsComps(qId, distComps);
         LOG.log(Level.INFO, "distancesCounter;{0}; simRelCounter;{1}", new Object[]{distComps, simRelEvalCounter});
         incTime(qId, t);
         LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{distComps, t, qId.toString()});
+        System.out.println("t1: " + t1);
+        System.out.println("t2: " + t2);
+        System.out.println("t3: " + t3);
+        System.out.println("t4: " + t4);
+        System.out.println("t5: " + t5);
+        System.out.println("t6: " + t6);
+        System.out.println("time_addToFull: " + time_addToFull);
         return ret;
 
     }
@@ -214,7 +247,10 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
     private final Set checked = new HashSet();
 
+    long time_addToFull = 0;
+
     private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator) {
+        time_addToFull -= System.currentTimeMillis();
         int distComps = 0;
         Set<Object> currKeys = new HashSet();
         for (Map.Entry<Object, Float> entry : queryAnswer) {
@@ -228,6 +264,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 checked.add(key);
             }
         }
+        time_addToFull += System.currentTimeMillis();
         return distComps;
     }
 
@@ -240,6 +277,20 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         T candData = fullObjectsStorage.get(candID);
         float distance = fullDF.getDistance(fullQData, candData);
         ret.add(new AbstractMap.SimpleEntry(candID, distance));
+    }
+
+    private int getMinIdx(List<AbstractMap.SimpleEntry<Object, Integer>>[] sortedHammingDists, int[] idxsToCandLists) {
+        int ret = 0;
+        int minDist = Integer.MAX_VALUE;
+        for (int i = 0; i < idxsToCandLists.length; i++) {
+            int idx = idxsToCandLists[i];
+            Integer hamDist = sortedHammingDists[i].get(idx).getValue();
+            if (hamDist < minDist) {
+                ret = i;
+                minDist = hamDist;
+            }
+        }
+        return ret;
     }
 
 }
