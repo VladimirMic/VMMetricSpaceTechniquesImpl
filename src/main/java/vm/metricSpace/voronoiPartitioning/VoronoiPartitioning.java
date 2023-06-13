@@ -21,7 +21,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class VoronoiPartitioning {
 
-    public static final Integer BATCH_SIZE = 10000;
+    public static final Integer BATCH_SIZE = 100000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     private final AbstractMetricSpace metricSpace;
