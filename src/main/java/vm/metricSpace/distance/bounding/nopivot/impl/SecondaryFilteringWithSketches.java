@@ -1,11 +1,21 @@
 package vm.metricSpace.distance.bounding.nopivot.impl;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.javatools.Tools;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -60,6 +70,17 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         this.hamDistsThresholds = hamDistsThresholds;
     }
 
+    public float lowerBound(int hamDist, float searchRadius) {
+        int pos = Arrays.binarySearch(primDistsThreshold, searchRadius);
+        if (pos < 0) {
+            pos = -pos - 1;
+        }
+        if (pos < hamDistsThresholds.length && hamDist >= hamDistsThresholds[pos]) {
+            return Float.MAX_VALUE;
+        }
+        return 0;
+    }
+
     public float lowerBound(long[] querySketch, Object oID, float searchRadius) {
         int pos = Arrays.binarySearch(primDistsThreshold, searchRadius);
         if (pos < 0) {
@@ -93,6 +114,66 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     @Override
     protected String getTechName() {
         return "Secondary_filtering_with_sketches";
+    }
+
+    public TreeSet<AbstractMap.SimpleEntry<Object, Integer>> evaluateHammingDistances(long[] qSketch, List candSetIDs) {
+        try {
+            TreeSet<AbstractMap.SimpleEntry<Object, Integer>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueIntComparator());
+            int batchCount = 5;
+            ExecutorService threadPool = Tools.initExecutor(batchCount);
+            float batchSize = candSetIDs.size() / (float) batchCount + 0.5f;
+            batchSize = vm.math.Tools.round(batchSize, 1f, false);
+
+            CountDownLatch latch = new CountDownLatch(batchCount);
+            Iterator it = candSetIDs.iterator();
+            DistEvaluationThread[] threads = new DistEvaluationThread[batchCount];
+            for (int i = 0; i < batchCount; i++) {
+                final Set batch = new HashSet();
+                while (batch.size() < batchSize && it.hasNext()) {
+                    batch.add(it.next());
+                }
+                threads[i] = new DistEvaluationThread(batch, qSketch, latch);
+                threadPool.execute(threads[i]);
+            }
+            latch.await();
+            for (int i = 0; i < batchCount; i++) {
+                ret.addAll(threads[i].getThreadRet());
+            }
+            threadPool.shutdown();
+            return ret;
+        } catch (InterruptedException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    private class DistEvaluationThread implements Runnable {
+
+        private final SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = new TreeSet<>(new vm.datatools.Tools.MapByValueIntComparator());
+        private final Set batch;
+        private final long[] qSketch;
+        private final CountDownLatch latch;
+
+        public DistEvaluationThread(Set batch, long[] qSketch, CountDownLatch latch) {
+            this.batch = batch;
+            this.qSketch = qSketch;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            for (Object id : batch) {
+                long[] oSketch = (long[]) sketches.get(id);
+                int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
+                threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
+            }
+            latch.countDown();
+        }
+
+        public SortedSet<AbstractMap.SimpleEntry<Object, Integer>> getThreadRet() {
+            return Collections.unmodifiableSortedSet(threadRet);
+        }
+
     }
 
 }

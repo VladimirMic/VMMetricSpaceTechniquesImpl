@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +31,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  * @author Vlada
  * @param <T>
  */
-public class VorSkeSim<T> extends SearchingAlgorithm<T> {
+public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
     public static final Boolean STORE_RESULTS = true;
 
@@ -53,7 +53,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     private long simRelEvalCounter;
 
-    public VorSkeSim(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
+    public VorSkeSimSorting(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -68,6 +68,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
+        // preparation
         long t = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
@@ -89,7 +90,6 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
         AbstractMetricSpace<float[]> pcaMetricSpace = (AbstractMetricSpace<float[]>) additionalParams[paramIDX++];
         Object pcaQ = additionalParams[paramIDX++];
-
         float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
 
         // first phase: voronoi
@@ -99,46 +99,55 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         List<Object> simRelAns = new ArrayList<>();
         Set<Object> objIdUnknownRelation = new HashSet<>();
         Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
-        
+
         // sketch preparation
         Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
         float range = Float.MAX_VALUE;
-        for (int i = 0; i < candSetIDs.size(); i++) {
-            Object candID = candSetIDs.get(i);
-            boolean add;
+
+        TreeSet<AbstractMap.SimpleEntry<Object, Integer>> hammingDists = sketchSecondaryFilter.evaluateHammingDistances(qSketchData, candSetIDs);
+
+        Iterator<AbstractMap.SimpleEntry<Object, Integer>> candidatesIterator = hammingDists.iterator();
+        for (int i = 1; candidatesIterator.hasNext(); i++) {
+            AbstractMap.SimpleEntry<Object, Integer> next = candidatesIterator.next();
+            Object candID = next.getKey();
+            int hamDist = next.getValue();
             // zkusit skece pokud je ret plna
-            if (ret.size() >= k) {
-                if (ret.size() > k) {
-                    range = adjustAndReturnSearchRadius(ret, k);
-                }
-                float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
-                if (lowerBound == Float.MAX_VALUE) {
-                    continue;
-                }
-                add = true;
-            } else {
+            if (ret.size() < k) {
                 //add to ret   
                 distComps++;
                 addToRet(ret, candID, fullQData);
-                add = false;
+                range = adjustAndReturnSearchRadius(ret, k);
+                continue;
+            } else {
+                float lowerBound = sketchSecondaryFilter.lowerBound(hamDist, range);
+                if (lowerBound == Float.MAX_VALUE) {
+                    continue;
+                }
             }
-            //jinak simRel
+            //; smazat
+//            distComps++;
+//            addToRet(ret, candID, fullQData);
+            //; smazat
+//
+//            //jinak simRel
             float[] oPCAData = pcaPrefixesMap.get(candID);
             boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap);
-            if (!knownRelation && add) {
+            if (!knownRelation) {
                 objIdUnknownRelation.add(candID);
             }
             if (objIdUnknownRelation.size() > 10) {
                 distComps += addToFullAnswerWithDists(ret, fullQData, objIdUnknownRelation.iterator());
+                range = adjustAndReturnSearchRadius(ret, k);
                 objIdUnknownRelation.clear();
             }
             if (i > 200 && (i < 1000 && i % 100 == 0)) {
                 distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator());
+                range = adjustAndReturnSearchRadius(ret, k);
             }
-
         }
         simRelAns.addAll(objIdUnknownRelation);
+
         // check by sketches again
         for (Object candID : simRelAns) {
             float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
@@ -205,7 +214,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     private final Set checked = new HashSet();
 
-    private int addToFullAnswerWithDists(TreeSet<Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator) {
+    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator) {
         int distComps = 0;
         Set<Object> currKeys = new HashSet();
         for (Map.Entry<Object, Float> entry : queryAnswer) {
@@ -227,7 +236,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
-    private void addToRet(TreeSet<Entry<Object, Float>> ret, Object candID, T fullQData) {
+    private void addToRet(TreeSet<Map.Entry<Object, Float>> ret, Object candID, T fullQData) {
         T candData = fullObjectsStorage.get(candID);
         float distance = fullDF.getDistance(fullQData, candData);
         ret.add(new AbstractMap.SimpleEntry(candID, distance));
