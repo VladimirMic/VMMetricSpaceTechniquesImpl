@@ -38,6 +38,7 @@ public class VoronoiPartitioning {
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         int batchCounter = 0;
+        long size = 0;
         while (dataObjects.hasNext()) {
             try {
                 CountDownLatch latch = new CountDownLatch(vm.javatools.Tools.PARALELISATION);
@@ -45,6 +46,7 @@ public class VoronoiPartitioning {
                 for (int j = 0; j < vm.javatools.Tools.PARALELISATION; j++) {
                     batchCounter++;
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
+                    size += batch.size();
                     processes[j] = new ProcessBatch(batch, metricSpace, latch);
                     threadPool.execute(processes[j]);
                 }
@@ -60,7 +62,7 @@ public class VoronoiPartitioning {
                         ret.get(key).addAll(partialEntry.getValue());
                     }
                 }
-                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects", (batchCounter * BATCH_SIZE));
+                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects", size);
             } catch (InterruptedException ex) {
                 Logger.getLogger(VoronoiPartitioning.class.getName()).log(Level.SEVERE, null, ex);
             }
