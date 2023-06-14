@@ -68,6 +68,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
+        time_addToFull = 0;;
         long t = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
