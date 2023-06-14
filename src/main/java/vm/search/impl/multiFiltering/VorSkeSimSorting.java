@@ -196,6 +196,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         System.out.println("t5: " + t5);
         System.out.println("t6: " + t6);
         System.out.println("time_addToFull: " + time_addToFull);
+        System.out.println("\n");
         return ret;
 
     }
@@ -256,6 +257,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         for (Map.Entry<Object, Float> entry : queryAnswer) {
             currKeys.add(entry.getKey());
         }
+        // sort them?
         while (iterator.hasNext()) {
             Object key = iterator.next();
             if (!checked.contains(key) && !currKeys.contains(key)) {
