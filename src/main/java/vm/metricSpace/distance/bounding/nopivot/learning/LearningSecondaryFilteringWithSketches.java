@@ -33,8 +33,10 @@ public class LearningSecondaryFilteringWithSketches<T> {
     private final Dataset sketchesDataset;
 //    private final String resultName;
     //iDim params
-    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
-    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
+    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000;
+    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 10000;
+//    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
+//    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
     private final File fileOutputForIDim;
     //px params
     private final float distIntervalForPX;
