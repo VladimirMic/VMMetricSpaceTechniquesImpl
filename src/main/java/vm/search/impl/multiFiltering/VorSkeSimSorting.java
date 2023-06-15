@@ -65,6 +65,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
     }
+    Set<String> ANSWER = null;
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
@@ -124,8 +125,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         long t4 = 0;
         long t5 = 0;
         int counter = 0;
-
-        Set<String> ANSWER = null;
+        int COUNT_OF_SEEN = 0;
         if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
             ANSWER = (Set<String>) additionalParams[paramIDX];
             paramIDX++;
@@ -146,7 +146,8 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
             Object candID = next.getKey();
             if (ANSWER != null && ANSWER.contains(candID.toString())) {
-                String s = "";
+                COUNT_OF_SEEN++;
+                ANSWER.remove(candID.toString());
             }
             int hamDist = next.getValue();
             // zkusit skece pokud je ret plna
@@ -181,6 +182,10 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator());
                 range = adjustAndReturnSearchRadius(ret, k);
             }
+            if (ANSWER != null && ANSWER.isEmpty()) {
+                break;
+            }
+
         }
         simRelAns.addAll(objIdUnknownRelation);
 
@@ -252,6 +257,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         while (ret.size() >= k && !indexesToRemove.isEmpty()) {
             Integer idx = indexesToRemove.get(0);
             Object id = ret.get(idx);
+            if (ANSWER != null && ANSWER.contains(id)) {
+                String s = "";
+            }
             retData.remove(id);
             ret.remove(id);
             indexesToRemove.remove(0);
