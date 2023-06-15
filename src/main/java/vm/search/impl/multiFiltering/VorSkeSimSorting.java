@@ -225,6 +225,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             mapOfData.put(idOfO, oData);
             return true;
         }
+        if (ansOfSimRel.size() > simRelMaxK) {
+            deleteIndexes(ansOfSimRel, k, null, mapOfData);
+        }
         int idxWhereAdd = Integer.MAX_VALUE;
         List<Integer> indexesToRemove = new ArrayList<>();
         for (int i = ansOfSimRel.size() - 1; i >= 0; i--) {
@@ -252,16 +255,13 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             mapOfData.put(idOfO, oData);
             return true;
         }
-        if (ansOfSimRel.size() > simRelMaxK) {
-            deleteIndexes(ansOfSimRel, k, null, mapOfData);
-        }
         mapOfData.put(idOfO, oData);
         return false;
     }
 
     private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
-        if (indexesToRemove != null && !indexesToRemove.isEmpty()) {
-            while (ret.size() >= k) {
+        if (indexesToRemove != null) {
+            while (ret.size() >= k && !indexesToRemove.isEmpty()) {
                 Integer idx = indexesToRemove.get(0);
                 Object id = ret.get(idx);
                 if (ANSWER != null && ANSWER.contains(id)) {
