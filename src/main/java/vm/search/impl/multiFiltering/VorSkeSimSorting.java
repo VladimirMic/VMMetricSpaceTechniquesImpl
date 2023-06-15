@@ -21,7 +21,6 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.SearchingAlgorithm;
-import vm.search.devel.CheckingOfNearestNeighbours;
 import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
@@ -45,6 +44,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
     private final SimRelInterface<float[]> simRelFunc;
     private final int simRelMinK;
+    private final int simRelMaxK;
     private final Map<Object, float[]> pcaPrefixesMap;
 
     private final Map<Object, T> fullObjectsStorage;
@@ -53,7 +53,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
     private long simRelEvalCounter;
 
-    public VorSkeSimSorting(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
+    public VorSkeSimSorting(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -61,6 +61,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         this.hammingSpaceForSketches = hammingSpaceForSketches;
         this.simRelFunc = simRelFunc;
         this.simRelMinK = simRelMinK;
+        this.simRelMaxK = simRelMaxK;
         this.pcaPrefixesMap = pcaPrefixesMap;
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
@@ -70,7 +71,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
-        time_addToFull = 0;;
+        time_addToFull = 0;
         long t = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
@@ -244,25 +245,40 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             }
         }
         if (idxWhereAdd != Integer.MAX_VALUE) {
+            System.out.print("Pos;" + idxWhereAdd + ";size;" + ansOfSimRel.size() + ";simRelEvalCounter;" + simRelEvalCounter);
             deleteIndexes(ansOfSimRel, k, indexesToRemove, mapOfData);
+            System.out.println(";afterDeleteSize;" + ansOfSimRel.size());
             ansOfSimRel.add(idxWhereAdd, idOfO);
             mapOfData.put(idOfO, oData);
             return true;
+        }
+        if (ansOfSimRel.size() > simRelMaxK) {
+            deleteIndexes(ansOfSimRel, k, null, mapOfData);
         }
         mapOfData.put(idOfO, oData);
         return false;
     }
 
     private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
-        while (ret.size() >= k && !indexesToRemove.isEmpty()) {
-            Integer idx = indexesToRemove.get(0);
-            Object id = ret.get(idx);
+        if (indexesToRemove != null && !indexesToRemove.isEmpty()) {
+            while (ret.size() >= k) {
+                Integer idx = indexesToRemove.get(0);
+                Object id = ret.get(idx);
+                if (ANSWER != null && ANSWER.contains(id)) {
+                    String s = "";
+                }
+                retData.remove(id);
+                ret.remove(id);
+                indexesToRemove.remove(0);
+            }
+        }
+        while (ret.size() >= simRelMaxK) {
+            Object id = ret.get(ret.size() - 1);
             if (ANSWER != null && ANSWER.contains(id)) {
                 String s = "";
             }
             retData.remove(id);
             ret.remove(id);
-            indexesToRemove.remove(0);
         }
     }
 
