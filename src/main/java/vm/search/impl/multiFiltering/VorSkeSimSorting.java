@@ -21,6 +21,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.SearchingAlgorithm;
+import vm.search.devel.CheckingOfNearestNeighbours;
 import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
@@ -92,6 +93,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         Object pcaQ = additionalParams[paramIDX++];
         float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
 
+        // actual query evaluation
         // first phase: voronoi
         long t1 = -System.currentTimeMillis();
         List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
@@ -122,6 +124,13 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         long t4 = 0;
         long t5 = 0;
         int counter = 0;
+
+        Set<String> ANSWER = null;
+        if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
+            ANSWER = (Set<String>) additionalParams[paramIDX];
+            paramIDX++;
+        }
+
         while (true) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
             mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
@@ -136,6 +145,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             }
 
             Object candID = next.getKey();
+            if (ANSWER != null && ANSWER.contains(candID.toString())) {
+                String s = "";
+            }
             int hamDist = next.getValue();
             // zkusit skece pokud je ret plna
             if (ret.size() < k) {

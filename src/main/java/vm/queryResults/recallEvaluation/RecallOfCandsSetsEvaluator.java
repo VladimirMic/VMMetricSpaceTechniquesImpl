@@ -55,7 +55,7 @@ public class RecallOfCandsSetsEvaluator {
         return ret;
     }
 
-    private Set<String> getFirstIDs(String queryID, TreeSet<Map.Entry<Object, Float>> evaluatedQuery, Integer count) {
+    public static final Set<String> getFirstIDs(String queryID, TreeSet<Map.Entry<Object, Float>> evaluatedQuery, Integer count) {
         Set<String> ret = new HashSet<>();
         if (evaluatedQuery == null) {
             return ret;
