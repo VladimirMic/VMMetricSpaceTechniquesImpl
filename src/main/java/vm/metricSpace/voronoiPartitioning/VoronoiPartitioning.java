@@ -1,5 +1,6 @@
 package vm.metricSpace.voronoiPartitioning;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,20 +21,20 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vlada
  */
 public class VoronoiPartitioning {
-
-    public static final Integer BATCH_SIZE = 14000;
+    
+    public static final Integer BATCH_SIZE = 7000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
-
+    
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface df;
     private final Map<Object, Object> pivots;
-
+    
     public VoronoiPartitioning(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
         this.metricSpace = metricSpace;
         this.df = df;
         this.pivots = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
     }
-
+    
     public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, int pivotCountUsedInTheFileName, StorageLearnedVoronoiPartitioningInterface storage) {
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
@@ -73,24 +74,25 @@ public class VoronoiPartitioning {
         }
         return ret;
     }
-
+    
     private class ProcessBatch implements Runnable {
-
+        
         private final List batch;
         private final Map<Object, SortedSet<Object>> ret;
         private final AbstractMetricSpace metricSpace;
-
+        
         private final CountDownLatch latch;
-
+        
         public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch) {
             this.batch = batch;
             this.ret = new HashMap<>();
             this.metricSpace = metricSpace;
             this.latch = latch;
         }
-
+        
         @Override
         public void run() {
+            long t = -System.currentTimeMillis();
             Iterator dataObjects = batch.iterator();
             for (int i = 0; dataObjects.hasNext(); i++) {
                 Object o = dataObjects.next();
@@ -111,11 +113,13 @@ public class VoronoiPartitioning {
                 ret.get(pivotID).add(oID);
             }
             latch.countDown();
+            t += System.currentTimeMillis();
+            LOG.log(Level.INFO, "Batch finished in {0} ms", t);
         }
-
+        
         public Map<Object, SortedSet<Object>> getRet() {
-            return ret;
+            return Collections.unmodifiableMap(ret);
         }
-
+        
     }
 }

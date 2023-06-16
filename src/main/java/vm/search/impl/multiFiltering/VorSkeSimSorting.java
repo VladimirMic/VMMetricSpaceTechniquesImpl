@@ -248,9 +248,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             }
         }
         if (idxWhereAdd != Integer.MAX_VALUE) {
-            System.out.print("Pos;" + idxWhereAdd + ";size;" + ansOfSimRel.size() + ";simRelEvalCounter;" + simRelEvalCounter);
+//            System.out.print("Pos;" + idxWhereAdd + ";size;" + ansOfSimRel.size() + ";simRelEvalCounter;" + simRelEvalCounter);
             deleteIndexes(ansOfSimRel, k, indexesToRemove, mapOfData);
-            System.out.println(";afterDeleteSize;" + ansOfSimRel.size());
+//            System.out.println(";afterDeleteSize;" + ansOfSimRel.size());
             ansOfSimRel.add(idxWhereAdd, idOfO);
             mapOfData.put(idOfO, oData);
             return true;
