@@ -29,7 +29,6 @@ public class LearnSketchingGHP {
     private static final Logger LOG = Logger.getLogger(LearnSketchingGHP.class.getName());
     public static final Float BALANCE_TOLERATION = 0.05f;
 
-    private final Dataset dataset;
     private final int numberOfPivotsForMakingAllPairs;
     private final int maxNumberOfBalancedForGeneticHeuristic;
 
@@ -40,7 +39,6 @@ public class LearnSketchingGHP {
     }
 
     public LearnSketchingGHP(Dataset dataset, GHPSketchingPivotPairsStoreInterface sketchingStorage, int numberOfPivotsForMakingAllPairs, int maxNumberOfBalancedForGeneticHeuristic) {
-        this.dataset = dataset;
         this.storage = sketchingStorage;
         this.numberOfPivotsForMakingAllPairs = numberOfPivotsForMakingAllPairs;
         this.maxNumberOfBalancedForGeneticHeuristic = maxNumberOfBalancedForGeneticHeuristic;
@@ -59,7 +57,6 @@ public class LearnSketchingGHP {
 
         List<BitSet> columnWiseSketches = sketchingTechnique.createColumnwiseSketches(metricSpace, sampleOfDataset, df);
         int[] balancedIndexes = getIndexesOfProperlyBalanced(columnWiseSketches, balance, sampleOfDataset.size(), sketchingTechnique);
-        LOG.log(Level.INFO, "{0} bits balanced up to {1} were found.", new Object[]{columnWiseSketches.size(), balance});
         columnWiseSketches = Tools.filterList(columnWiseSketches, balancedIndexes);
         sketchingTechnique.preserveJustGivenBits(balancedIndexes);
         Object[] pivotsBalancedBackup = Tools.copyArray(sketchingTechnique.getPivots());
