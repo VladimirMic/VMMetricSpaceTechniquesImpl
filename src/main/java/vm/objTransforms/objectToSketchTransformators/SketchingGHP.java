@@ -59,6 +59,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
             Object p2 = pivotsMap.get(pivotPairIDs[1]);
             if (p1 == null || p2 == null) {
                 LOG.log(Level.SEVERE, "CSV file contains pivot ID which is not in the list of pivots!{0}, {1}", new Object[]{pivotPairIDs[0], pivotPairIDs[1]});
+                throw new Error();
             }
             pivotPairs[2 * i] = p1;
             pivotPairs[2 * i + 1] = p2;
