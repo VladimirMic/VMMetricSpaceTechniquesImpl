@@ -120,6 +120,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
         int[] curIndexes = new int[hammingDists.length];
         for (int i = 0; i < hammingDists.length; i++) {
+            if (hammingDists[i].isEmpty()) {
+                continue;
+            }
             AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[i].get(curIndexes[i]);
             mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(i, next.getValue()));
         }
@@ -132,7 +135,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             paramIDX++;
         }
 
-        while (true) {
+        while (!mapOfCandSetsIdxsToCurHamDist.isEmpty()) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
             mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
 
@@ -204,9 +207,8 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
         t += System.currentTimeMillis();
         incDistsComps(qId, distComps);
-        LOG.log(Level.INFO, "distancesCounter;{0}; simRelCounter;{1}", new Object[]{distComps, simRelEvalCounter});
         incTime(qId, t);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{distComps, t, qId.toString()});
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
         System.out.println("t1: " + t1);
         System.out.println("t2: " + t2);
         System.out.println("t3: " + t3);

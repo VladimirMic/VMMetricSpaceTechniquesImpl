@@ -44,7 +44,7 @@ public class TransformDataToGHPSketches {
         for (int i = 0; i < sketchesLengths.length; i++) {
             int sketchesLength = sketchesLengths[i];
             List pivots = dataset.getPivots(pivotCount);
-            sketchingTechnique = new SketchingGHP(dataset.getDistanceFunction(), dataset.getMetricSpace(), pivots, false, false);
+            sketchingTechnique = new SketchingGHP(dataset.getDistanceFunction(), dataset.getMetricSpace(), pivots, false);
             String producedSketchesName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchesLength, balance);
 
             if (sketchesPivotPairsNames[i] == null) {

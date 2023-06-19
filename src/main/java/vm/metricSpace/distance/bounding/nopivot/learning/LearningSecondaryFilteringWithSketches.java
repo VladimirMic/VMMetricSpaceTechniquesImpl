@@ -34,8 +34,8 @@ public class LearningSecondaryFilteringWithSketches<T> {
     private final Dataset sketchesDataset;
 //    private final String resultName;
     //iDim params
-    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000;
-    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 10000;
+    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 10000;
+    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000;
 //    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
 //    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
     private final File fileOutputForIDim;
@@ -134,6 +134,7 @@ public class LearningSecondaryFilteringWithSketches<T> {
             double xMappedToT = mapperDistDToHammingThresholdT.findXMappedToT(t);
             ret.put(xMappedToT, t);
             if (xMappedToT == maxDistForPX) {
+                LOG.log(Level.INFO, "Max dist achieved at the Hamming dist {0}", t);
                 break;
             }
             if (t % 10 == 0) {

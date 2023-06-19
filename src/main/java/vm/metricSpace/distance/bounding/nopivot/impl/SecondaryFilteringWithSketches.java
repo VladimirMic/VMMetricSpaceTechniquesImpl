@@ -37,8 +37,6 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     private final double[] primDistsThreshold;
     private final int[] hamDistsThresholds;
 
-    private ExecutorService threadPool = null;
-
     public SecondaryFilteringWithSketches(String namePrefix, String fullDatasetName, Dataset<long[]> sketchingDataset, SecondaryFilteringWithSketchesStoreInterface storage, float thresholdPcum, int iDimSketchesSampleCount, int iDimDistComps, float distIntervalForPX) {
         super(namePrefix);
         this.hamDistFunc = new HammingDistanceLongs();
@@ -129,9 +127,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             CountDownLatch latch = new CountDownLatch(batchCount);
             Iterator it = candSetIDs.iterator();
             DistEvaluationThread[] threads = new DistEvaluationThread[batchCount];
-            if (threadPool == null) {
-                threadPool = Tools.initExecutor(batchCount);
-            }
+            ExecutorService threadPool = Tools.initExecutor(batchCount);
             long x1 = -System.currentTimeMillis();
             for (int i = 0; i < batchCount; i++) {
                 final Set batch = new HashSet();
@@ -155,9 +151,11 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             System.out.println("x1 " + x1);
             System.out.println("x2 " + x2);
             System.out.println("batchCount " + batchCount);
+            threadPool.shutdown();
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);
+        } finally {
         }
         return null;
     }

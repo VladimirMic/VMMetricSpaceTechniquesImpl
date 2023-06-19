@@ -64,6 +64,9 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
             nextCell = voronoiPartitioning.get(pivotPerm[idxOfNext]);
             idxOfNext++;
         }
+        if (ret.isEmpty()) {
+            ret.addAll(nextCell);
+        }
         LOG.log(Level.FINE, "Returning the cand set with {0} objects. It is made of {1} cells", new Object[]{ret.size(), idxOfNext});
         return ret;
     }
