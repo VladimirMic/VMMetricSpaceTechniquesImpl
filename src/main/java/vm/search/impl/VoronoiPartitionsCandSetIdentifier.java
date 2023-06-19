@@ -34,7 +34,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     }
 
     public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageLearnedVoronoiPartitioningInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
-        this(dataset.getPivots(-1), dataset.getDistanceFunction(), dataset.getDatasetName(), dataset.getMetricSpace(), voronoiPartitioningStorage, pivotCountUsedForVoronoiLearning);
+        this(dataset.getPivots(2 * pivotCountUsedForVoronoiLearning), dataset.getDistanceFunction(), dataset.getDatasetName(), dataset.getMetricSpace(), voronoiPartitioningStorage, pivotCountUsedForVoronoiLearning);
     }
 
     @Override

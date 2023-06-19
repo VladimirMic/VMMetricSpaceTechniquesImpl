@@ -23,36 +23,30 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
     protected Object[] pivots;
     protected final DistanceFunctionInterface distanceFunc;
     protected final Object[] additionalInfo;
-    protected final boolean learning;
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean learning, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), learning);
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray());
     }
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean learning, Object... additionalInfo) {
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, Object... additionalInfo) {
         this.metricSpace = metricSpace;
         this.pivots = pivots;
         this.distanceFunc = distanceFunc;
         this.additionalInfo = additionalInfo;
-        this.learning = learning;
     }
 
     /**
      *
      * @param fullDatasetName
-     * @param rename
      * @param params params[0] is the length of sketches, params[1] is the float
      * between 0 and 1 denoting the balance of bits
      * @return
      */
     @Override
-    public final String getNameOfTransformedSetOfObjects(String fullDatasetName, boolean rename, Object... params) {
+    public final String getNameOfTransformedSetOfObjects(String fullDatasetName, Object... params) {
         int sketchLength = (int) params[0];
         float balance = (float) params[1];
         int balanceInt = (int) (balance * 100);
-        if (fullDatasetName.contains("laion2B-en-clip768v2") && rename) {
-            fullDatasetName = "laion2B-en-clip768v2-n=1M_sample.h5";
-        }
         return fullDatasetName + "_" + getTechniqueAbbreviation() + "_" + balanceInt + "_" + sketchLength;
     }
 

@@ -23,18 +23,23 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean renameFile, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), false, renameFile, additionalInfo);
-        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, renameFile, sketchLength, balance);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String sketchesName, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
         setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, boolean learning, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, learning, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
+        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
+        setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, boolean renameFile, Object... additionalInfo) {
-        super(distanceFunc, metricSpace, pivots, renameFile, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, additionalInfo);
+    }
+
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+        super(distanceFunc, metricSpace, pivots, additionalInfo);
         if (makeAllPivotPairs) {
             makeAllPivotsPairs();
         }

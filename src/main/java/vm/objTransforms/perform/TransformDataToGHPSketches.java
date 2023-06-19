@@ -39,16 +39,20 @@ public class TransformDataToGHPSketches {
         this.storageForSketches = storageForSketches;
     }
 
-    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths) {
+    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths, String[] sketchesPivotPairsNames) {
         AbstractObjectToSketchTransformator sketchingTechnique = null;
-        for (int sketchLength : sketchesLengths) {
+        for (int i = 0; i < sketchesLengths.length; i++) {
+            int sketchesLength = sketchesLengths[i];
             List pivots = dataset.getPivots(pivotCount);
             sketchingTechnique = new SketchingGHP(dataset.getDistanceFunction(), dataset.getMetricSpace(), pivots, false, false);
-            String sketchesName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), true, sketchLength, balance);
-            sketchingTechnique.setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
-            sketchesName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), false, sketchLength, balance);
+            String producedSketchesName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchesLength, balance);
 
-            MetricObjectsParallelTransformerImpl parallelTransformer = new MetricObjectsParallelTransformerImpl(sketchingTechnique, storageForSketches, sketchesName);
+            if (sketchesPivotPairsNames[i] == null) {
+                sketchesPivotPairsNames[i] = producedSketchesName;
+            }
+            sketchingTechnique.setPivotPairsFromStorage(storageOfPivotPairs, sketchesPivotPairsNames[i]);
+
+            MetricObjectsParallelTransformerImpl parallelTransformer = new MetricObjectsParallelTransformerImpl(sketchingTechnique, storageForSketches, producedSketchesName);
             Iterator pivotsIt = dataset.getPivots(-1).iterator();
             Iterator queriesIt = dataset.getMetricQueryObjects().iterator();
             Iterator dataIt = dataset.getMetricObjectsFromDataset();

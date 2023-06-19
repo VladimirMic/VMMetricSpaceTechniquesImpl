@@ -52,7 +52,7 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
     }
 
     @Override
-    public String getNameOfTransformedSetOfObjects(String origDatasetName, boolean learning, Object... otherParams) {
+    public String getNameOfTransformedSetOfObjects(String origDatasetName, Object... otherParams) {
         return origDatasetName + "_" + getTechniqueAbbreviation() + pcaMatrix.length;
     }
 

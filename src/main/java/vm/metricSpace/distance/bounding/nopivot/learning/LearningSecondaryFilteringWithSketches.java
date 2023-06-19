@@ -25,7 +25,8 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
  */
 public class LearningSecondaryFilteringWithSketches<T> {
 
-    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
+//    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
+    private static final float[] THRESHOLDS_P_CUM = new float[]{0.5f, 0.55f, 0.6f};
     public static final Logger LOG = Logger.getLogger(LearningSecondaryFilteringWithSketches.class.getName());
 
     private final SecondaryFilteringWithSketchesStoreInterface storage;
@@ -33,10 +34,10 @@ public class LearningSecondaryFilteringWithSketches<T> {
     private final Dataset sketchesDataset;
 //    private final String resultName;
     //iDim params
-//    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000;
-//    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 10000;
-    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
-    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
+    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000;
+    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 10000;
+//    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
+//    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
     private final File fileOutputForIDim;
     //px params
     private final float distIntervalForPX;
@@ -134,6 +135,9 @@ public class LearningSecondaryFilteringWithSketches<T> {
             ret.put(xMappedToT, t);
             if (xMappedToT == maxDistForPX) {
                 break;
+            }
+            if (t % 10 == 0) {
+                LOG.log(Level.INFO, "Defining mapping. Done {0} Hamming dists out of {1}", new Object[]{t, sketchLength + 1});
             }
         }
         return ret;
