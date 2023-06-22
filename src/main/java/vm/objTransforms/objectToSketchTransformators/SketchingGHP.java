@@ -23,9 +23,9 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String sketchesName, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String pivotPairsFileName, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
-        setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
+        setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
     public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
@@ -51,11 +51,11 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
      * constructor
      *
      * @param storage
-     * @param sketchingTechniqueName
+     * @param pivotPairsFileName
      */
     @Override
-    public final void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String sketchingTechniqueName) {
-        List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(sketchingTechniqueName);
+    public final void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String pivotPairsFileName) {
+        List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(pivotPairsFileName);
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots), false);
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];
         for (int i = 0; i < pivotPairsIDs.size(); i++) {
