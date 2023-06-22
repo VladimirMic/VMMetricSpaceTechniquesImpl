@@ -26,8 +26,8 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public abstract class SearchingAlgorithm<T> {
 
     private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
-//    public static final Integer BATCH_SIZE = 1000000;
-    public static final Integer BATCH_SIZE = 10;
+    public static final Integer BATCH_SIZE = 100000;
+//    public static final Integer BATCH_SIZE = 10;
 
     private final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     private final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
