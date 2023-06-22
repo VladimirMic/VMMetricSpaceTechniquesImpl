@@ -30,8 +30,8 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
-        String sketchesName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
-        setPivotPairsFromStorage(storageOfPivotPairs, sketchesName);
+        String pivotPairsFileName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
+        setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
     public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
