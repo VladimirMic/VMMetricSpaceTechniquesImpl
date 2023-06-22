@@ -27,7 +27,6 @@ public abstract class SearchingAlgorithm<T> {
 
     private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 1000000;
-//    public static final Integer BATCH_SIZE = 10;
 
     private final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     private final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
@@ -120,6 +119,7 @@ public abstract class SearchingAlgorithm<T> {
                     break;
                 }
                 batchCounter++;
+                System.gc();
                 CountDownLatch latch = new CountDownLatch(queryObjects.size());
                 final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;
                 final int batchFinal = batchCounter;
