@@ -319,18 +319,26 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         ret.add(new AbstractMap.SimpleEntry(candID, distance));
     }
 
-    private int getMinIdx(List<AbstractMap.SimpleEntry<Object, Integer>>[] sortedHammingDists, int[] idxsToCandLists) {
-        int ret = 0;
-        int minDist = Integer.MAX_VALUE;
-        for (int i = 0; i < idxsToCandLists.length; i++) {
-            int idx = idxsToCandLists[i];
-            Integer hamDist = sortedHammingDists[i].get(idx).getValue();
-            if (hamDist < minDist) {
-                ret = i;
-                minDist = hamDist;
-            }
+//    private int getMinIdx(List<AbstractMap.SimpleEntry<Object, Integer>>[] sortedHammingDists, int[] idxsToCandLists) {
+//        int ret = 0;
+//        int minDist = Integer.MAX_VALUE;
+//        for (int i = 0; i < idxsToCandLists.length; i++) {
+//            int idx = idxsToCandLists[i];
+//            Integer hamDist = sortedHammingDists[i].get(idx).getValue();
+//            if (hamDist < minDist) {
+//                ret = i;
+//                minDist = hamDist;
+//            }
+//        }
+//        return ret;
+//    }
+
+    public long[] getSimRelStatsOfLastExecutedQuery() {
+        if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
+            SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
+            return euclid.getEarlyStopsOnCoordsCounts();
         }
-        return ret;
+        throw new RuntimeException("No simRel stats for the last query");
     }
 
 }
