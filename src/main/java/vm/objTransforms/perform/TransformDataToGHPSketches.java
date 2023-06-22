@@ -39,8 +39,15 @@ public class TransformDataToGHPSketches {
         this.storageForSketches = storageForSketches;
     }
 
+    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths) {
+        return createSketchesForDatasetPivotsAndQueries(sketchesLengths, null);
+    }
+
     public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths, String[] sketchesPivotPairsNames) {
         AbstractObjectToSketchTransformator sketchingTechnique = null;
+        if (sketchesPivotPairsNames == null) {
+            sketchesPivotPairsNames = new String[sketchesLengths.length];
+        }
         for (int i = 0; i < sketchesLengths.length; i++) {
             int sketchesLength = sketchesLengths[i];
             List pivots = dataset.getPivots(pivotCount);
