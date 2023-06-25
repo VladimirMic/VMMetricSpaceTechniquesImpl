@@ -114,7 +114,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         float range = Float.MAX_VALUE;
 
         long t3 = -System.currentTimeMillis();
-        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistances(qSketchData, candSetIDs);
+        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
         t3 += System.currentTimeMillis();
 
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());

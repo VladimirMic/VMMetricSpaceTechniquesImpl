@@ -3,6 +3,7 @@ package vm.metricSpace.distance.bounding.nopivot.impl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -117,7 +118,17 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         return "Secondary_filtering_with_sketches";
     }
 
-    public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistances(long[] qSketch, List candSetIDs) {
+    public List<AbstractMap.SimpleEntry<Object, Integer>> evaluateHammingDistancesSequentially(long[] qSketch, List candSetIDs) {
+        long x3 = -System.currentTimeMillis();
+        DistEvaluationThread distEvaluationThread = new DistEvaluationThread(candSetIDs, qSketch, null);
+        distEvaluationThread.run();
+        x3 += System.currentTimeMillis();
+        SortedSet<AbstractMap.SimpleEntry<Object, Integer>> ret = distEvaluationThread.getThreadRet();
+        System.out.println("x1 " + x3);
+        return new ArrayList<>(ret);
+    }
+
+    public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistancesInParallel(long[] qSketch, List candSetIDs) {
         try {
             long x0 = -System.currentTimeMillis();
             int batchCount = Tools.PARALELISATION;
@@ -155,7 +166,6 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);
-        } finally {
         }
         return null;
     }
@@ -163,12 +173,12 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     private class DistEvaluationThread implements Runnable {
 
         private final SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = new TreeSet<>(new vm.datatools.Tools.MapByValueIntComparator());
-        private final Set batch;
+        private final Collection batch;
         private final long[] qSketch;
         private final CountDownLatch latch;
 
-        public DistEvaluationThread(Set batch, long[] qSketch, CountDownLatch latch) {
-            this.batch = batch;
+        public DistEvaluationThread(Collection batchOfIDs, long[] qSketch, CountDownLatch latch) {
+            this.batch = batchOfIDs;
             this.qSketch = qSketch;
             this.latch = latch;
         }
