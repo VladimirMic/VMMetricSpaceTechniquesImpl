@@ -28,8 +28,8 @@ public abstract class SearchingAlgorithm<T> {
     private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 1000000;
 
-    private final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
-    private final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
 
     public abstract TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
@@ -125,13 +125,13 @@ public abstract class SearchingAlgorithm<T> {
                 final int batchFinal = batchCounter;
                 for (int i = 0; i < queryObjects.size(); i++) {
                     final Object queryObject = queryObjects.get(i);
-                    final TreeSet<Map.Entry<Object, Float>> map = ret[i];
+                    final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
                     final int iFinal = i + 1;
                     threadPool.execute(() -> {
-                        TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), map, additionalParams);
-                        map.addAll(completeKnnSearch);
+                        TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
+                        answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
-                        adjustAndReturnSearchRadius(map, k);
+                        adjustAndReturnSearchRadius(answerToQuery, k);
                         LOG.log(Level.INFO, "Query obj {0} evaluated in the batch {1} (batch size: {2})", new Object[]{iFinal, batchFinal, BATCH_SIZE});
                     });
                 }

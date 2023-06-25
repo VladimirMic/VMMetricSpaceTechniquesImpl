@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
@@ -21,6 +24,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.SearchingAlgorithm;
+import static vm.search.SearchingAlgorithm.BATCH_SIZE;
 import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
@@ -130,6 +134,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         long t5 = 0;
         int counter = 0;
         int COUNT_OF_SEEN = 0;
+        
         if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
             ANSWER = (Set<String>) additionalParams[paramIDX];
             paramIDX++;
@@ -313,25 +318,42 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    @Override
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+        AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
+        List<Object> pcaQueryObjects = (List<Object>) additionalParams[1];
+        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
+        CountDownLatch latch = new CountDownLatch(queryObjects.size());
+        for (int i = 0; i < queryObjects.size(); i++) {
+            Object queryObject = queryObjects.get(i);
+            Object qID = metricSpace.getIDOfMetricObject(queryObject);
+            Object pcaQueryObject = pcaQueryObjects.get(i);
+            Object pcaQData = pcaDatasetMetricSpace.getDataOfMetricObject(pcaQueryObject);
+            int iFinal = i;
+            try {
+                threadPool.execute(() -> {
+                    long tQ = -System.currentTimeMillis();
+                    ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQData);
+                    latch.countDown();
+                    tQ += System.currentTimeMillis();
+                    timesPerQueries.put(qID, new AtomicLong(tQ));
+                    LOG.log(Level.INFO, "Query obj {0} evaluated in {1} ms", new Object[]{iFinal, tQ, BATCH_SIZE});
+                });
+                latch.await();
+            } catch (InterruptedException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        threadPool.shutdown();
+        return ret;
+    }
+
     private void addToRet(TreeSet<Map.Entry<Object, Float>> ret, Object candID, T fullQData) {
         T candData = fullObjectsStorage.get(candID);
         float distance = fullDF.getDistance(fullQData, candData);
         ret.add(new AbstractMap.SimpleEntry(candID, distance));
     }
-
-//    private int getMinIdx(List<AbstractMap.SimpleEntry<Object, Integer>>[] sortedHammingDists, int[] idxsToCandLists) {
-//        int ret = 0;
-//        int minDist = Integer.MAX_VALUE;
-//        for (int i = 0; i < idxsToCandLists.length; i++) {
-//            int idx = idxsToCandLists[i];
-//            Integer hamDist = sortedHammingDists[i].get(idx).getValue();
-//            if (hamDist < minDist) {
-//                ret = i;
-//                minDist = hamDist;
-//            }
-//        }
-//        return ret;
-//    }
 
     public long[] getSimRelStatsOfLastExecutedQuery() {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
