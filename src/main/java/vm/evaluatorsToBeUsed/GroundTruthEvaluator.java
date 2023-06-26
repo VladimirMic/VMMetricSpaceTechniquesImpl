@@ -22,7 +22,7 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
-    public static final Integer BATCH_SIZE = 50000000;
+    public static final Integer BATCH_SIZE = 10000000;
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
@@ -110,6 +110,7 @@ public class GroundTruthEvaluator {
             }
             latch.await();
             LOG.log(Level.INFO, "Batch processed");
+            System.gc();
             return queryResults;
         } catch (Throwable ex) {
             LOG.log(Level.SEVERE, null, ex);
