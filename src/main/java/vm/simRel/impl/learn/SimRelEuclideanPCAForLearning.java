@@ -3,6 +3,8 @@ package vm.simRel.impl.learn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import vm.datatools.Tools;
 import vm.metricSpace.distance.impl.L2OnFloatsArray;
 import vm.simRel.SimRelInterface;
@@ -40,23 +42,31 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
         } else {
             numberOfCoordinates = Math.min(diffsWhenWrongPerCoords.length, numberOfCoordinates);
         }
-        float[][] ret = new float[percentiles.length][numberOfCoordinates];
+        final float[][] ret = new float[percentiles.length][numberOfCoordinates];
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        CountDownLatch latch = new CountDownLatch(numberOfCoordinates);
         for (int i = 0; i < numberOfCoordinates; i++) {
             if (!diffsWhenWrongPerCoords[i].isEmpty()) {
-                Collections.sort(diffsWhenWrongPerCoords[i]);
-                for (int j = 0; j < percentiles.length; j++) {
-                    float percentile = percentiles[j];
-                    int idx;
-                    if (percentile == 1f) {
-                        idx = diffsWhenWrongPerCoords[i].size() - 1;
-                    } else {
-                        idx = (int) (Math.floor(diffsWhenWrongPerCoords[i].size() * percentile) - 1);
+                List<Float> diffsFinal = diffsWhenWrongPerCoords[i];
+                int iFinal = i;
+                threadPool.execute(() -> {
+                    Collections.sort(diffsFinal);
+                    for (int j = 0; j < percentiles.length; j++) {
+                        float percentile = percentiles[j];
+                        int idx;
+                        if (percentile == 1f) {
+                            idx = diffsFinal.size() - 1;
+                        } else {
+                            idx = (int) (Math.floor(diffsFinal.size() * percentile) - 1);
+                        }
+                        idx = Math.min(idx, diffsFinal.size() - 1);
+                        idx = Math.max(0, idx);
+                        ret[j][iFinal] = diffsFinal.get(idx);
+                        System.out.println("Percentile: " + percentile + ",cord: " + iFinal + ", idx: " + idx + ", threshold: " + ret[j][iFinal] + ", number of errors: " + diffsFinal.size());
                     }
-                    idx = Math.min(idx, diffsWhenWrongPerCoords[i].size() - 1);
-                    idx = Math.max(0, idx);
-                    ret[j][i] = diffsWhenWrongPerCoords[i].get(idx);
-                    System.out.println("Percentile: " + percentile + ",cord: " + i + ", idx: " + idx + ", threshold: " + ret[j][i] + ", number of errors: " + diffsWhenWrongPerCoords[i].size());
-                }
+                    latch.countDown();
+                });
+
             }
         }
         return ret;

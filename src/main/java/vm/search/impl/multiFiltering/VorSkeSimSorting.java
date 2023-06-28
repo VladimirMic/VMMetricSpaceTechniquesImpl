@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -107,7 +108,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
         // simRel preparation
         List<Object> simRelAns = new ArrayList<>();
-        Set<Object> objIdUnknownRelation = new HashSet<>();
+        Set<Object> objIdUnknownRelation = new TreeSet<>();
         Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
@@ -134,7 +135,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         long t5 = 0;
         int counter = 0;
         int COUNT_OF_SEEN = 0;
-        
+
         if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
             ANSWER = (Set<String>) additionalParams[paramIDX];
             paramIDX++;

@@ -26,12 +26,15 @@ public class ThresholdsTOmegaEvaluator {
     }
 
     public float[][] learnTOmegaThresholds(Dataset<float[]> pcaDataset, SimRelEuclidThresholdsTOmegaStorage simRelStorage, int dataSampleCount, int pcaLength, float... percentiles) {
+        List<Object> pcaOfCandidates = pcaDataset.getSampleOfDataset(dataSampleCount);
+        return learnTOmegaThresholds(pcaDataset, pcaOfCandidates, simRelStorage, dataSampleCount, pcaLength, percentiles);
+    }
+
+    public float[][] learnTOmegaThresholds(Dataset<float[]> pcaDataset, List<Object> pcaOfCandidates, SimRelEuclidThresholdsTOmegaStorage simRelStorage, int dataSampleCount, int pcaLength, float... percentiles) {
         List<Object> pcaQuerySamples = pcaDataset.getPivots(querySampleCount);
         AbstractMetricSpace<float[]> pcaDatasetMetricSpace = pcaDataset.getMetricSpace();
 
         SimRelEuclideanPCAForLearning simRelLearn = new SimRelEuclideanPCAForLearning(pcaLength);
-
-        List<Object> pcaOfCandidates = pcaDataset.getSampleOfDataset(dataSampleCount);
 
         SearchingAlgorithm simRelAlg = new SimRelSeqScanKNNCandSet(simRelLearn, kPCA);
 

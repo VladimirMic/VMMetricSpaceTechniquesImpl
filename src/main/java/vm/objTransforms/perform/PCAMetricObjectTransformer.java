@@ -9,10 +9,10 @@ import vm.metricSpace.AbstractMetricSpace;
  */
 public class PCAMetricObjectTransformer implements MetricObjectTransformerInterface {
 
-    private final float[] meansOverColumns;
-    private final float[][] pcaMatrix;
-    private final AbstractMetricSpace<float[]> origFloatVectorSpace;
-    private final AbstractMetricSpace<float[]> pcaMetricSpace;
+    protected final float[] meansOverColumns;
+    protected final float[][] pcaMatrix;
+    protected final AbstractMetricSpace<float[]> origFloatVectorSpace;
+    protected final AbstractMetricSpace<float[]> pcaMetricSpace;
 
     /**
      *
@@ -37,9 +37,6 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
         Object objID = origFloatVectorSpace.getIDOfMetricObject(obj);
         float[] vector = origFloatVectorSpace.getDataOfMetricObject(obj);
         int length = pcaMatrix.length;
-        if (params.length > 0) {
-            length = Math.min(length, (int) params[0]);
-        }
         final float[] ret = new float[length];
         for (int i = 0; i < length; i++) {
             float[] matrixRow = pcaMatrix[i];
@@ -57,7 +54,7 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
     }
 
     @Override
-    public final String getTechniqueAbbreviation() {
+    public String getTechniqueAbbreviation() {
         return "PCA";
     }
 
