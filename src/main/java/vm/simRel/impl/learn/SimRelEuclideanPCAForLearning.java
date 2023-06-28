@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.distance.impl.L2OnFloatsArray;
 import vm.simRel.SimRelInterface;
@@ -68,6 +70,12 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
                 });
 
             }
+        }
+        try {
+            latch.await();
+            threadPool.shutdown();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimRelEuclideanPCAForLearning.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ret;
     }
