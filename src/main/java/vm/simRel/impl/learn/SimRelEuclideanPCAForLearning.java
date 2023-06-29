@@ -68,8 +68,10 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
                     }
                     latch.countDown();
                 });
-
+            } else {
+                latch.countDown();
             }
+
         }
         try {
             latch.await();
@@ -91,7 +93,7 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
         float d2 = df.getDistance(q, o2);
         short realOrder = Tools.booleanToShort(d1 < d2, 1, 2);
 
-        for (int i = 0; i < diffsWhenWrongPerCoords.length; i++) {
+        for (int i = 0; i < Math.min(q.length, diffsWhenWrongPerCoords.length); i++) {
             diffQO1 += (q[i] - o1[i]) * (q[i] - o1[i]);
             diffQO2 += (q[i] - o2[i]) * (q[i] - o2[i]);
             short currOrder = Tools.booleanToShort(diffQO1 < diffQO2, 1, 2);

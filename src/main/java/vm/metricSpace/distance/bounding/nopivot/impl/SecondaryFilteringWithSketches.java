@@ -187,9 +187,9 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         public void run() {
             for (Object id : batch) {
                 long[] oSketch = (long[]) sketches.get(id);
-                int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
-                threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
-            }
+                    int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
+                    threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
+                }
             latch.countDown();
         }
 

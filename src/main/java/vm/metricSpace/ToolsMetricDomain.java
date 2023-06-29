@@ -3,12 +3,13 @@ package vm.metricSpace;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -21,9 +22,9 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vlada
  */
 public class ToolsMetricDomain {
-
+    
     private static final Logger LOG = Logger.getLogger(ToolsMetricDomain.class.getName());
-
+    
     public static float[][] transformMetricObjectsToVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] first = metricSpace.getDataOfMetricObject(metricObjects.get(0));
         float[][] ret = new float[metricObjects.size()][first.length];
@@ -33,7 +34,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-
+    
     public static float[][] transformMetricObjectsToTransposedVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] vec = metricSpace.getDataOfMetricObject(metricObjects.get(0));
         float[][] ret = new float[vec.length][metricObjects.size()];
@@ -104,7 +105,7 @@ public class ToolsMetricDomain {
         }
         return histogram;
     }
-
+    
     public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances, float basicInterval) {
         SortedMap<Float, Float> histogram = new TreeMap<>();
         for (float distance : distances) {
@@ -140,7 +141,7 @@ public class ToolsMetricDomain {
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Collection<Object> metricObjects, boolean valuesAsMetricObjectData) {
         return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator(), valuesAsMetricObjectData);
     }
-
+    
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects, boolean valuesAsMetricObjectData) {
         Map<Object, Object> ret = new HashMap();
         long t = -System.currentTimeMillis();
@@ -157,15 +158,27 @@ public class ToolsMetricDomain {
         LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
         return ret;
     }
-
-    public static Object[] getData(Object[] fourObjects, AbstractMetricSpace metricSpace) {
-        Object[] ret = new Object[fourObjects.length];
+    
+    public static Object[] getData(Object[] objects, AbstractMetricSpace metricSpace) {
+        Object[] ret = new Object[objects.length];
         for (int i = 0; i < ret.length; i++) {
-            ret[i] = metricSpace.getDataOfMetricObject(fourObjects[i]);
+            ret[i] = metricSpace.getDataOfMetricObject(objects[i]);
         }
         return ret;
     }
-
+    
+    public static Set<Object> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
+        Set<Object> ret = new HashSet<>();
+        for (int i = 1; objects.hasNext(); i++) {
+            Object next = objects.next();
+            ret.add(metricSpace.getIDOfMetricObject(next));
+            if (i % 1000000 == 0) {
+                LOG.log(Level.INFO, "Loaded {0} keys", i);
+            }
+        }
+        return ret;
+    }
+    
     public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength) {
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
         Object referentData = metricSpace.getDataOfMetricObject(referent);
@@ -193,7 +206,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-
+    
     public static TreeSet<Map.Entry<Object, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
         for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
@@ -203,5 +216,5 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-
+    
 }

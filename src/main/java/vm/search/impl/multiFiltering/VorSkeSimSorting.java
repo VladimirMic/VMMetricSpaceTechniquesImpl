@@ -361,7 +361,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             return euclid.getEarlyStopsOnCoordsCounts();
         }
-        throw new RuntimeException("No simRel stats for the last query");
+        return null;
     }
 
 }
