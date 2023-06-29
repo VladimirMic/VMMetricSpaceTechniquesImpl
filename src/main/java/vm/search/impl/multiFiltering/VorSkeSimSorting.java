@@ -207,14 +207,14 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             if (lowerBound == Float.MAX_VALUE) {
                 continue;
             }
-            int added = addToFullAnswerWithDists(currAnswer, fullQData, candID, checkedIDs);
+            int added = addToFullAnswerWithDists(ret, fullQData, candID, checkedIDs);
             if (added == 1) {
                 range = adjustAndReturnSearchRadius(ret, k);
                 distComps++;
             }
         }
-        time_addToFull += t6;
         t6 += System.currentTimeMillis();
+        time_addToFull += t6;
 
         t += System.currentTimeMillis();
         incDistsComps(qId, distComps);
@@ -226,8 +226,8 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         System.out.println("t5: " + t5);
         System.out.println("t6: " + t6);
         System.out.println("time_addToFull: " + time_addToFull);
-        System.out.println("\n");
         LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
+        System.out.println("\n\n\n\n");
         return ret;
 
     }
