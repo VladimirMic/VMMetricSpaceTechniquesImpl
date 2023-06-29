@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -141,6 +140,8 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             paramIDX++;
         }
 
+        Set checkedIDs = new HashSet();
+
         while (!mapOfCandSetsIdxsToCurHamDist.isEmpty()) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
             mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
@@ -173,7 +174,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                     break;
                 }
             }
-//            //jinak simRel
+//            //otherwise simRel
             t4 -= System.currentTimeMillis();
             float[] oPCAData = pcaPrefixesMap.get(candID);
             t4 += System.currentTimeMillis();
@@ -184,12 +185,12 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 objIdUnknownRelation.add(candID);
             }
             if (objIdUnknownRelation.size() > 10) {
-                distComps += addToFullAnswerWithDists(ret, fullQData, objIdUnknownRelation.iterator());
+                distComps += addToFullAnswerWithDists(ret, fullQData, objIdUnknownRelation.iterator(), checkedIDs);
                 range = adjustAndReturnSearchRadius(ret, k);
                 objIdUnknownRelation.clear();
             }
             if (counter > 200 && (counter < 1000 && counter % 100 == 0)) {
-                distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator());
+                distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator(), checkedIDs);
                 range = adjustAndReturnSearchRadius(ret, k);
             }
             if (ANSWER != null && ANSWER.isEmpty()) {
@@ -206,15 +207,18 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             if (lowerBound == Float.MAX_VALUE) {
                 continue;
             }
-            addToRet(ret, candID, fullQData);
-            range = adjustAndReturnSearchRadius(ret, k);
+            int added = addToFullAnswerWithDists(currAnswer, fullQData, candID, checkedIDs);
+            if (added == 1) {
+                range = adjustAndReturnSearchRadius(ret, k);
+                distComps++;
+            }
         }
+        time_addToFull += t6;
         t6 += System.currentTimeMillis();
 
         t += System.currentTimeMillis();
         incDistsComps(qId, distComps);
         incTime(qId, t);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
         System.out.println("t1: " + t1);
         System.out.println("t2: " + t2);
         System.out.println("t3: " + t3);
@@ -223,6 +227,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         System.out.println("t6: " + t6);
         System.out.println("time_addToFull: " + time_addToFull);
         System.out.println("\n");
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
         return ret;
 
     }
@@ -290,25 +295,23 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         }
     }
 
-    private final Set checked = new HashSet();
+    private long time_addToFull = 0;
 
-    long time_addToFull = 0;
+    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Object id, Set checkedIDs) {
+        if (!checkedIDs.contains(id)) {
+            addToRet(queryAnswer, id, fullQData);
+            checkedIDs.add(id);
+            return 1;
+        }
+        return 0;
+    }
 
-    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator) {
+    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator, Set checkedIDs) {
         time_addToFull -= System.currentTimeMillis();
         int distComps = 0;
-        Set<Object> currKeys = new HashSet();
-        for (Map.Entry<Object, Float> entry : queryAnswer) {
-            currKeys.add(entry.getKey());
-        }
-        // sort them?
         while (iterator.hasNext()) {
             Object key = iterator.next();
-            if (!checked.contains(key) && !currKeys.contains(key)) {
-                addToRet(queryAnswer, key, fullQData);
-                distComps++;
-                checked.add(key);
-            }
+            distComps += addToFullAnswerWithDists(queryAnswer, fullQData, key, checkedIDs);
         }
         time_addToFull += System.currentTimeMillis();
         return distComps;
