@@ -43,7 +43,7 @@ public class MetricObjectsParallelTransformerImpl {
         while (itOverMetricObjects.hasNext()) {
             List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverMetricObjects);
             processedObjects += processBatch(batch, objType, parallelisation, threadPool, first, additionalParamsToStoreWithNewDataset);
-            System.gc();
+//            System.gc();
             LOG.log(Level.INFO, "Transformed and stored {0} metric objects", processedObjects);
             first = false;
         }

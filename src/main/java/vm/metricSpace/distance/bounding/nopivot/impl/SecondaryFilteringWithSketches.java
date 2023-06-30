@@ -32,6 +32,8 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
 public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     private static final Logger LOG = Logger.getLogger(SecondaryFilteringWithSketches.class.getName());
+    private static final Integer PARALELISATION = vm.javatools.Tools.PARALELISATION;
+    private final ExecutorService threadPool;
 
     private final Map<Object, Object> sketches;
     private final DistanceFunctionInterface hamDistFunc;
@@ -40,6 +42,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     public SecondaryFilteringWithSketches(String namePrefix, String fullDatasetName, Dataset<long[]> sketchingDataset, SecondaryFilteringWithSketchesStoreInterface storage, float thresholdPcum, int iDimSketchesSampleCount, int iDimDistComps, float distIntervalForPX) {
         super(namePrefix);
+        threadPool = Tools.initExecutor(PARALELISATION);
         this.hamDistFunc = new HammingDistanceLongs();
         SortedMap<Double, Integer> mapping = storage.loadMapping(thresholdPcum, fullDatasetName, sketchingDataset.getDatasetName(), iDimSketchesSampleCount, iDimDistComps, distIntervalForPX);
         primDistsThreshold = new double[mapping.size()];
@@ -57,6 +60,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     public SecondaryFilteringWithSketches(String namePrefix, Dataset<long[]> sketchingDataset, double[] primDistsThreshold, int[] hamDistsThresholds) {
         super(namePrefix);
+        threadPool = Tools.initExecutor(PARALELISATION);
         this.hamDistFunc = new HammingDistanceLongs();
         this.primDistsThreshold = primDistsThreshold;
         this.hamDistsThresholds = hamDistsThresholds;
@@ -66,6 +70,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     public SecondaryFilteringWithSketches(String namePrefix, Map<Object, Object> sketches, double[] primDistsThreshold, int[] hamDistsThresholds) {
         super(namePrefix);
+        threadPool = Tools.initExecutor(PARALELISATION);
         this.sketches = sketches;
         this.hamDistFunc = new HammingDistanceLongs();
         this.primDistsThreshold = primDistsThreshold;
@@ -118,19 +123,20 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         return "Secondary_filtering_with_sketches";
     }
 
-    public List<AbstractMap.SimpleEntry<Object, Integer>> evaluateHammingDistancesSequentially(long[] qSketch, List candSetIDs) {
+    public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistancesSequentially(long[] qSketch, List candSetIDs) {
         long x3 = -System.currentTimeMillis();
         DistEvaluationThread distEvaluationThread = new DistEvaluationThread(candSetIDs, qSketch, null);
         distEvaluationThread.run();
         x3 += System.currentTimeMillis();
-        SortedSet<AbstractMap.SimpleEntry<Object, Integer>> ret = distEvaluationThread.getThreadRet();
+        SortedSet<AbstractMap.SimpleEntry<Object, Integer>> entries = distEvaluationThread.getThreadRet();
         System.out.println("x1 " + x3);
-        return new ArrayList<>(ret);
+        ArrayList<AbstractMap.SimpleEntry<Object, Integer>> list = new ArrayList<>(entries);
+        List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new ArrayList[]{list};
+        return ret;
     }
 
     public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistancesInParallel(long[] qSketch, List candSetIDs) {
         try {
-            long x0 = -System.currentTimeMillis();
             int batchCount = 4;
             float batchSize = candSetIDs.size() / (float) batchCount + 0.5f;
             batchSize = vm.math.Tools.round(batchSize, 1f, false);
@@ -138,7 +144,6 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             CountDownLatch latch = new CountDownLatch(batchCount);
             Iterator it = candSetIDs.iterator();
             DistEvaluationThread[] threads = new DistEvaluationThread[batchCount];
-            ExecutorService threadPool = Tools.initExecutor(batchCount);
             long x1 = -System.currentTimeMillis();
             for (int i = 0; i < batchCount; i++) {
                 final Set batch = new HashSet();
@@ -157,17 +162,18 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
                 ret[i] = new ArrayList<>(threadRet);
             }
             x2 += System.currentTimeMillis();
-            x0 += System.currentTimeMillis();
-            System.out.println("x0 " + x0);
             System.out.println("x1 " + x1);
             System.out.println("x2 " + x2);
             System.out.println("batchCount " + batchCount);
-            threadPool.shutdown();
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    public void shutdownThreadPool() {
+        threadPool.shutdown();
     }
 
     private class DistEvaluationThread implements Runnable {
@@ -187,9 +193,9 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         public void run() {
             for (Object id : batch) {
                 long[] oSketch = (long[]) sketches.get(id);
-                    int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
-                    threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
-                }
+                int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
+                threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
+            }
             latch.countDown();
         }
 

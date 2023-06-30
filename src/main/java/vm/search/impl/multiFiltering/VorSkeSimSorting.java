@@ -36,6 +36,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  */
 public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
+    public static final Integer MAX_DIST_COMPS = 3000;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -70,7 +71,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
     }
-    Set<String> ANSWER = null;
+    private Set<String> ANSWER = null;
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
@@ -118,7 +119,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         float range = Float.MAX_VALUE;
 
         long t3 = -System.currentTimeMillis();
-        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
+        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesSequentially(qSketchData, candSetIDs);
         t3 += System.currentTimeMillis();
 
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
@@ -130,8 +131,8 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[i].get(curIndexes[i]);
             mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(i, next.getValue()));
         }
-        long t4 = 0;
-        long t5 = 0;
+        long retrieveFromPCAMemoryMap = 0;
+        long simRelTimes = 0;
         int counter = 0;
         int COUNT_OF_SEEN = 0;
 
@@ -142,7 +143,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
         Set checkedIDs = new HashSet();
 
-        while (!mapOfCandSetsIdxsToCurHamDist.isEmpty()) {
+        while (!mapOfCandSetsIdxsToCurHamDist.isEmpty() && distComps < MAX_DIST_COMPS) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
             mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
 
@@ -175,12 +176,12 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 }
             }
 //            //otherwise simRel
-            t4 -= System.currentTimeMillis();
+            retrieveFromPCAMemoryMap -= System.currentTimeMillis();
             float[] oPCAData = pcaPrefixesMap.get(candID);
-            t4 += System.currentTimeMillis();
-            t5 -= System.currentTimeMillis();
+            retrieveFromPCAMemoryMap += System.currentTimeMillis();
+            simRelTimes -= System.currentTimeMillis();
             boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap);
-            t5 += System.currentTimeMillis();
+            simRelTimes += System.currentTimeMillis();
             if (!knownRelation) {
                 objIdUnknownRelation.add(candID);
             }
@@ -219,15 +220,14 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         t += System.currentTimeMillis();
         incDistsComps(qId, distComps);
         incTime(qId, t);
-        System.out.println("t1: " + t1);
-        System.out.println("t2: " + t2);
-        System.out.println("t3: " + t3);
-        System.out.println("t4: " + t4);
-        System.out.println("t5: " + t5);
-        System.out.println("t6: " + t6);
-        System.out.println("time_addToFull: " + time_addToFull);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
-        System.out.println("\n\n\n\n");
+        System.err.println("t1: " + t1);
+        System.err.println("t2: " + t2);
+        System.err.println("t3: " + t3);
+        System.err.println("retrieveFromPCAMemoryMap: " + retrieveFromPCAMemoryMap);
+        System.err.println("simRelTimes: " + simRelTimes);
+        System.err.println("t6: " + t6);
+        System.err.println("time_addToFull: " + time_addToFull);
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n\n\n", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
         return ret;
 
     }
@@ -325,20 +325,22 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
     @Override
     public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
-        List<Object> pcaQueryObjects = (List<Object>) additionalParams[1];
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
+        int queriesCount = Math.min(500, queryObjects.size());
+        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
-        CountDownLatch latch = new CountDownLatch(queryObjects.size());
-        for (int i = 0; i < queryObjects.size(); i++) {
+        CountDownLatch latch = new CountDownLatch(queriesCount);
+        for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
             Object qID = metricSpace.getIDOfMetricObject(queryObject);
-            Object pcaQueryObject = pcaQueryObjects.get(i);
+            Object pcaQueryObject = pcaQMap.get(qID);
             Object pcaQData = pcaDatasetMetricSpace.getDataOfMetricObject(pcaQueryObject);
             int iFinal = i;
             try {
                 threadPool.execute(() -> {
                     long tQ = -System.currentTimeMillis();
-                    ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQData);
+                    AbstractMap.SimpleEntry pcaQ = new AbstractMap.SimpleEntry(qID, pcaQData);
+                    ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQ);
                     latch.countDown();
                     tQ += System.currentTimeMillis();
                     timesPerQueries.put(qID, new AtomicLong(tQ));
