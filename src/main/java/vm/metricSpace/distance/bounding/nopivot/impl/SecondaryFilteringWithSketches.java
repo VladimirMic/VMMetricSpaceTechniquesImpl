@@ -32,7 +32,7 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
 public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     private static final Logger LOG = Logger.getLogger(SecondaryFilteringWithSketches.class.getName());
-    private static final Integer PARALELISATION = 4;
+    private static final Integer PARALELISATION = vm.javatools.Tools.PARALELISATION;
     private final ExecutorService threadPool;
 
     private final Map<Object, Object> sketches;
@@ -129,7 +129,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         distEvaluationThread.run();
         hammingDistsEval += System.currentTimeMillis();
         SortedSet<AbstractMap.SimpleEntry<Object, Integer>> entries = distEvaluationThread.getThreadRet();
-        System.out.println("hammingDistsEval: " + hammingDistsEval);
+        LOG.log(Level.INFO, "hammingDistsEval: {0}", hammingDistsEval);
         ArrayList<AbstractMap.SimpleEntry<Object, Integer>> list = new ArrayList<>(entries);
         List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new ArrayList[]{list};
         return ret;
@@ -154,16 +154,12 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             }
             latch.await();
             hammingDistsEval += System.currentTimeMillis();
-//            long x2 = -System.currentTimeMillis();
             List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new List[PARALELISATION];
             for (int i = 0; i < PARALELISATION; i++) {
                 SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = threads[i].getThreadRet();
                 ret[i] = new ArrayList<>(threadRet);
             }
-//            x2 += System.currentTimeMillis();
-            System.out.println("hammingDistsEval " + hammingDistsEval);
-//            System.out.println("x2 " + x2);
-            System.out.println("batchCount " + PARALELISATION);
+            LOG.log(Level.INFO, "hammingDistsEval: {0}", hammingDistsEval);
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);
