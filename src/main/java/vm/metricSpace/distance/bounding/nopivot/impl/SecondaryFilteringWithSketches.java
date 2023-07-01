@@ -129,7 +129,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         distEvaluationThread.run();
         hammingDistsEval += System.currentTimeMillis();
         SortedSet<AbstractMap.SimpleEntry<Object, Integer>> entries = distEvaluationThread.getThreadRet();
-        LOG.log(Level.INFO, "hammingDistsEval: {0}", hammingDistsEval);
+        LOG.log(Level.FINE, "hammingDistsEval: {0}", hammingDistsEval);
         ArrayList<AbstractMap.SimpleEntry<Object, Integer>> list = new ArrayList<>(entries);
         List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new ArrayList[]{list};
         return ret;
@@ -159,7 +159,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
                 SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = threads[i].getThreadRet();
                 ret[i] = new ArrayList<>(threadRet);
             }
-            LOG.log(Level.INFO, "hammingDistsEval: {0}", hammingDistsEval);
+            LOG.log(Level.FINE, "hammingDistsEval: {0}", hammingDistsEval);
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);

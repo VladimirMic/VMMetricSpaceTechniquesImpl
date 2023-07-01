@@ -36,7 +36,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer PARALELISM = vm.javatools.Tools.PARALELISATION;
-    public static final Integer MAX_DIST_COMPS = 3500;
+    public static final Integer MAX_DIST_COMPS = 4000;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -227,7 +227,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        System.err.println("simRelTimes: " + simRelTimes);
 //        System.err.println("t6: " + t6);
 //        System.err.println("time_addToFull: " + time_addToFull);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Query time: {1}", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
         return ret;
 
     }
