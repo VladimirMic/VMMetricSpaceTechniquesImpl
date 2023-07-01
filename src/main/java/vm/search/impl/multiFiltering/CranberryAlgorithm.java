@@ -35,7 +35,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  */
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer PARALELISM = 15;
+    public static final Integer PARALELISM = vm.javatools.Tools.PARALELISATION;
     public static final Integer MAX_DIST_COMPS = 3500;
     public static final Boolean STORE_RESULTS = true;
 
