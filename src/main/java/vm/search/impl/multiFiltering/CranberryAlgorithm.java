@@ -33,7 +33,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  * @author Vlada
  * @param <T>
  */
-public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
+public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer PARALELISM = 15;
     public static final Integer MAX_DIST_COMPS = 3500;
@@ -58,7 +58,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
     private long simRelEvalCounter;
 
-    public VorSkeSimSorting(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
+    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -349,7 +349,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            Logger.getLogger(VorSkeSimSorting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CranberryAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
         threadPool.shutdown();
         return ret;
