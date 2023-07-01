@@ -35,7 +35,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  */
 public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer PARALELISM = 4;
+    public static final Integer PARALELISM = 15;
     public static final Integer MAX_DIST_COMPS = 3500;
     public static final Boolean STORE_RESULTS = true;
 
@@ -77,7 +77,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
         time_addToFull = 0;
-        long t = -System.currentTimeMillis();
+        long overallTime = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
 
@@ -102,9 +102,9 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
         // actual query evaluation
         // first phase: voronoi
-        long t1 = -System.currentTimeMillis();
+//        long t1 = -System.currentTimeMillis();
         List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
-        t1 += System.currentTimeMillis();
+//        t1 += System.currentTimeMillis();
 
         // simRel preparation
         List<Object> simRelAns = new ArrayList<>();
@@ -112,15 +112,15 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
-        long t2 = -System.currentTimeMillis();
+//        long t2 = -System.currentTimeMillis();
         Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
-        t2 += System.currentTimeMillis();
+//        t2 += System.currentTimeMillis();
         float range = Float.MAX_VALUE;
 
-        long t3 = -System.currentTimeMillis();
+//        long t3 = -System.currentTimeMillis();
         List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
-        t3 += System.currentTimeMillis();
+//        t3 += System.currentTimeMillis();
 
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
         int[] curIndexes = new int[hammingDists.length];
@@ -131,15 +131,15 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[i].get(curIndexes[i]);
             mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(i, next.getValue()));
         }
-        long retrieveFromPCAMemoryMap = 0;
-        long simRelTimes = 0;
+//        long retrieveFromPCAMemoryMap = 0;
+//        long simRelTimes = 0;
         int counter = 0;
-        int COUNT_OF_SEEN = 0;
+//        int COUNT_OF_SEEN = 0;
 
-        if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
-            ANSWER = (Set<String>) additionalParams[paramIDX];
-            paramIDX++;
-        }
+//        if (additionalParams.length > paramIDX && additionalParams[paramIDX] instanceof Set) {
+//            ANSWER = (Set<String>) additionalParams[paramIDX];
+//            paramIDX++;
+//        }
 
         Set checkedIDs = new HashSet();
 
@@ -157,10 +157,10 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             }
 
             Object candID = next.getKey();
-            if (ANSWER != null && ANSWER.contains(candID.toString())) {
-                COUNT_OF_SEEN++;
-                ANSWER.remove(candID.toString());
-            }
+//            if (ANSWER != null && ANSWER.contains(candID.toString())) {
+//                COUNT_OF_SEEN++;
+//                ANSWER.remove(candID.toString());
+//            }
             int hamDist = next.getValue();
             // zkusit skece pokud je ret plna
             if (ret.size() < k) {
@@ -176,12 +176,12 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 }
             }
 //            //otherwise simRel
-            retrieveFromPCAMemoryMap -= System.currentTimeMillis();
+//            retrieveFromPCAMemoryMap -= System.currentTimeMillis();
             float[] oPCAData = pcaPrefixesMap.get(candID);
-            retrieveFromPCAMemoryMap += System.currentTimeMillis();
-            simRelTimes -= System.currentTimeMillis();
+//            retrieveFromPCAMemoryMap += System.currentTimeMillis();
+//            simRelTimes -= System.currentTimeMillis();
             boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap);
-            simRelTimes += System.currentTimeMillis();
+//            simRelTimes += System.currentTimeMillis();
             if (!knownRelation) {
                 objIdUnknownRelation.add(candID);
             }
@@ -201,7 +201,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         }
         simRelAns.addAll(objIdUnknownRelation);
 
-        long t6 = -System.currentTimeMillis();
+//        long t6 = -System.currentTimeMillis();
         // check by sketches again
         for (Object candID : simRelAns) {
             float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
@@ -214,20 +214,20 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
                 distComps++;
             }
         }
-        t6 += System.currentTimeMillis();
-        time_addToFull += t6;
+//        t6 += System.currentTimeMillis();
+//        time_addToFull += t6;
 
-        t += System.currentTimeMillis();
+        overallTime += System.currentTimeMillis();
         incDistsComps(qId, distComps);
-        incTime(qId, t);
-        System.err.println("t1: " + t1);
-        System.err.println("t2: " + t2);
-        System.err.println("t3: " + t3);
-        System.err.println("retrieveFromPCAMemoryMap: " + retrieveFromPCAMemoryMap);
-        System.err.println("simRelTimes: " + simRelTimes);
-        System.err.println("t6: " + t6);
-        System.err.println("time_addToFull: " + time_addToFull);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n\n\n", new Object[]{distComps, t, qId.toString(), simRelEvalCounter});
+        incTime(qId, overallTime);
+//        System.err.println("t1: " + t1);
+//        System.err.println("t2: " + t2);
+//        System.err.println("t3: " + t3);
+//        System.err.println("retrieveFromPCAMemoryMap: " + retrieveFromPCAMemoryMap);
+//        System.err.println("simRelTimes: " + simRelTimes);
+//        System.err.println("t6: " + t6);
+//        System.err.println("time_addToFull: " + time_addToFull);
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n\n\n", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
         return ret;
 
     }
