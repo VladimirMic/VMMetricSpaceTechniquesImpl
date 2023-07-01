@@ -227,7 +227,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        System.err.println("simRelTimes: " + simRelTimes);
 //        System.err.println("t6: " + t6);
 //        System.err.println("time_addToFull: " + time_addToFull);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n\n\n", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
+        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Time: {1}\n\n", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
         return ret;
 
     }
