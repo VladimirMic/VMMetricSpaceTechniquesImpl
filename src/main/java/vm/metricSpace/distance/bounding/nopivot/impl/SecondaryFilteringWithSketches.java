@@ -137,15 +137,14 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     public List<AbstractMap.SimpleEntry<Object, Integer>>[] evaluateHammingDistancesInParallel(long[] qSketch, List candSetIDs) {
         try {
-            int batchCount = 4;
-            float batchSize = candSetIDs.size() / (float) batchCount + 0.5f;
+            float batchSize = candSetIDs.size() / (float) PARALELISATION + 0.5f;
             batchSize = vm.math.Tools.round(batchSize, 1f, false);
 
-            CountDownLatch latch = new CountDownLatch(batchCount);
+            CountDownLatch latch = new CountDownLatch(PARALELISATION);
             Iterator it = candSetIDs.iterator();
-            DistEvaluationThread[] threads = new DistEvaluationThread[batchCount];
+            DistEvaluationThread[] threads = new DistEvaluationThread[PARALELISATION];
             long x1 = -System.currentTimeMillis();
-            for (int i = 0; i < batchCount; i++) {
+            for (int i = 0; i < PARALELISATION; i++) {
                 final Set batch = new HashSet();
                 while (batch.size() < batchSize && it.hasNext()) {
                     batch.add(it.next());
@@ -156,15 +155,15 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
             latch.await();
             x1 += System.currentTimeMillis();
             long x2 = -System.currentTimeMillis();
-            List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new List[batchCount];
-            for (int i = 0; i < batchCount; i++) {
+            List<AbstractMap.SimpleEntry<Object, Integer>>[] ret = new List[PARALELISATION];
+            for (int i = 0; i < PARALELISATION; i++) {
                 SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = threads[i].getThreadRet();
                 ret[i] = new ArrayList<>(threadRet);
             }
             x2 += System.currentTimeMillis();
             System.out.println("x1 " + x1);
             System.out.println("x2 " + x2);
-            System.out.println("batchCount " + batchCount);
+            System.out.println("batchCount " + PARALELISATION);
             return ret;
         } catch (InterruptedException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -196,7 +195,9 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
                 int distance = (int) hamDistFunc.getDistance(qSketch, oSketch);
                 threadRet.add(new AbstractMap.SimpleEntry<>(id, distance));
             }
-            latch.countDown();
+            if (latch != null) {
+                latch.countDown();
+            }
         }
 
         public SortedSet<AbstractMap.SimpleEntry<Object, Integer>> getThreadRet() {

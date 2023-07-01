@@ -24,7 +24,6 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.SearchingAlgorithm;
-import static vm.search.SearchingAlgorithm.BATCH_SIZE;
 import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
@@ -36,7 +35,8 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  */
 public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer MAX_DIST_COMPS = 3000;
+    public static final Integer PARALELISM = 4;
+    public static final Integer MAX_DIST_COMPS = 3500;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -119,7 +119,7 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
         float range = Float.MAX_VALUE;
 
         long t3 = -System.currentTimeMillis();
-        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesSequentially(qSketchData, candSetIDs);
+        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
         t3 += System.currentTimeMillis();
 
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
@@ -326,9 +326,10 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
         Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
-        int queriesCount = Math.min(500, queryObjects.size());
+//        int queriesCount = 500;
+        int queriesCount = queryObjects.size();
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
         CountDownLatch latch = new CountDownLatch(queriesCount);
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
@@ -336,20 +337,19 @@ public class VorSkeSimSorting<T> extends SearchingAlgorithm<T> {
             Object pcaQueryObject = pcaQMap.get(qID);
             Object pcaQData = pcaDatasetMetricSpace.getDataOfMetricObject(pcaQueryObject);
             int iFinal = i;
-            try {
-                threadPool.execute(() -> {
-                    long tQ = -System.currentTimeMillis();
-                    AbstractMap.SimpleEntry pcaQ = new AbstractMap.SimpleEntry(qID, pcaQData);
-                    ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQ);
-                    latch.countDown();
-                    tQ += System.currentTimeMillis();
-                    timesPerQueries.put(qID, new AtomicLong(tQ));
-                    LOG.log(Level.INFO, "Query obj {0} evaluated in {1} ms", new Object[]{iFinal, tQ, BATCH_SIZE});
-                });
-                latch.await();
-            } catch (InterruptedException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            threadPool.execute(() -> {
+                long tQ = -System.currentTimeMillis();
+                AbstractMap.SimpleEntry pcaQ = new AbstractMap.SimpleEntry(qID, pcaQData);
+                ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQ);
+                tQ += System.currentTimeMillis();
+                timesPerQueries.put(qID, new AtomicLong(tQ));
+                latch.countDown();
+            });
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(VorSkeSimSorting.class.getName()).log(Level.SEVERE, null, ex);
         }
         threadPool.shutdown();
         return ret;

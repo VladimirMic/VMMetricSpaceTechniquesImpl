@@ -1,6 +1,7 @@
 package vm.metricSpace;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -169,6 +170,18 @@ public class ToolsMetricDomain {
     
     public static Set<Object> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
         Set<Object> ret = new HashSet<>();
+        for (int i = 1; objects.hasNext(); i++) {
+            Object next = objects.next();
+            ret.add(metricSpace.getIDOfMetricObject(next));
+            if (i % 1000000 == 0) {
+                LOG.log(Level.INFO, "Loaded {0} keys", i);
+            }
+        }
+        return ret;
+    }
+    
+    public static List<Object> getIDsAsList(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
+        List<Object> ret = new ArrayList<>();
         for (int i = 1; objects.hasNext(); i++) {
             Object next = objects.next();
             ret.add(metricSpace.getIDOfMetricObject(next));
