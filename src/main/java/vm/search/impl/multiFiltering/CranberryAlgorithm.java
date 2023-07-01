@@ -71,12 +71,12 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
     }
-    private Set<String> ANSWER = null;
+//    private Set<String> ANSWER = null;
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
-        time_addToFull = 0;
+//        time_addToFull = 0;
         long overallTime = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
@@ -194,9 +194,9 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
                 distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator(), checkedIDs);
                 range = adjustAndReturnSearchRadius(ret, k);
             }
-            if (ANSWER != null && ANSWER.isEmpty()) {
-                break;
-            }
+//            if (ANSWER != null && ANSWER.isEmpty()) {
+//                break;
+//            }
 
         }
         simRelAns.addAll(objIdUnknownRelation);
@@ -277,9 +277,9 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             while (ret.size() >= k && !indexesToRemove.isEmpty()) {
                 Integer idx = indexesToRemove.get(0);
                 Object id = ret.get(idx);
-                if (ANSWER != null && ANSWER.contains(id)) {
-                    String s = "";
-                }
+//                if (ANSWER != null && ANSWER.contains(id)) {
+//                    String s = "";
+//                }
                 retData.remove(id);
                 ret.remove(id);
                 indexesToRemove.remove(0);
@@ -287,9 +287,9 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         }
         while (ret.size() >= simRelMaxK) {
             Object id = ret.get(ret.size() - 1);
-            if (ANSWER != null && ANSWER.contains(id)) {
-                String s = "";
-            }
+//            if (ANSWER != null && ANSWER.contains(id)) {
+//                String s = "";
+//            }
             retData.remove(id);
             ret.remove(id);
         }
