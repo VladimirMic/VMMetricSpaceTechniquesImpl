@@ -140,7 +140,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //            ANSWER = (Set<String>) additionalParams[paramIDX];
 //            paramIDX++;
 //        }
-
         Set checkedIDs = new HashSet();
 
         while (!mapOfCandSetsIdxsToCurHamDist.isEmpty() && distComps < MAX_DIST_COMPS) {
@@ -326,8 +325,13 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
         Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
-//        int queriesCount = 500;
-        int queriesCount = queryObjects.size();
+        int queriesCount = -1;
+        if (additionalParams.length > 2 && additionalParams[2] instanceof Integer) {
+            queriesCount = Integer.parseInt(additionalParams[2].toString());
+        }
+        if (queriesCount < 0) {
+            queriesCount = queryObjects.size();
+        }
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
         CountDownLatch latch = new CountDownLatch(queriesCount);

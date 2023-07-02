@@ -18,6 +18,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
 
+    public static final Logger LOG = Logger.getLogger(SimRelEuclideanPCAForLearning.class.getName());
     private int simRelCounter;
     private int[] errorsPerCoord;
     private List<Float>[] diffsWhenWrongPerCoords;
@@ -99,7 +100,9 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
             short currOrder = Tools.booleanToShort(diffQO1 < diffQO2, 1, 2);
             if (currOrder != realOrder) {
                 errorsPerCoord[i]++;
-                diffsWhenWrongPerCoords[i].add(Math.abs(diffQO1 - diffQO2));
+                synchronized (this) {
+                    diffsWhenWrongPerCoords[i].add(Math.abs(diffQO1 - diffQO2));
+                }
             }
         }
         if (diffQO1 == diffQO2) {
