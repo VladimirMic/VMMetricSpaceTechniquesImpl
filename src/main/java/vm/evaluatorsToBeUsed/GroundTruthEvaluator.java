@@ -70,7 +70,7 @@ public class GroundTruthEvaluator {
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIterator(ExecutorService threadPool, Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        TreeSet<Entry<Object, Float>>[] queryResults = initKNNResultingMaps(queryObjectsData.size());
+        TreeSet<Entry<Object, Float>>[] queryResults = initKNNResultSets(queryObjectsData.size());
         int counter = 0;
         while (itOverMetricObjects.hasNext()) {
             List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverMetricObjects);
@@ -118,9 +118,9 @@ public class GroundTruthEvaluator {
         return null;
     }
 
-    private TreeSet<Entry<Object, Float>>[] initKNNResultingMaps(int size) {
-        TreeSet<Entry<Object, Float>>[] ret = new TreeSet[size];
-        for (int i = 0; i < size; i++) {
+    public static TreeSet<Entry<Object, Float>>[] initKNNResultSets(int numberOfQueries) {
+        TreeSet<Entry<Object, Float>>[] ret = new TreeSet[numberOfQueries];
+        for (int i = 0; i < numberOfQueries; i++) {
             ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
         }
         return ret;
