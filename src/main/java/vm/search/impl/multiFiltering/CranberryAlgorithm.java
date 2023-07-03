@@ -56,8 +56,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     private final DistanceFunctionInterface<T> fullDF;
 
-    private long simRelEvalCounter;
-
     public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
@@ -79,7 +77,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        time_addToFull = 0;
         long overallTime = -System.currentTimeMillis();
         int distComps = 0;
-        simRelEvalCounter = 0;
+        AtomicLong simRelEvalCounter = new AtomicLong();
 
         TreeSet<Map.Entry<Object, Float>> currAnswer = null;
         int paramIDX = 0;
@@ -179,7 +177,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             float[] oPCAData = pcaPrefixesMap.get(candID);
 //            retrieveFromPCAMemoryMap += System.currentTimeMillis();
 //            simRelTimes -= System.currentTimeMillis();
-            boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap);
+            boolean knownRelation = addOToSimRelAnswer(simRelMinK, pcaQData, oPCAData, candID, simRelAns, simRelCandidatesMap, simRelEvalCounter);
 //            simRelTimes += System.currentTimeMillis();
             if (!knownRelation) {
                 objIdUnknownRelation.add(candID);
@@ -231,7 +229,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     }
 
-    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData) {
+    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData, AtomicLong simRelEvalCounter) {
         if (ansOfSimRel.isEmpty()) {
             ansOfSimRel.add(idOfO);
             mapOfData.put(idOfO, oData);
@@ -244,7 +242,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         List<Integer> indexesToRemove = new ArrayList<>();
         for (int i = ansOfSimRel.size() - 1; i >= 0; i--) {
             float[] oLastData = mapOfData.get(ansOfSimRel.get(i));
-            simRelEvalCounter++;
+            simRelEvalCounter.incrementAndGet();
             short sim = simRelFunc.getMoreSimilar(queryObjectData, oLastData, oData);
             if (sim == 1) {
                 if (i < k - 1) {
@@ -294,7 +292,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         }
     }
 
-    private long time_addToFull = 0;
+//    private long time_addToFull = 0;
 
     private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Object id, Set checkedIDs) {
         if (!checkedIDs.contains(id)) {
@@ -306,13 +304,13 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator, Set checkedIDs) {
-        time_addToFull -= System.currentTimeMillis();
+//        time_addToFull -= System.currentTimeMillis();
         int distComps = 0;
         while (iterator.hasNext()) {
             Object key = iterator.next();
             distComps += addToFullAnswerWithDists(queryAnswer, fullQData, key, checkedIDs);
         }
-        time_addToFull += System.currentTimeMillis();
+//        time_addToFull += System.currentTimeMillis();
         return distComps;
     }
 
