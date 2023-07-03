@@ -6,6 +6,7 @@ package vm.search.impl.multiFiltering;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,6 +42,8 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
+
+    protected final ConcurrentHashMap<Object, AtomicLong> simRelsPerQueries = new ConcurrentHashMap();
 
     private final VoronoiPartitionsCandSetIdentifier voronoiFilter;
     private final int voronoiK;
@@ -217,6 +221,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         overallTime += System.currentTimeMillis();
         incDistsComps(qId, distComps);
         incTime(qId, overallTime);
+        simRelsPerQueries.put(qId, simRelEvalCounter);
 //        System.err.println("t1: " + t1);
 //        System.err.println("t2: " + t2);
 //        System.err.println("t3: " + t3);
@@ -226,7 +231,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        System.err.println("time_addToFull: " + time_addToFull);
         LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps and {3} simRels. Query time: {1}", new Object[]{distComps, overallTime, qId.toString(), simRelEvalCounter});
         return ret;
-
     }
 
     private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData, AtomicLong simRelEvalCounter) {
@@ -293,7 +297,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
 //    private long time_addToFull = 0;
-
     private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Object id, Set checkedIDs) {
         if (!checkedIDs.contains(id)) {
             addToRet(queryAnswer, id, fullQData);
@@ -369,6 +372,10 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             return euclid.getEarlyStopsOnCoordsCounts();
         }
         return null;
+    }
+
+    public Map<Object, AtomicLong> getSimRelsPerQueries() {
+        return Collections.unmodifiableMap(simRelsPerQueries);
     }
 
 }
