@@ -18,7 +18,7 @@ import vm.metricSpace.MetricSpacesStorageInterface.OBJECT_TYPE;
  */
 public class MetricObjectsParallelTransformerImpl {
 
-    public static final Integer BATCH_SIZE = 1000000;
+    public static final Integer BATCH_SIZE = 5000000;
     private static final Logger LOG = Logger.getLogger(MetricObjectsParallelTransformerImpl.class.getName());
 
     private final MetricObjectTransformerInterface transformer;
