@@ -11,7 +11,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class MPEG7EdgeCompDistanceFunction implements DistanceFunctionInterface<byte[]> {
+public class MPEG7EdgeCompDistanceFunction extends DistanceFunctionInterface<byte[]> {
 
     /**
      * Class id for Java serialization.

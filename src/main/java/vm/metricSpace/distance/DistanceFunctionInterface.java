@@ -5,7 +5,7 @@ package vm.metricSpace.distance;
  * @author Vlada
  * @param <T>
  */
-public interface DistanceFunctionInterface<T> {
+public abstract class DistanceFunctionInterface<T> {
 
     /**
      *
@@ -15,6 +15,10 @@ public interface DistanceFunctionInterface<T> {
      * distance. E.g. float[] or others. See implementations for details.
      * @return
      */
-    public float getDistance(T obj1, T obj2);
+    public abstract float getDistance(T obj1, T obj2);
+
+    public float getDistance(T obj1, T obj2, Object... additionalParams) {
+        return getDistance(obj1, obj2);
+    }
 
 }

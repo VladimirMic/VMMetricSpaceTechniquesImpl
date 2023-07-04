@@ -6,7 +6,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  *
  * @author Vlada
  */
-public class L2OnFloatsArray implements DistanceFunctionInterface<float[]> {
+public class L2OnFloatsArray extends DistanceFunctionInterface<float[]> {
 
     @Override
     public float getDistance(float[] o1, float[] o2) {

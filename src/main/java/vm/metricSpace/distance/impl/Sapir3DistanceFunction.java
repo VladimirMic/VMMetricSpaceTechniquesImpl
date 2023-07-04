@@ -9,7 +9,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic, copied form
  * the MESSIF library, xmic@fi.muni.cz
  */
-public class Sapir3DistanceFunction implements DistanceFunctionInterface<Map<String, Object>> {
+public class Sapir3DistanceFunction extends DistanceFunctionInterface<Map<String, Object>> {
 
     private final DistanceFunctionInterface<Map<String, byte[]>> colorLayoutDF = new MPEG7ColorLayoutDistanceFunction();
     private final DistanceFunctionInterface<short[]> colorStructureDF = new L1OnShortsArray();

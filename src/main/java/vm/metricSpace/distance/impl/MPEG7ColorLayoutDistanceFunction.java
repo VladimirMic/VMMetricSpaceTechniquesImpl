@@ -10,7 +10,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class MPEG7ColorLayoutDistanceFunction implements DistanceFunctionInterface<Map<String, byte[]>> {
+public class MPEG7ColorLayoutDistanceFunction extends DistanceFunctionInterface<Map<String, byte[]>> {
 
     /**
      * Class id for Java serialization.

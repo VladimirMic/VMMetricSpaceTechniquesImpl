@@ -10,7 +10,7 @@ import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDis
  * @param <T> the data type for the distance function, e.g. float[] for the
  * float vector.
  */
-public class DistanceFunctionWithPrecomputedValues<T> implements DistanceFunctionInterface {
+public class DistanceFunctionWithPrecomputedValues<T> extends DistanceFunctionInterface {
 
     private final float[][] dists;
     private final Map<String, Integer> columnHeaders;

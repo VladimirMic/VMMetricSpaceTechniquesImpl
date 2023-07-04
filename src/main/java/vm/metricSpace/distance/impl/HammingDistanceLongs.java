@@ -9,7 +9,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class HammingDistanceLongs implements DistanceFunctionInterface<long[]> {
+public class HammingDistanceLongs extends DistanceFunctionInterface<long[]> {
 
     @Override
     public float getDistance(long[] o1, long[] o2) {
