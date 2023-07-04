@@ -130,10 +130,11 @@ public class VoronoiPartitioning {
                 Object oID = metricSpace.getIDOfMetricObject(o);
                 float minDist = Float.MAX_VALUE;
                 Object pivotWithMinDist = null;
+                Float oLength = objectsLengths.get(oID);
                 for (Map.Entry<Object, Object> pivot : pivots.entrySet()) {
                     Object pivotID = pivot.getKey();
                     float dist;
-                    dist = df.getDistance(oData, pivot.getValue(), objectsLengths.get(oID), pivotLengths.get(pivotID));
+                    dist = df.getDistance(oData, pivot.getValue(), oLength, pivotLengths.get(pivotID));
                     if (dist < minDist) {
                         minDist = dist;
                         pivotWithMinDist = pivotID;
