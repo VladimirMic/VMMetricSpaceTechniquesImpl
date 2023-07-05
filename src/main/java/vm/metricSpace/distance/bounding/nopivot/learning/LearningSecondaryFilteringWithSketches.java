@@ -25,8 +25,9 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
  */
 public class LearningSecondaryFilteringWithSketches<T> {
 
-//    private static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
-    public static final float[] THRESHOLDS_P_CUM = new float[]{0.8f};
+////    public static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
+//    public static final float[] THRESHOLDS_P_CUM = new float[]{0.91f, 0.92f, 0.93f, 0.94f, 0.95f, 0.96f, 0.97f, 0.98f, 0.99f, 1};
+    public static final float[] THRESHOLDS_P_CUM = new float[]{0.95f};
     public static final Logger LOG = Logger.getLogger(LearningSecondaryFilteringWithSketches.class.getName());
 
     private final SecondaryFilteringWithSketchesStoreInterface storage;
