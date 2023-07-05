@@ -32,7 +32,7 @@ import vm.metricSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringW
 public class SecondaryFilteringWithSketches extends NoPivotFilter {
 
     private static final Logger LOG = Logger.getLogger(SecondaryFilteringWithSketches.class.getName());
-    private static final Integer PARALELISATION = vm.javatools.Tools.PARALELISATION;
+    private static final Integer PARALELISATION = Runtime.getRuntime().availableProcessors() - 1;
     private final ExecutorService threadPool;
 
     private final Map<Object, Object> sketches;

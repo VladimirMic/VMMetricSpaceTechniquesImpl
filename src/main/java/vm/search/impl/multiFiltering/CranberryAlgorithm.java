@@ -37,8 +37,8 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
  */
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer PARALELISM = vm.javatools.Tools.PARALELISATION;
-    public static final Integer MAX_DIST_COMPS = 1500;
+    public static final Integer QUERIES_PARALELISM = vm.javatools.Tools.PARALELISATION;
+    public static final Integer MAX_DIST_COMPS = 1200;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -334,7 +334,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             queriesCount = queryObjects.size();
         }
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(PARALELISM);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(QUERIES_PARALELISM);
         CountDownLatch latch = new CountDownLatch(queriesCount);
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
