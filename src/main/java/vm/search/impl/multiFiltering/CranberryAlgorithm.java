@@ -38,7 +38,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer QUERIES_PARALELISM = (int) (Runtime.getRuntime().availableProcessors() / 3f);
-    public static final Integer MAX_DIST_COMPS = 1150;
+    public static final Integer MAX_DIST_COMPS = 5000;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -60,7 +60,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     private final DistanceFunctionInterface<T> fullDF;
 
-    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
+    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, int datasetSize, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;

@@ -171,6 +171,10 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
         threadPool.shutdown();
     }
 
+    public final int getNumberOfSketches() {
+        return sketches.size();
+    }
+
     private class DistEvaluationThread implements Runnable {
 
         private final SortedSet<AbstractMap.SimpleEntry<Object, Integer>> threadRet = new TreeSet<>(new vm.datatools.Tools.MapByValueIntComparator());
