@@ -378,4 +378,8 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         return Collections.unmodifiableMap(simRelsPerQueries);
     }
 
+    public int getDatasetSize() {
+        return sketchSecondaryFilter.getNumberOfSketches();
+    }
+
 }

@@ -6,6 +6,7 @@ package vm.metricSpace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,13 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
     private static final Logger LOG = Logger.getLogger(MainMemoryDatasetChache.class.getName());
 
     public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace, String datasetName) {
+        this(metricSpace, datasetName, null);
+    }
+
+    public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace, String datasetName, AbstractMetricSpacesStorage metricSpacesStorage) {
         this.datasetName = datasetName;
         this.metricSpace = metricSpace;
-        this.metricSpacesStorage = null;
-
+        this.metricSpacesStorage = metricSpacesStorage;
     }
 
     public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace) {
@@ -68,14 +72,13 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
         LOG.log(Level.INFO, "Cached {0} queries in the main memory", this.queries.size());
     }
 
-    public List<Object> getPivots() {
-        return getPivots(0);
-    }
-
     @Override
-    public List<Object> getPivots(int ignored) {
-        LOG.log(Level.INFO, "Provided {0} pivots from the cache main memory", this.pivots.size());
-        return pivots;
+    public List<Object> getPivots(int count) {
+        if (count < 0) {
+            count = this.pivots.size();
+        }
+        LOG.log(Level.INFO, "Provided {0} pivots from the cache main memory", count);
+        return Collections.unmodifiableList(pivots.subList(0, count));
     }
 
     @Override
@@ -87,7 +90,7 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
     @Override
     public List<Object> getMetricQueryObjects() {
         LOG.log(Level.INFO, "Provided {0} queries from the cache main memory", this.queries.size());
-        return queries;
+        return Collections.unmodifiableList(queries);
     }
 
     @Override
@@ -97,7 +100,7 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
         }
         if (objCount > dataObjects.size()) {
             LOG.log(Level.WARNING, "Just {0} are cached but {1} asked. Returning {0} objects", new Object[]{dataObjects.size(), objCount});
-            return dataObjects;
+            return Collections.unmodifiableList(dataObjects);
         }
         return dataObjects.subList(0, objCount);
     }
@@ -116,7 +119,11 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
 
     @Override
     public Map<Object, Object> getKeyValueStorage() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (!dataLoaded()) {
+            loadAllDataObjets();
+        }
+        return ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, getMetricObjectsFromDataset(), true);
+
     }
 
     public void setName(String newName) {
@@ -125,6 +132,15 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
 
     public int getDatasetSize() {
         return dataObjects.size();
+    }
+
+    public void loadAllDataObjets() {
+        if (dataLoaded()) {
+            LOG.log(Level.INFO, "Already cached {0} data objects in the main memory. No change made.", this.dataObjects.size());
+            return;
+        }
+        Iterator<Object> it = super.getMetricObjectsFromDataset();
+        addAllDataObjects(it);
     }
 
 }
