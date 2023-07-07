@@ -61,6 +61,10 @@ public class PxEvaluator {
             // number of measurements per each dist interval
             SortedMap<Float, Float> counts = initDistMapping(maxDist);
             ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+            if (sampleObjects.size() < 300000) {
+                distCount = 200000;
+            }
+            final int distComparisons = distCount;
             CountDownLatch latch = new CountDownLatch(distCount);
             DistanceFunctionInterface fullDistFunc = fullDataset.getDistanceFunction();
             AbstractMetricSpace fullMetricSpace = fullDataset.getMetricSpace();
@@ -81,8 +85,8 @@ public class PxEvaluator {
                     float hamDistRelative = hammingDF.getDistance(sk1, sk2) / sketchLength;
                     addValueToMap(sumOfProbabilities, origDist, hamDistRelative);
                     addValueToMap(counts, origDist, 1f);
-                    if (idx % 1000000 == 0 || idx > distCount - 10) {
-                        Logger.getLogger(PxEvaluator.class.getName()).log(Level.INFO, "Evaluated correspondence of {0}  distances out of {1}", new Object[]{idx, distCount});
+                    if (idx % 1000000 == 0 || idx > distComparisons - 10) {
+                        Logger.getLogger(PxEvaluator.class.getName()).log(Level.INFO, "Evaluated correspondence of {0}  distances out of {1}", new Object[]{idx, distComparisons});
                     }
                     latch.countDown();
                 });

@@ -102,11 +102,12 @@ public class LearningSecondaryFilteringWithSketches<T> {
             long[] sk2Data = metricSpaceOfSketches.getDataOfMetricObject(sk2);
             float distance = hammingDF.getDistance(sk1Data, sk2Data);
             distances[i] = distance;
+            i++;
             if (i % (DISTS_COMPS_FOR_SK_IDIM_AND_PX / 10) == 0) {
                 LOG.log(Level.INFO, "iDim evaluation: {0} distances", i);
             }
-            i++;
         }
+        LOG.log(Level.INFO, "Finished iDim evaluation: {0} distances", i);
         double iDim = Tools.getIDim(distances, true);
         return iDim;
     }
@@ -121,6 +122,7 @@ public class LearningSecondaryFilteringWithSketches<T> {
             }
         }
         PxEvaluator pxEval = new PxEvaluator(fullDataset, sketchesDataset, SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX, sketchLength, distIntervalForPX);
+        
         SortedMap<Float, Float> pxPlot = pxEval.evaluateProbabilities(maxDistForPX, DISTS_COMPS_FOR_SK_IDIM_AND_PX);
         pxPlot = Tools.createNonDecreasingFunction(pxPlot);
         vm.datatools.Tools.printMap(pxPlot);
