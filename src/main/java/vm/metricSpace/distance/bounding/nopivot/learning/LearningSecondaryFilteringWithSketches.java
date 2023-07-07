@@ -86,7 +86,11 @@ public class LearningSecondaryFilteringWithSketches<T> {
         int i = 0;
         AbstractMetricSpace<long[]> metricSpaceOfSketches = sketchesDataset.getMetricSpace();
         DistanceFunctionInterface hammingDF = sketchesDataset.getDistanceFunction();
-        while (i < DISTS_COMPS_FOR_SK_IDIM_AND_PX) {
+        int numberOfDists = DISTS_COMPS_FOR_SK_IDIM_AND_PX;
+        if (sketches.size() <= 300000) {
+            numberOfDists = sketches.size();
+        }
+        while (i < numberOfDists) {
             Object sk1 = sketches.get(r.nextInt(sketches.size()));
             Object sk2 = sketches.get(r.nextInt(sketches.size()));
             Object id1 = metricSpaceOfSketches.getIDOfMetricObject(sk1);
