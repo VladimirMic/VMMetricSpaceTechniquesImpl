@@ -123,4 +123,8 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
         this.datasetName = newName;
     }
 
+    public int getDatasetSize() {
+        return dataObjects.size();
+    }
+
 }
