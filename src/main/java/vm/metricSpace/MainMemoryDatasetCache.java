@@ -19,21 +19,21 @@ import vm.datatools.Tools;
  * @author xmic
  * @param <T>
  */
-public class MainMemoryDatasetChache<T> extends Dataset<T> {
+public class MainMemoryDatasetCache<T> extends Dataset<T> {
 
-    private static final Logger LOG = Logger.getLogger(MainMemoryDatasetChache.class.getName());
+    private static final Logger LOG = Logger.getLogger(MainMemoryDatasetCache.class.getName());
 
-    public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace, String datasetName) {
+    public MainMemoryDatasetCache(AbstractMetricSpace<T> metricSpace, String datasetName) {
         this(metricSpace, datasetName, null);
     }
 
-    public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace, String datasetName, AbstractMetricSpacesStorage metricSpacesStorage) {
+    public MainMemoryDatasetCache(AbstractMetricSpace<T> metricSpace, String datasetName, AbstractMetricSpacesStorage metricSpacesStorage) {
         this.datasetName = datasetName;
         this.metricSpace = metricSpace;
         this.metricSpacesStorage = metricSpacesStorage;
     }
 
-    public MainMemoryDatasetChache(AbstractMetricSpace<T> metricSpace) {
+    public MainMemoryDatasetCache(AbstractMetricSpace<T> metricSpace) {
         this(metricSpace, "");
     }
 
@@ -122,8 +122,9 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
         if (!dataLoaded()) {
             loadAllDataObjets();
         }
-        return ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, getMetricObjectsFromDataset(), true);
-
+        Map<Object, Object> ret = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, getMetricObjectsFromDataset(), true);
+        LOG.log(Level.INFO, "Returning the cached map of objects from the main memory. Size: {0} objects.", ret.size());
+        return ret;
     }
 
     public void setName(String newName) {

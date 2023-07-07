@@ -11,7 +11,7 @@ import vm.datatools.Tools;
 import vm.javatools.Tools.MetricObjectArrayIterator;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.metricSpace.AbstractMetricSpacesStorage.OBJECT_TYPE;
-import vm.metricSpace.MainMemoryDatasetChache;
+import vm.metricSpace.MainMemoryDatasetCache;
 
 /**
  *
@@ -78,11 +78,11 @@ public class MetricObjectsParallelTransformerImpl {
                 throw new Error();
             }
             MetricObjectArrayIterator it = new MetricObjectArrayIterator(transformedMetricObjects);
-            MainMemoryDatasetChache cache = null;
+            MainMemoryDatasetCache cache = null;
             if (additionalParamsToStoreWithNewDataset.length != 0) {
                 for (Object param : additionalParamsToStoreWithNewDataset) {
-                    if (param instanceof MainMemoryDatasetChache) {
-                        cache = (MainMemoryDatasetChache) param;
+                    if (param instanceof MainMemoryDatasetCache) {
+                        cache = (MainMemoryDatasetCache) param;
                     }
                 }
             }
