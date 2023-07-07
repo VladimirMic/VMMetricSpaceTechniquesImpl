@@ -9,8 +9,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.javatools.Tools.MetricObjectArrayIterator;
-import vm.metricSpace.MetricSpacesStorageInterface;
-import vm.metricSpace.MetricSpacesStorageInterface.OBJECT_TYPE;
+import vm.metricSpace.AbstractMetricSpacesStorage;
+import vm.metricSpace.AbstractMetricSpacesStorage.OBJECT_TYPE;
+import vm.metricSpace.MainMemoryDatasetChache;
 
 /**
  *
@@ -22,10 +23,10 @@ public class MetricObjectsParallelTransformerImpl {
     private static final Logger LOG = Logger.getLogger(MetricObjectsParallelTransformerImpl.class.getName());
 
     private final MetricObjectTransformerInterface transformer;
-    private final MetricSpacesStorageInterface metricSpaceStorage;
+    private final AbstractMetricSpacesStorage metricSpaceStorage;
     private final String resultName;
 
-    public MetricObjectsParallelTransformerImpl(MetricObjectTransformerInterface transformer, MetricSpacesStorageInterface metricSpaceStorage, String resultName) {
+    public MetricObjectsParallelTransformerImpl(MetricObjectTransformerInterface transformer, AbstractMetricSpacesStorage metricSpaceStorage, String resultName) {
         this.transformer = transformer;
         this.metricSpaceStorage = metricSpaceStorage;
         this.resultName = resultName;
@@ -42,7 +43,8 @@ public class MetricObjectsParallelTransformerImpl {
         boolean first = true;
         while (itOverMetricObjects.hasNext()) {
             List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverMetricObjects);
-            processedObjects += processBatch(batch, objType, parallelisation, threadPool, first, additionalParamsToStoreWithNewDataset);
+            Object[] concatArrays = Tools.concatArrays(new Object[]{first}, additionalParamsToStoreWithNewDataset);
+            processedObjects += processBatch(batch, objType, parallelisation, threadPool, concatArrays);
 //            System.gc();
             LOG.log(Level.INFO, "Transformed and stored {0} metric objects", processedObjects);
             first = false;
@@ -76,19 +78,36 @@ public class MetricObjectsParallelTransformerImpl {
                 throw new Error();
             }
             MetricObjectArrayIterator it = new MetricObjectArrayIterator(transformedMetricObjects);
+            MainMemoryDatasetChache cache = null;
+            if (additionalParamsToStoreWithNewDataset.length != 0) {
+                for (Object param : additionalParamsToStoreWithNewDataset) {
+                    if (param instanceof MainMemoryDatasetChache) {
+                        cache = (MainMemoryDatasetChache) param;
+                    }
+                }
+            }
             switch (objType) {
                 case DATASET_OBJECT: {
                     metricSpaceStorage.storeObjectsToDataset(it, -1, resultName, additionalParamsToStoreWithNewDataset);
+                    if (cache != null) {
+                        cache.addAllDataObjects(transformedMetricObjects);
+                    }
                     break;
                 }
                 case PIVOT_OBJECT: {
                     List<Object> pivots = Tools.getObjectsFromIterator(it);
                     metricSpaceStorage.storePivots(pivots, resultName, additionalParamsToStoreWithNewDataset);
+                    if (cache != null) {
+                        cache.addPivots(transformedMetricObjects);
+                    }
                     break;
                 }
                 case QUERY_OBJECT: {
                     List<Object> queryObjects = Tools.getObjectsFromIterator(it);
                     metricSpaceStorage.storeQueryObjects(queryObjects, resultName, additionalParamsToStoreWithNewDataset);
+                    if (cache != null) {
+                        cache.addQueries(transformedMetricObjects);
+                    }
                     break;
                 }
             }

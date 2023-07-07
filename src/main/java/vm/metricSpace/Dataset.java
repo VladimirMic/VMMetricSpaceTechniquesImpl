@@ -15,7 +15,7 @@ public abstract class Dataset<T> {
     protected String datasetName;
 
     protected AbstractMetricSpace<T> metricSpace;
-    protected MetricSpacesStorageInterface metricSpacesStorage;
+    protected AbstractMetricSpacesStorage metricSpacesStorage;
 
     /**
      *
@@ -77,7 +77,7 @@ public abstract class Dataset<T> {
         return metricSpace;
     }
 
-    public MetricSpacesStorageInterface getMetricSpacesStorage() {
+    public AbstractMetricSpacesStorage getMetricSpacesStorage() {
         return metricSpacesStorage;
     }
 

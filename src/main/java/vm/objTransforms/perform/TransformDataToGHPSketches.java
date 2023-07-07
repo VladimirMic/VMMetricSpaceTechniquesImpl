@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.Dataset;
-import vm.metricSpace.MetricSpacesStorageInterface;
+import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.objTransforms.MetricObjectsParallelTransformerImpl;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
@@ -22,16 +22,16 @@ public class TransformDataToGHPSketches {
 
     private final Dataset dataset;
     private final GHPSketchingPivotPairsStoreInterface storageOfPivotPairs;
-    private final MetricSpacesStorageInterface storageForSketches;
+    private final AbstractMetricSpacesStorage storageForSketches;
     private final float balance;
     private final int pivotCount;
 
-    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, MetricSpacesStorageInterface storageForSketches) {
+    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches) {
         this(dataset, storageOfPivotPairs, storageForSketches, 0.5f, IMPLICIT_PIVOT_COUNT);
         LOG.log(Level.WARNING, "Using implicit pivot count {0}", IMPLICIT_PIVOT_COUNT);
     }
 
-    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, MetricSpacesStorageInterface storageForSketches, float balance, int pivotCount) {
+    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches, float balance, int pivotCount) {
         this.dataset = dataset;
         this.storageOfPivotPairs = storageOfPivotPairs;
         this.balance = balance;
@@ -39,11 +39,11 @@ public class TransformDataToGHPSketches {
         this.storageForSketches = storageForSketches;
     }
 
-    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths) {
-        return createSketchesForDatasetPivotsAndQueries(sketchesLengths, null);
+    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths, Object ... params) {
+        return createSketchesForDatasetPivotsAndQueries(sketchesLengths, null, params);
     }
 
-    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths, String[] sketchesPivotPairsNames) {
+    public AbstractObjectToSketchTransformator createSketchesForDatasetPivotsAndQueries(int[] sketchesLengths, String[] sketchesPivotPairsNames, Object ... params) {
         AbstractObjectToSketchTransformator sketchingTechnique = null;
         if (sketchesPivotPairsNames == null) {
             sketchesPivotPairsNames = new String[sketchesLengths.length];
@@ -63,9 +63,9 @@ public class TransformDataToGHPSketches {
             Iterator pivotsIt = dataset.getPivots(-1).iterator();
             Iterator queriesIt = dataset.getMetricQueryObjects().iterator();
             Iterator dataIt = dataset.getMetricObjectsFromDataset();
-            parallelTransformer.processIteratorSequentially(pivotsIt, MetricSpacesStorageInterface.OBJECT_TYPE.PIVOT_OBJECT);
-            parallelTransformer.processIteratorSequentially(queriesIt, MetricSpacesStorageInterface.OBJECT_TYPE.QUERY_OBJECT);
-            parallelTransformer.processIteratorInParallel(dataIt, MetricSpacesStorageInterface.OBJECT_TYPE.DATASET_OBJECT, vm.javatools.Tools.PARALELISATION);
+            parallelTransformer.processIteratorSequentially(pivotsIt, AbstractMetricSpacesStorage.OBJECT_TYPE.PIVOT_OBJECT, params);
+            parallelTransformer.processIteratorSequentially(queriesIt, AbstractMetricSpacesStorage.OBJECT_TYPE.QUERY_OBJECT, params);
+            parallelTransformer.processIteratorInParallel(dataIt, AbstractMetricSpacesStorage.OBJECT_TYPE.DATASET_OBJECT, vm.javatools.Tools.PARALELISATION, params);
         }
         return sketchingTechnique;
     }

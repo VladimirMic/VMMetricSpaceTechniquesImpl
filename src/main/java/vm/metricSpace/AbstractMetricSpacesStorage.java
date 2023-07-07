@@ -2,6 +2,7 @@ package vm.metricSpace;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
@@ -10,10 +11,10 @@ import vm.datatools.Tools;
  *
  * @author Vlada
  */
-public abstract class MetricSpacesStorageInterface {
+public abstract class AbstractMetricSpacesStorage {
 
-    private static final Logger LOG = Logger.getLogger(MetricSpacesStorageInterface.class.getName());
-
+    private static final Logger LOG = Logger.getLogger(AbstractMetricSpacesStorage.class.getName());
+    
     public static enum OBJECT_TYPE {
         DATASET_OBJECT,
         PIVOT_OBJECT,
