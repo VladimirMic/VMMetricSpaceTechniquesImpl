@@ -27,17 +27,17 @@ public class LearningSecondaryFilteringWithSketches<T> {
 
 ////    public static final float[] THRESHOLDS_P_CUM = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f};
 //    public static final float[] THRESHOLDS_P_CUM = new float[]{0.91f, 0.92f, 0.93f, 0.94f, 0.95f, 0.96f, 0.97f, 0.98f, 0.99f, 1};
-    public static final float[] THRESHOLDS_P_CUM = new float[]{1f};
+    public static final float[] THRESHOLDS_P_CUM = new float[]{0.95f};
     public static final Logger LOG = Logger.getLogger(LearningSecondaryFilteringWithSketches.class.getName());
 
     private final SecondaryFilteringWithSketchesStoreInterface storage;
     private final Dataset fullDataset;
     private final Dataset sketchesDataset;
     //iDim params
-//    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 10000;
-//    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000;
-    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
-    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
+    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 10000;
+    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000;
+//    public static final int SKETCHES_SAMPLE_COUNT_FOR_IDIM_PX = 1000000;
+//    public static final int DISTS_COMPS_FOR_SK_IDIM_AND_PX = 100000000;
     private final File fileOutputForIDim;
     //px params
     private final float distIntervalForPX;
