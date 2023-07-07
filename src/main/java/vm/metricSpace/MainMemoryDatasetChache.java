@@ -95,6 +95,10 @@ public class MainMemoryDatasetChache<T> extends Dataset<T> {
         if (!dataLoaded()) {
             return super.getSampleOfDataset(objCount);
         }
+        if (objCount > dataObjects.size()) {
+            LOG.log(Level.WARNING, "Just {0} are cached but {1} asked. Returning {0} objects", new Object[]{dataObjects.size(), objCount});
+            return dataObjects;
+        }
         return dataObjects.subList(0, objCount);
     }
 
