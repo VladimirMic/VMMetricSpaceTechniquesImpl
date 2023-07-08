@@ -21,6 +21,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class PxEvaluator {
 
+    public static final Logger LOG = Logger.getLogger(PxEvaluator.class.getName());
     private static final Integer IMPLICIT_MIN_BUCKET_SIZE = 20;
     private final int minNumberOfDistsPerBucket;
 
@@ -62,7 +63,8 @@ public class PxEvaluator {
             SortedMap<Float, Float> counts = initDistMapping(maxDist);
             ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
             if (sampleObjects.size() < 300000) {
-                distCount = 200000;
+                LOG.log(Level.INFO, "Small dataset. Going to evaluate just {0} dist sample instead of {1}", new Object[]{sampleObjects.size() * 10, distCount});
+                distCount = sampleObjects.size() * 10;
             }
             final int distComparisons = distCount;
             CountDownLatch latch = new CountDownLatch(distCount);
