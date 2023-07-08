@@ -53,14 +53,13 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     private final SimRelInterface<float[]> simRelFunc;
     private final int simRelMinK;
-    private final int simRelMaxK;
     private final Map<Object, float[]> pcaPrefixesMap;
 
     private final Map<Object, T> fullObjectsStorage;
 
     private final DistanceFunctionInterface<T> fullDF;
 
-    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, int simRelMaxK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, int datasetSize, DistanceFunctionInterface<T> fullDF) {
+    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, int datasetSize, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -68,7 +67,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         this.hammingSpaceForSketches = hammingSpaceForSketches;
         this.simRelFunc = simRelFunc;
         this.simRelMinK = simRelMinK;
-        this.simRelMaxK = simRelMaxK;
         this.pcaPrefixesMap = pcaPrefixesMap;
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
@@ -239,9 +237,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             mapOfData.put(idOfO, oData);
             return true;
         }
-        if (ansOfSimRel.size() > simRelMaxK) {
-            deleteIndexes(ansOfSimRel, k, null, mapOfData);
-        }
         int idxWhereAdd = Integer.MAX_VALUE;
         List<Integer> indexesToRemove = new ArrayList<>();
         for (int i = ansOfSimRel.size() - 1; i >= 0; i--) {
@@ -285,14 +280,6 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
                 ret.remove(id);
                 indexesToRemove.remove(0);
             }
-        }
-        while (ret.size() >= simRelMaxK) {
-            Object id = ret.get(ret.size() - 1);
-//            if (ANSWER != null && ANSWER.contains(id)) {
-//                String s = "";
-//            }
-            retData.remove(id);
-            ret.remove(id);
         }
     }
 
