@@ -78,6 +78,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
             count = pivots.size();
         }
         if (count > pivots.size() && pivotsLoaded()) {
+        LOG.log(Level.WARNING, "Just {0} pivots found. They are returned", pivots.size());
             count = pivots.size();
         }
         LOG.log(Level.INFO, "Provided {0} pivots from the cache main memory", count);
