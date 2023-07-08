@@ -75,7 +75,10 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     @Override
     public List<Object> getPivots(int count) {
         if (count < 0) {
-            count = this.pivots.size();
+            count = pivots.size();
+        }
+        if (count > pivots.size() && pivotsLoaded()) {
+            count = pivots.size();
         }
         LOG.log(Level.INFO, "Provided {0} pivots from the cache main memory", count);
         return Collections.unmodifiableList(pivots.subList(0, count));
