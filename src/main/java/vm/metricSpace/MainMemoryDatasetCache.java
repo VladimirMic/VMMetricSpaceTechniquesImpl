@@ -147,16 +147,19 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     public void unloadPivots() {
         LOG.log(Level.INFO, "Going to delete {0} pivots from the cache main memory", this.pivots.size());
         pivots.clear();
+        System.gc();
     }
 
     public void unloadQueries() {
         LOG.log(Level.INFO, "Going to delete {0} query objects from the cache main memory", this.queries.size());
         queries.clear();
+        System.gc();
     }
 
     public void unloadDataObjets() {
         LOG.log(Level.INFO, "Going to delete {0} data objects from the cache main memory", this.dataObjects.size());
         dataObjects.clear();
+        System.gc();
     }
 
 }
