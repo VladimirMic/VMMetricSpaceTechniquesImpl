@@ -86,7 +86,7 @@ public class LearningSecondaryFilteringWithSketches<T> {
         DistanceFunctionInterface hammingDF = sketchesDataset.getDistanceFunction();
         int numberOfDists = DISTS_COMPS_FOR_SK_IDIM_AND_PX;
         if (sketches.size() <= 300000) {
-            numberOfDists = sketches.size();
+            numberOfDists = sketches.size() * 10;
         }
         while (i < numberOfDists) {
             Object sk1 = sketches.get(r.nextInt(sketches.size()));
