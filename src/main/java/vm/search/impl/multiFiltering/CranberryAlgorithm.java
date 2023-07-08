@@ -38,7 +38,8 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer QUERIES_PARALELISM = (int) (Runtime.getRuntime().availableProcessors() / 3f);
-    public static final Integer MAX_DIST_COMPS = 1150;
+    public static final Integer IMPLICIT_MAX_DIST_COMPS = 1150;
+    private final Integer maxDistComps;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
@@ -70,6 +71,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         this.pcaPrefixesMap = pcaPrefixesMap;
         this.fullObjectsStorage = fullObjectsStorage;
         this.fullDF = fullDF;
+        maxDistComps = datasetSize >= 300000 ? IMPLICIT_MAX_DIST_COMPS : 500;
     }
 //    private Set<String> ANSWER = null;
 
@@ -142,7 +144,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        }
         Set checkedIDs = new HashSet();
 
-        while (!mapOfCandSetsIdxsToCurHamDist.isEmpty() && distComps < MAX_DIST_COMPS) {
+        while (!mapOfCandSetsIdxsToCurHamDist.isEmpty() && distComps < maxDistComps) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
             mapOfCandSetsIdxsToCurHamDist.remove(candSetRunIndexAndHamDist);
 
@@ -365,6 +367,10 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public int getDatasetSize() {
         return sketchSecondaryFilter.getNumberOfSketches();
+    }
+
+    public Integer getMaxDistComps() {
+        return maxDistComps;
     }
 
 }
