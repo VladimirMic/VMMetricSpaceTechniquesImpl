@@ -39,7 +39,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer QUERIES_PARALELISM = (int) (Runtime.getRuntime().availableProcessors() / 3f);
     public static final Integer IMPLICIT_MAX_DIST_COMPS = 1150;
-    private final Integer maxDistComps;
+    private final int maxDistComps;
     public static final Boolean STORE_RESULTS = true;
 
     private static final Logger LOG = Logger.getLogger(VorSkeSim.class.getName());
