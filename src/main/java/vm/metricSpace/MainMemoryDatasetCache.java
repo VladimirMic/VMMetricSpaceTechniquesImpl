@@ -144,4 +144,16 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         addAllDataObjects(it);
     }
 
+    public void unloadPivots() {
+        pivots.clear();
+    }
+
+    public void unloadQueries() {
+        queries.clear();
+    }
+
+    public void unloadDataObjets() {
+        dataObjects.clear();
+    }
+
 }
