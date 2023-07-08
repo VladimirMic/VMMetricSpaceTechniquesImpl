@@ -326,13 +326,11 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
             Object qID = metricSpace.getIDOfMetricObject(queryObject);
-            Object pcaQueryObject = pcaQMap.get(qID);
-            Object pcaQData = pcaDatasetMetricSpace.getDataOfMetricObject(pcaQueryObject);
+            final Object pcaQueryObject = pcaQMap.get(qID);
             int iFinal = i;
             threadPool.execute(() -> {
                 long tQ = -System.currentTimeMillis();
-                AbstractMap.SimpleEntry pcaQ = new AbstractMap.SimpleEntry(qID, pcaQData);
-                ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQ);
+                ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQueryObject);
                 tQ += System.currentTimeMillis();
                 timesPerQueries.put(qID, new AtomicLong(tQ));
                 latch.countDown();
