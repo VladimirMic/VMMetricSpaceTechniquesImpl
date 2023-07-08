@@ -323,7 +323,9 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             queriesCount = queryObjects.size();
         }
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(QUERIES_PARALELISM);
+        int datasetSize = getDatasetSize();
+        int paralelism = datasetSize >= 300000 ? QUERIES_PARALELISM : 1;
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(paralelism);
         CountDownLatch latch = new CountDownLatch(queriesCount);
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
