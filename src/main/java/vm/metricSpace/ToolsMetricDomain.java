@@ -23,9 +23,9 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vlada
  */
 public class ToolsMetricDomain {
-    
+
     private static final Logger LOG = Logger.getLogger(ToolsMetricDomain.class.getName());
-    
+
     public static float[][] transformMetricObjectsToVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] first = metricSpace.getDataOfMetricObject(metricObjects.get(0));
         float[][] ret = new float[metricObjects.size()][first.length];
@@ -35,7 +35,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
+
     public static float[][] transformMetricObjectsToTransposedVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] vec = metricSpace.getDataOfMetricObject(metricObjects.get(0));
         float[][] ret = new float[vec.length][metricObjects.size()];
@@ -106,7 +106,7 @@ public class ToolsMetricDomain {
         }
         return histogram;
     }
-    
+
     public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances, float basicInterval) {
         SortedMap<Float, Float> histogram = new TreeMap<>();
         for (float distance : distances) {
@@ -142,7 +142,7 @@ public class ToolsMetricDomain {
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Collection<Object> metricObjects, boolean valuesAsMetricObjectData) {
         return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator(), valuesAsMetricObjectData);
     }
-    
+
     public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects, boolean valuesAsMetricObjectData) {
         Map<Object, Object> ret = new HashMap();
         long t = -System.currentTimeMillis();
@@ -159,7 +159,7 @@ public class ToolsMetricDomain {
         LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
         return ret;
     }
-    
+
     public static Object[] getData(Object[] objects, AbstractMetricSpace metricSpace) {
         Object[] ret = new Object[objects.length];
         for (int i = 0; i < ret.length; i++) {
@@ -167,7 +167,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
+
     public static Set<Object> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
         Set<Object> ret = new HashSet<>();
         for (int i = 1; objects.hasNext(); i++) {
@@ -179,7 +179,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
+
     public static List<Object> getIDsAsList(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
         List<Object> ret = new ArrayList<>();
         for (int i = 1; objects.hasNext(); i++) {
@@ -191,11 +191,11 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
-    public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength) {
+
+    public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
         Object referentData = metricSpace.getDataOfMetricObject(referent);
-        return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength);
+        return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength, distsToPivotsStorage);
     }
 
     /**
@@ -204,13 +204,19 @@ public class ToolsMetricDomain {
      * @param pivotsMap
      * @param referentData
      * @param prefixLength
+     * @param distsToPivotsStorage
      * @return ids of the closest pivots
      */
-    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
+    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
         TreeSet<Map.Entry<Object, Float>> map = getPivotIDsPermutationWithDists(df, pivotsMap, referentData, prefixLength);
+        if (distsToPivotsStorage != null) {
+            for (Map.Entry<Object, Float> entry : map) {
+                distsToPivotsStorage.put(entry.getKey(), entry.getValue());
+            }
+        }
         Object[] ret = new Object[Math.min(pivotsMap.size(), prefixLength)];
         Iterator<Map.Entry<Object, Float>> it = map.iterator();
         for (int i = 0; it.hasNext() && i < prefixLength; i++) {
@@ -219,7 +225,7 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
+
     public static TreeSet<Map.Entry<Object, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
         for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
@@ -229,5 +235,5 @@ public class ToolsMetricDomain {
         }
         return ret;
     }
-    
+
 }

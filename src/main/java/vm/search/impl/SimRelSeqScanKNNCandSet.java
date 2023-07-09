@@ -40,7 +40,7 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects, Object ... additionalParams) {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             euclid.resetEarlyStopsOnCoordsCounts();

@@ -188,7 +188,7 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object ... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -189,11 +189,27 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
         Object oID = metricSpace.getIDOfMetricObject(obj);
         Object oData = metricSpace.getDataOfMetricObject(obj);
         BitSet sketch = new BitSet(pivots.length / 2);
+        Map<Object, Float> precomputedDists = null;
+        if (params[0] instanceof Map) {
+            precomputedDists = (Map<Object, Float>) params[0];
+        }
         for (int i = 0; i < pivots.length; i += 2) {
             Object p1Data = metricSpace.getDataOfMetricObject(pivots[i]);
             Object p2Data = metricSpace.getDataOfMetricObject(pivots[i + 1]);
-            float d1 = distanceFunc.getDistance(oData, p1Data);
-            float d2 = distanceFunc.getDistance(oData, p2Data);
+            Object p1Id = metricSpace.getIDOfMetricObject(pivots[i]);
+            Object p2Id = metricSpace.getIDOfMetricObject(pivots[i + 1]);
+            float d1;
+            if (precomputedDists != null && precomputedDists.containsKey(p1Id)) {
+                d1 = precomputedDists.get(p1Id);
+            } else {
+                d1 = distanceFunc.getDistance(oData, p1Data);
+            }
+            float d2;
+            if (precomputedDists != null && precomputedDists.containsKey(p2Id)) {
+                d2 = precomputedDists.get(p2Id);
+            } else {
+                d2 = distanceFunc.getDistance(oData, p2Data);
+            }
             if (d1 > d2) {
                 sketch.set(i / 2);
             }

@@ -48,12 +48,19 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
      * @param fullQueryObject
      * @param k maximum size - never returnes bigger answer
      * @param ignored ignored!
+     * @param additionalParams
      * @return
      */
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> ignored) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> ignored, Object... additionalParams) {
         T qData = metricSpace.getDataOfMetricObject(fullQueryObject);
-        Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1);
+        Map<Object, Float> distsToPivots = null;
+        for (Object param : additionalParams) {
+            if (param instanceof Map) {
+                distsToPivots = (Map<Object, Float>) param;
+            }
+        }
+        Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
         List<Object> ret = new ArrayList<>();
         int idxOfNext = 0;
         TreeSet<Object> nextCell = null;

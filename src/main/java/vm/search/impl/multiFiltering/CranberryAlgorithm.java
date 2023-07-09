@@ -38,7 +38,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer QUERIES_PARALELISM = (int) (Runtime.getRuntime().availableProcessors() / 3f);
-    public static final Integer IMPLICIT_MAX_DIST_COMPS = 1150;
+    public static final Integer IMPLICIT_MAX_DIST_COMPS = 800;
     private final int maxDistComps;
     public static final Boolean STORE_RESULTS = true;
 
@@ -105,7 +105,8 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         // actual query evaluation
         // first phase: voronoi
 //        long t1 = -System.currentTimeMillis();
-        List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
+        Map<Object, Float> distsQP = new HashMap();
+        List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null, distsQP);
 //        t1 += System.currentTimeMillis();
 
         // simRel preparation
@@ -115,7 +116,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
         // sketch preparation
 //        long t2 = -System.currentTimeMillis();
-        Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
+        Object qSketch = sketchingTechnique.transformMetricObject(fullQ, distsQP);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
 //        t2 += System.currentTimeMillis();
         float range = Float.MAX_VALUE;
@@ -307,7 +308,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object ... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

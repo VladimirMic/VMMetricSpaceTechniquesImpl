@@ -95,7 +95,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public List candSetKnnSearch(AbstractMetricSpace hammingMetricSpace, Object skQ, int k, Iterator objects) {
+    public List candSetKnnSearch(AbstractMetricSpace hammingMetricSpace, Object skQ, int k, Iterator objects, Object ... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
