@@ -190,7 +190,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
         Object oData = metricSpace.getDataOfMetricObject(obj);
         BitSet sketch = new BitSet(pivots.length / 2);
         Map<Object, Float> precomputedDists = null;
-        if (params[0] instanceof Map) {
+        if (params.length != 0 && params[0] instanceof Map) {
             precomputedDists = (Map<Object, Float>) params[0];
         }
         for (int i = 0; i < pivots.length; i += 2) {
