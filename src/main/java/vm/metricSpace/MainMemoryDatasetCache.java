@@ -173,9 +173,9 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         private final Object[] array;
 
         public VMArrayMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects) {
-            List<Object> list = new ArrayList<>();
-            for (int i = 1; metricObjects.hasNext(); i++) {
-                Object metricObject = metricObjects.next();
+            List<Object> list = Tools.getObjectsFromIterator(metricObjects);
+            for (int i = 0; i < list.size(); i++) {
+                Object metricObject = list.get(i);
                 Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
                 Object value = metricSpace.getDataOfMetricObject(metricObject);
                 int idx = Integer.parseInt(idOfMetricObject.toString());
@@ -183,8 +183,8 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
                     throw new Error("The array already contains the value with key " + idx);
                 }
                 list.add(idx, value);
-                if (i % 100000 == 0) {
-                    LOG.log(Level.INFO, "Loaded {0} objects into map", i);
+                if ((i + 1) % 100000 == 0) {
+                    LOG.log(Level.INFO, "Loaded {0} objects into map", i + 1);
                 }
             }
             Object[] ret = new Object[0];
