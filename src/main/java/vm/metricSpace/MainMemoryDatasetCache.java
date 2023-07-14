@@ -6,10 +6,12 @@ package vm.metricSpace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
@@ -126,7 +128,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         if (!dataLoaded()) {
             loadAllDataObjets();
         }
-        Map<Object, Object> ret = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, getMetricObjectsFromDataset(), true);
+        VMArrayMap ret = new VMArrayMap(metricSpace, getMetricObjectsFromDataset());
         LOG.log(Level.INFO, "Returning the cached map of objects from the main memory. Size: {0} objects.", ret.size());
         return ret;
     }
@@ -165,5 +167,108 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         dataObjects.clear();
         System.gc();
     }
+
+    private class VMArrayMap implements Map<Object, Object> {
+
+        private final Object[] array;
+
+        public VMArrayMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects) {
+            List<Object> list = new ArrayList<>();
+            for (int i = 1; metricObjects.hasNext(); i++) {
+                Object metricObject = metricObjects.next();
+                Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
+                Object value = metricSpace.getDataOfMetricObject(metricObject);
+                int idx = Integer.parseInt(idOfMetricObject.toString());
+                if (list.size() >= idx && list.get(idx) != null) {
+                    throw new Error("The array already contains the value with key " + idx);
+                }
+                list.add(idx, value);
+                if (i % 100000 == 0) {
+                    LOG.log(Level.INFO, "Loaded {0} objects into map", i);
+                }
+            }
+            Object[] ret = new Object[0];
+            array = list.toArray(ret);
+            LOG.log(Level.INFO, "Finished loading map of size {0} objects", list.size());
+        }
+
+        @Override
+        public int size() {
+            return array.length;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return size() == 0;
+        }
+
+        private int getKeyAsIdx(Object key) {
+            int id;
+            if (key instanceof String) {
+                id = Integer.parseInt(key.toString());
+            } else if (!(key instanceof Long) && !(key instanceof Integer)) {
+                return -1;
+            } else {
+                id = (int) key;
+            }
+            return id;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            int id = getKeyAsIdx(key);
+            return id > 0 && id <= size();
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Object get(Object key) {
+            int id = getKeyAsIdx(key);
+            if (id > 0 && id <= size()) {
+                return array[id];
+            }
+            return null;
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public T remove(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void putAll(java.util.Map m) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Set keySet() {
+            System.out.println("Minimum is 0, maximum is " + size() + ". Use row index as the key");
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Collection values() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Set entrySet() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    };
 
 }
