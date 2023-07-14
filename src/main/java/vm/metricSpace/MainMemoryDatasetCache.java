@@ -173,21 +173,20 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         private final Object[] array;
 
         public VMArrayMap(AbstractMetricSpace metricSpace, List<Object> metricObjects) {
+            array = new Object[metricObjects.size()];
             for (int i = 0; i < metricObjects.size(); i++) {
                 Object metricObject = metricObjects.get(i);
                 Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
                 Object value = metricSpace.getDataOfMetricObject(metricObject);
-                int idx = Integer.parseInt(idOfMetricObject.toString());
-                if (metricObjects.size() >= idx && metricObjects.get(idx) != null) {
+                int idx = Integer.parseInt(idOfMetricObject.toString()) - 1;
+                if (array.length < idx || array[idx] != null) {
                     throw new Error("The array already contains the value with key " + idx);
                 }
-                metricObjects.add(idx, value);
+                array[idx] = value;
                 if ((i + 1) % 100000 == 0) {
                     LOG.log(Level.INFO, "Loaded {0} objects into map", i + 1);
                 }
             }
-            Object[] ret = new Object[0];
-            array = metricObjects.toArray(ret);
             LOG.log(Level.INFO, "Finished loading map of size {0} objects", metricObjects.size());
         }
 
@@ -210,7 +209,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
             } else {
                 id = (int) key;
             }
-            return id;
+            return id - 1;
         }
 
         @Override
@@ -227,7 +226,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         @Override
         public Object get(Object key) {
             int id = getKeyAsIdx(key);
-            if (id > 0 && id <= size()) {
+            if (id >= 0 && id < size()) {
                 return array[id];
             }
             return null;
