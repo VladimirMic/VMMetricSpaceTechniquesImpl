@@ -128,7 +128,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         if (!dataLoaded()) {
             loadAllDataObjets();
         }
-        VMArrayMap ret = new VMArrayMap(metricSpace, getMetricObjectsFromDataset());
+        VMArrayMap ret = new VMArrayMap(metricSpace, dataObjects);
         LOG.log(Level.INFO, "Returning the cached map of objects from the main memory. Size: {0} objects.", ret.size());
         return ret;
     }
@@ -172,24 +172,23 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
 
         private final Object[] array;
 
-        public VMArrayMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects) {
-            List<Object> list = Tools.getObjectsFromIterator(metricObjects);
-            for (int i = 0; i < list.size(); i++) {
-                Object metricObject = list.get(i);
+        public VMArrayMap(AbstractMetricSpace metricSpace, List<Object> metricObjects) {
+            for (int i = 0; i < metricObjects.size(); i++) {
+                Object metricObject = metricObjects.get(i);
                 Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
                 Object value = metricSpace.getDataOfMetricObject(metricObject);
                 int idx = Integer.parseInt(idOfMetricObject.toString());
-                if (list.size() >= idx && list.get(idx) != null) {
+                if (metricObjects.size() >= idx && metricObjects.get(idx) != null) {
                     throw new Error("The array already contains the value with key " + idx);
                 }
-                list.add(idx, value);
+                metricObjects.add(idx, value);
                 if ((i + 1) % 100000 == 0) {
                     LOG.log(Level.INFO, "Loaded {0} objects into map", i + 1);
                 }
             }
             Object[] ret = new Object[0];
-            array = list.toArray(ret);
-            LOG.log(Level.INFO, "Finished loading map of size {0} objects", list.size());
+            array = metricObjects.toArray(ret);
+            LOG.log(Level.INFO, "Finished loading map of size {0} objects", metricObjects.size());
         }
 
         @Override
