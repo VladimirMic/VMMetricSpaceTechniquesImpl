@@ -236,4 +236,21 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static List<Object> getPrefixesOfVectors(AbstractMetricSpace metricSpace, List<Object> vectors, int finalDimensions) {
+        List<Object> ret = new ArrayList<>();
+        for (Object obj : vectors) {
+            Object oData = metricSpace.getDataOfMetricObject(obj);
+            Object oID = metricSpace.getIDOfMetricObject(obj);
+            Object vec = null;
+            if (oData instanceof float[]) {
+                vec = new float[finalDimensions];
+            } else if (oData instanceof double[]) {
+                vec = new double[finalDimensions];
+            }
+            System.arraycopy(oData, 0, vec, 0, finalDimensions);
+            ret.add(new AbstractMap.SimpleEntry<>(oID, vec));
+        }
+        return ret;
+    }
+
 }
