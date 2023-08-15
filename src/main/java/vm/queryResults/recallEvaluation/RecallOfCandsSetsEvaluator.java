@@ -33,9 +33,6 @@ public class RecallOfCandsSetsEvaluator {
         Map<String, Float> ret = new HashMap<>();
         Set<String> queryIDs = groundTruthForDataset.keySet();
         for (String queryID : queryIDs) {
-            if (!groundTruthForDataset.containsKey(queryID)) {
-                Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the ground truth", queryID);
-            }
             if (!candidateSets.containsKey(queryID)) {
                 Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the candidates", queryID);
             }
