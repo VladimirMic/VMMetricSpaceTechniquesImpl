@@ -38,7 +38,7 @@ import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public static final Integer QUERIES_PARALELISM = (int) (Runtime.getRuntime().availableProcessors() / 3f);
-    public static final Integer IMPLICIT_MAX_DIST_COMPS = 800;
+    public static final Integer IMPLICIT_MAX_DIST_COMPS = 1100;
     private final int maxDistComps;
     public static final Boolean STORE_RESULTS = true;
 
