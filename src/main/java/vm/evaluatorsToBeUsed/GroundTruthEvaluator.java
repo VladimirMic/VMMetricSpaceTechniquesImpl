@@ -77,6 +77,7 @@ public class GroundTruthEvaluator {
             queryResults = processBatch(batch, queryResults, threadPool);
             counter += batch.size();
             LOG.log(Level.INFO, "Evaluated queries for {0} objects from the dataset", counter);
+            System.gc();
         }
         if (storage != null) {
             String datasetName = null;
