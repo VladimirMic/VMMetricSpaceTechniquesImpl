@@ -72,7 +72,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             int oIdx = rowHeaders.get(oId.toString());
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
-            float distanceCheck = df.getDistance(qData, oData);
+//            float distanceCheck = df.getDistance(qData, oData);;
             if (range < Float.MAX_VALUE) {
                 for (int p = 0; p < pivotIDs.length; p++) {
                     PRINT_DETAILS = false;
@@ -92,27 +92,33 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
                     float distP1O = poDists[oIdx][p1];
                     float distP2Q = qpDists[p2];
                     float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-                    if (distanceCheck < lowerBound) {
-                        PRINT_DETAILS = false;
-//                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
-                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-                    }
+//                    if (distanceCheck < lowerBound) {
+//                        PRINT_DETAILS = false;
+////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
+//                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+//                    }
                     if (lowerBound > range) {
-                        skip = true;
-                        break;
-                    }
-                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-                    if (distanceCheck > upperBound) {
+                        PRINT_DETAILS = true;
+                        if (PRINT_DETAILS) {
+                            System.out.println("Skipped. Radius: " + range + ", lb: " + lowerBound);
+                            filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+                        }
                         PRINT_DETAILS = false;
-//                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
-                        upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-                    }
-                    if (upperBound < range) {
                         skip = true;
-                        float distance = df.getDistance(qData, oData);
-                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
                         break;
                     }
+//                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+//                    if (distanceCheck > upperBound) {
+//                        PRINT_DETAILS = false;
+////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
+//                        upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+//                    }
+//                    if (upperBound < range) {
+//                        skip = true;
+//                        float distance = df.getDistance(qData, oData);
+//                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+//                        break;
+//                    }
                 }
             }
             if (skip) {
@@ -130,7 +136,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object ... additionalParams) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

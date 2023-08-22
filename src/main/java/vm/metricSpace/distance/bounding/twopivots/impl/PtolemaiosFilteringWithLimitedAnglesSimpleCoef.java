@@ -15,7 +15,7 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
     private final Map<String, float[]> coefs;
     private static final Logger LOGGER = Logger.getLogger(PtolemaiosFilteringWithLimitedAnglesSimpleCoef.class.getName());
     public static final Integer CONSTANT_FOR_PRECISION = 10000;
-    public static final Float RATIO_OF_OUTLIERS_TO_CUT = 0.0f / 100f; // percentile defining the minimum and the maximum. I.e., 2 times this is ignored.
+    public static final Float RATIO_OF_IGNORED_SMALLEST = 0.0f / 100f; // percentile defining the minimum and the maximum. I.e., 2 times this is ignored.
     public static final Integer NUMBER_OF_TETRAHEDRONS_FOR_LEARNING = 40000000;
 
     public PtolemaiosFilteringWithLimitedAnglesSimpleCoef(String namePrefix, Map<String, float[]> coefs) {
@@ -28,20 +28,30 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
         float lb1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 0) / CONSTANT_FOR_PRECISION;
         float lb2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 2);
         if (PRINT_DETAILS) {
-            System.out.println("lb1;" + lb1 + ";lb2;" + lb2 + ";");
+            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
+            if (lb1 > lb2) {
+                System.out.println(1);
+            } else {
+                System.out.println(2);
+            }
         }
         return Math.max(lb1, lb2);
     }
 
     @Override
     public float upperBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID) {
-//        return Float.MAX_VALUE;
-        float ub1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 1) / CONSTANT_FOR_PRECISION;
-        float ub2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 3);
-        if (PRINT_DETAILS) {
-            System.out.println("ub1;" + ub1 + ";ub2;" + ub2 + ";");
-        }
-        return Math.min(ub1, ub2);
+        return Float.MAX_VALUE;
+//        float ub1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 1) / CONSTANT_FOR_PRECISION;
+//        float ub2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 3);
+//        if (PRINT_DETAILS) {
+//            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
+//            if (ub1 < ub2) {
+//                System.out.println(1);
+//            } else {
+//                System.out.println(2);
+//            }
+//        }
+//        return Math.min(ub1, ub2);
     }
 
     private float returnBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID, int index) {
