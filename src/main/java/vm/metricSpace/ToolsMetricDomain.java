@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.math.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.metricSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
 /**
  *
@@ -251,6 +252,38 @@ public class ToolsMetricDomain {
             ret.add(new AbstractMap.SimpleEntry<>(oID, vec));
         }
         return ret;
+    }
+
+    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator metricObjectsFromDataset, List pivots, AbstractMetricSpace metricSpace, DistanceFunctionInterface df) {
+        List<float[]> dists = new ArrayList<>();
+        Map<String, Integer> columnHeaders = new HashMap<>();
+        Map<String, Integer> rowHeaders = new HashMap<>();
+        for (int i = 0; i < pivots.size(); i++) {
+            Object p = pivots.get(i);
+            Object pID = metricSpace.getIDOfMetricObject(p);
+            columnHeaders.put(pID.toString(), i);
+        }
+        int rowCounter;
+        for (rowCounter = 0; metricObjectsFromDataset.hasNext(); rowCounter++) {
+            Object o = metricObjectsFromDataset.next();
+            Object oID = metricSpace.getIDOfMetricObject(o);
+            Object oData = metricSpace.getDataOfMetricObject(o);
+            rowHeaders.put(oID.toString(), rowCounter);
+            float[] row = new float[pivots.size()];
+            for (int i = 0; i < pivots.size(); i++) {
+                Object p = pivots.get(i);
+                Object pData = metricSpace.getDataOfMetricObject(p);
+                row[i] = df.getDistance(oData, pData);
+            }
+            dists.add(row);
+            if (rowCounter % 50000 == 0) {
+                LOG.log(Level.INFO, "Evaluated dists between {0} o and {1} pivots", new Object[]{rowCounter, pivots.size()});
+            }
+        }
+        float[][] ret = new float[dists.size()][pivots.size()];
+        ret = dists.toArray(ret);
+        MainMemoryStoredPrecomputedDistances pd = new MainMemoryStoredPrecomputedDistances(ret, columnHeaders, rowHeaders);
+        return pd;
     }
 
 }

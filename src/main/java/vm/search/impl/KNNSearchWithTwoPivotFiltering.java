@@ -32,12 +32,21 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     private final Map<String, Integer> columnHeaders;
     private final float[][] pivotPivotDists;
     private final DistanceFunctionInterface<T> df;
+    private final boolean pivotPairsFromFilter;
 
     public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
+        this(metricSpace, filter, pivots, poDists, rowHeaders, columnHeaders, pivotPivotDists, df, false);
+    }
+
+    public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df, boolean createAllPivotPairs) {
         this.filter = filter;
+        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);// correct!
+        this.pivotPairsFromFilter = createAllPivotPairs;
+        if (createAllPivotPairs) {
+            pivots = Tools.createAllPairs(pivots);
+        }
         List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
         this.pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
-        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
         this.pivotPivotDists = pivotPivotDists;
         this.df = df;
@@ -62,6 +71,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             qpDists[i] = df.getDistance(qData, pData);
         }
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
+        int step = pivotPairsFromFilter ? 2 : 1;
         while (objects.hasNext()) {
             boolean skip = false;
             Object o = objects.next();
@@ -74,7 +84,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             float range = adjustAndReturnSearchRadius(ret, k);
 //            float distanceCheck = df.getDistance(qData, oData);;
             if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotIDs.length; p++) {
+                for (int p = 0; p < pivotIDs.length; p += step) {
                     PRINT_DETAILS = false;
                     String p1ID = pivotIDs[p];
                     String p2ID = pivotIDs[(p + 1) % pivotIDs.length];
@@ -98,12 +108,12 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
 //                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                    }
                     if (lowerBound > range) {
-                        PRINT_DETAILS = true;
-                        if (PRINT_DETAILS) {
-                            System.out.println("Skipped. Radius: " + range + ", lb: " + lowerBound);
-                            filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-                        }
-                        PRINT_DETAILS = false;
+//                        PRINT_DETAILS = true;
+//                        if (PRINT_DETAILS) {
+//                            System.out.println("Skipped. Radius: " + range + ", lb: " + lowerBound);
+//                            filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+//                        }
+//                        PRINT_DETAILS = false;
                         skip = true;
                         break;
                     }

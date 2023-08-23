@@ -61,6 +61,9 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
         double ef = distP1O * distP2Q;
         double bd = distQP1 * distP2O;
         double fraction = Math.abs(bd + signum * ef) / a;
+        if (PRINT_DETAILS && signum < 0) {
+            System.out.println(a + ";" + distP1O + ";" + distP2O + ";" + distQP1 + ";" + distP2Q + ";;;" + bd + ";" + ef + ";;;" + fraction + ";" + coef);
+        }
         return (float) (coef * fraction);
     }
 
