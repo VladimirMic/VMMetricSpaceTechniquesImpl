@@ -286,4 +286,19 @@ public class ToolsMetricDomain {
         return pd;
     }
 
+    public static Map<Object, Float> getVectorsLength(List batch, AbstractMetricSpace metricSpace) {
+        Map<Object, Float> ret = new HashMap<>();
+        for (Object object : batch) {
+            Object id = metricSpace.getIDOfMetricObject(object);
+            float length = 0;
+            float[] vector = (float[]) metricSpace.getDataOfMetricObject(object); // must be the space of floats
+            for (int i = 0; i < vector.length; i++) {
+                float f = vector[i];
+                length += f * f;
+            }
+            ret.put(id, length);
+        }
+        return ret;
+    }
+
 }
