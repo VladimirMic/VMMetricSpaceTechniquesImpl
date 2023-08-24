@@ -301,4 +301,32 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static final float[] getPairwiseDistsOfFourObjects(DistanceFunctionInterface df, boolean enforceEFgeqBD, Object... fourObjects) {
+        if (fourObjects.length < 4) {
+            throw new IllegalArgumentException("At least four objects must be provided");
+        }
+        float[] ret = new float[6];
+        ret[4] = df.getDistance(fourObjects[0], fourObjects[2]);
+        ret[5] = df.getDistance(fourObjects[1], fourObjects[3]);
+        for (int i = 0; i < 6; i++) {
+            if (i < 4) {
+                ret[i] = df.getDistance(fourObjects[i], fourObjects[(i + 1) % 4]);
+            }
+            if (ret[i] == 0) {
+                return null;
+            }
+        }
+        if (enforceEFgeqBD && ret[4] * ret[5] < ret[1] * ret[3]) {
+            float b = ret[4];
+            float d = ret[5];
+            float e = ret[1];
+            float f = ret[3];
+            ret[1] = b;
+            ret[3] = d;
+            ret[4] = e;
+            ret[5] = f;
+        }
+        return ret;
+    }
+
 }

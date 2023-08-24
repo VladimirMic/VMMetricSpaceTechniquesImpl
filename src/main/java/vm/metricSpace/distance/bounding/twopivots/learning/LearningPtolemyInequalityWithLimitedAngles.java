@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.distEstimation.limitedAngles.foursome.ToolsPtolemaionsLikeCoefs;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -103,7 +102,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
             fourObjects[3] = metricObjectsAsIdObjectMap.get(qoIDs[1]);
             fourObjectsData[2] = metricSpace.getDataOfMetricObject(fourObjects[2]);
             fourObjectsData[3] = metricSpace.getDataOfMetricObject(fourObjects[3]);
-            float[] sixDists = ToolsPtolemaionsLikeCoefs.getPairwiseDistsOfFourObjects(df, true, fourObjectsData);
+            float[] sixDists = ToolsMetricDomain.getPairwiseDistsOfFourObjects(df, true, fourObjectsData);
             if (sixDists == null || Tools.isZeroInArray(sixDists)) {
                 continue;
             }
