@@ -11,8 +11,8 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.voronoiPartitioning.StorageLearnedVoronoiPartitioningInterface;
 import vm.search.SearchingAlgorithm;
+import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 
 /**
  *
@@ -27,13 +27,13 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     private final DistanceFunctionInterface<T> df;
     private final Map<Object, TreeSet<Object>> voronoiPartitioning;
 
-    public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractMetricSpace<T> metricSpace, StorageLearnedVoronoiPartitioningInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
+    public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractMetricSpace<T> metricSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
         pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
         this.df = df;
         voronoiPartitioning = voronoiPartitioningStorage.load(datasetName, pivotCountUsedForVoronoiLearning);
     }
 
-    public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageLearnedVoronoiPartitioningInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
+    public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
         this(dataset.getPivots(pivotCountUsedForVoronoiLearning), dataset.getDistanceFunction(), dataset.getDatasetName(), dataset.getMetricSpace(), voronoiPartitioningStorage, pivotCountUsedForVoronoiLearning);
     }
 

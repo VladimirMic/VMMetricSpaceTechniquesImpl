@@ -1,4 +1,4 @@
-package vm.metricSpace.voronoiPartitioning;
+package vm.metricSpace.datasetPartitioning.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,14 +14,16 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
+import vm.metricSpace.datasetPartitioning.DatasetPartitioningInterface;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.impl.CosineDistance;
+import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 
 /**
  *
  * @author Vlada
  */
-public class VoronoiPartitioning {
+public class VoronoiPartitioning implements DatasetPartitioningInterface {
 
     public static final Integer BATCH_SIZE = 100000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
@@ -38,7 +40,9 @@ public class VoronoiPartitioning {
         this.pivotsList = pivots;
     }
 
-    public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, int pivotCountUsedInTheFileName, StorageLearnedVoronoiPartitioningInterface storage) {
+    @Override
+    public Map<Object, SortedSet<Object>> splitByVoronoi(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
+        Integer pivotCountUsedInTheFileName = (Integer) params[0];
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         int batchCounter = 0;
@@ -47,6 +51,7 @@ public class VoronoiPartitioning {
         if (df instanceof CosineDistance) {
             lengthOfPivotVectors = getVectorsLength(pivotsList, metricSpace);
         }
+
         while (dataObjects.hasNext()) {
             try {
                 CountDownLatch latch = new CountDownLatch(vm.javatools.Tools.PARALELISATION);
@@ -79,8 +84,10 @@ public class VoronoiPartitioning {
                 Logger.getLogger(VoronoiPartitioning.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
         threadPool.shutdown();
-        if (storage != null) {
+        if (storage
+                != null) {
             storage.store(ret, datasetName, pivotCountUsedInTheFileName);
         }
         return ret;
@@ -99,6 +106,7 @@ public class VoronoiPartitioning {
             ret.put(id, length);
         }
         return ret;
+
     }
 
     private class ProcessBatch implements Runnable {
