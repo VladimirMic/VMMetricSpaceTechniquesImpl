@@ -24,7 +24,6 @@ import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
  */
 public class VoronoiPartitioning extends AbstractDatasetPartitioning {
 
-    public static final Integer BATCH_SIZE = 100000;
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     protected final DistanceFunctionInterface df;
@@ -84,8 +83,7 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
         }
 
         threadPool.shutdown();
-        if (storage
-                != null) {
+        if (storage != null) {
             storage.store(ret, datasetName, pivotCountUsedInTheFileName);
         }
         return ret;

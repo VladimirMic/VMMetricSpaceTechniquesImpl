@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import vm.metricSpace.AbstractMetricSpace;
 
@@ -19,6 +21,7 @@ import vm.metricSpace.AbstractMetricSpace;
  */
 public abstract class AbstractDatasetPartitioning {
 
+    public static final Integer BATCH_SIZE = 125;
     protected final AbstractMetricSpace metricSpace;
 
     public AbstractDatasetPartitioning(AbstractMetricSpace metricSpace) {
@@ -30,7 +33,7 @@ public abstract class AbstractDatasetPartitioning {
     public abstract class BatchProcessor implements Runnable {
 
         protected final List batch;
-        protected final Map<Object, SortedSet<Object>> ret;
+        protected final ConcurrentMap<Object, SortedSet<Object>> ret;
         protected final AbstractMetricSpace metricSpace;
         protected final Map<Object, Float> pivotLengths;
         protected final Map<Object, Float> objectsLengths;
@@ -39,7 +42,7 @@ public abstract class AbstractDatasetPartitioning {
 
         public BatchProcessor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
             this.batch = batch;
-            this.ret = new HashMap<>();
+            this.ret = new ConcurrentHashMap<>();
             this.metricSpace = metricSpace;
             this.latch = latch;
             this.pivotLengths = pivotLengths == null ? new HashMap<>() : pivotLengths;

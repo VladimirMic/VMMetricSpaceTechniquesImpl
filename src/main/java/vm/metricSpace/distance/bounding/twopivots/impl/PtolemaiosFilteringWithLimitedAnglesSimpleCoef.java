@@ -67,12 +67,12 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
         return (float) (coef * fraction);
     }
 
-    private float getCoef(String p1ID, String p2ID, int index) {
+    public float getCoef(String p1ID, String p2ID, int index) {
         if (coefs.containsKey(p1ID + "-" + p2ID)) {
             return coefs.get(p1ID + "-" + p2ID)[index];
         }
-        if (coefs.containsKey(p1ID + "-" + p2ID)) {
-            return coefs.get(p1ID + "-" + p2ID)[index];
+        if (coefs.containsKey(p2ID + "-" + p1ID)) {
+            return coefs.get(p2ID + "-" + p1ID)[index];
         }
         LOGGER.log(Level.SEVERE, "No coef for pivots ({0}-{1}). Coefs for pivot pairs provided: {2}", new Object[]{p1ID, p2ID, coefs.size()});
         throw new Error("No coef provided");

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.datasetPartitioning.AbstractDatasetPartitioning;
 import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaiosFilteringWithLimitedAnglesSimpleCoef;
 
 /**
  *
@@ -23,11 +24,11 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
     public static final Logger LOG = Logger.getLogger(GRAPPLEPartitioning.class.getName());
-    private final Map<Object, float[]> coefsForBoundsOnPivotPairs;
+    private final PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter;
 
-    public GRAPPLEPartitioning(Map<Object, float[]> coefsForBoundsOnPivotPairs, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
+    public GRAPPLEPartitioning(PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
         super(metricSpace, df, pivots);
-        this.coefsForBoundsOnPivotPairs = coefsForBoundsOnPivotPairs;
+        this.filter = filter;
     }
 
     @Override
@@ -52,13 +53,13 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 Object oID = metricSpace.getIDOfMetricObject(o);
 
                 float minFDOverADefinesPartitioning = Float.MAX_VALUE;
-                float maxCosPi1DefinesFiltering = 0;
+                float minCosPi1DefinesFiltering = Float.MAX_VALUE;
 
                 Object p1IDForPartitioning = null;
                 Object p2IDForPartitioning = null;
 
-                Object p1IDForFiltering = null;
-                Object p2IDForFiltering = null;
+                String p1IDForFiltering = null;
+                String p2IDForFiltering = null;
 
                 float dp1ForLB = 0, dp2ForLB = 0, dp1ForUB = 0, dp2ForUB = 0, dp1p2ForLB = 0, dp1p2ForUB = 0;
 
@@ -93,35 +94,31 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                                 p2IDForPartitioning = p1ID;
                             }
                         }
-                        // is this pivot pair best for the filtering? -- the order of pivots matters!
-                        float cosPi1 = (distOP2 * distOP2 - distP1P2 * distP1P2 - distOP1 * distOP1) / (2 * distP1P2 * distOP1);
-                        if (cosPi1 > maxCosPi1DefinesFiltering) { // yes
+                        // is this pivot pair best for the filtering? -- the order of pivots matters!                        
+                        float cosPi1 = (-distOP2 * distOP2 + distP1P2 * distP1P2 + distOP1 * distOP1) / (2 * distP1P2 * distOP1);
+                        if (cosPi1 < minCosPi1DefinesFiltering) { // yes
                             dp1p2ForLB = distP1P2;
                             dp1ForLB = distOP1;
                             dp2ForLB = distOP2;
-                            maxCosPi1DefinesFiltering = cosPi1;
-                            p1IDForFiltering = p1ID;
-                            p2IDForFiltering = p2ID;
+                            minCosPi1DefinesFiltering = cosPi1;
+                            p1IDForFiltering = p1ID.toString();
+                            p2IDForFiltering = p2ID.toString();
                         }
                         // is this pivot pair best for the filtering? -- opposite order
-                        cosPi1 = (distOP1 * distOP1 - distP1P2 * distP1P2 - distOP2 * distOP2) / (2 * distP1P2 * distOP2);
-                        if (cosPi1 > maxCosPi1DefinesFiltering) { // yes
+                        cosPi1 = (-distOP1 * distOP1 + distP1P2 * distP1P2 + distOP2 * distOP2) / (2 * distP1P2 * distOP2);
+                        if (cosPi1 < minCosPi1DefinesFiltering) { // yes
                             dp1p2ForLB = distP1P2;
-                            maxCosPi1DefinesFiltering = cosPi1;
+                            minCosPi1DefinesFiltering = cosPi1;
                             dp1ForLB = distOP2;
                             dp2ForLB = distOP1;
-                            p1IDForFiltering = p2ID;
-                            p2IDForFiltering = p1ID;
+                            p1IDForFiltering = p2ID.toString();
+                            p2IDForFiltering = p1ID.toString();
                         }
                     }
 
                 }
-                String key = p1IDForPartitioning + "-" + p2IDForPartitioning;
-                if (!ret.containsKey(key)) {
-                    ret.put(key, new TreeSet<>());
-                }
-                Float coefP1P2ForLB = coefsForBoundsOnPivotPairs.get(p1IDForFiltering + "-" + p2IDForFiltering)[2];
-                Float coefP1P2ForUB = coefsForBoundsOnPivotPairs.get(p1IDForPartitioning + "-" + p2IDForPartitioning)[1];
+                Float coefP1P2ForLB = filter.getCoef(p1IDForFiltering, p2IDForFiltering, 2);
+                Float coefP1P2ForUB = filter.getCoef(p1IDForFiltering, p2IDForFiltering, 1);
                 ObjectMetadata oMetadata = new ObjectMetadata(oID,
                         p1IDForPartitioning, p2IDForPartitioning,
                         p1IDForFiltering, p2IDForFiltering,
@@ -131,7 +128,14 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                         coefP1P2ForUB,
                         dp1p2ForLB,
                         dp1p2ForUB);
+                String key = p1IDForPartitioning + "-" + p2IDForPartitioning;
+                if (!ret.containsKey(key)) {
+                    ret.put(key, new TreeSet<>());
+                }
                 ret.get(key).add(oMetadata);
+                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosPi1DefinesFiltering));
+                LOG.log(Level.INFO, "oID {0} assigned to {1} due to dist {2}. Max angle: {3}", new Object[]{oID.toString(), key, minFDOverADefinesPartitioning, angleDeg});
+                System.out.println(oID.toString() + ";" + key + ";" + minFDOverADefinesPartitioning + ";" + angleDeg);
             }
             latch.countDown();
             t += System.currentTimeMillis();
@@ -139,7 +143,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
     }
 
-    private class ObjectMetadata {
+    private class ObjectMetadata implements Comparable<ObjectMetadata> {
 
         private final Object oID;
 
@@ -161,6 +165,9 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
         public ObjectMetadata(Object oID, Object p1IDForUB, Object p2IDForUB, Object p1IDForLB, Object p2IDForLB, float dOP1ForLB, float dOP2ForLB, float dOP1ForUB, float dOP2ForUB, float coefP1P2ForLB, float coefP1P2ForUB, float dP1P2ForLB, float dP1P2ForUB) {
             this.oID = oID;
+            if (oID == null) {
+                throw new IllegalArgumentException("oID cannot be null");
+            }
             this.p1IDForUB = p1IDForUB;
             this.p2IDForUB = p2IDForUB;
             this.p1IDForLB = p1IDForLB;
@@ -196,8 +203,22 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
 
         public String getAsCSVString() {
-            return oID + ";" + p1IDForUB + ";" + p2IDForUB + ";" + p1IDForLB + ";" + p2IDForLB + ";" + dOP1ForLB + ";" + dOP2ForLB + ";" + dOP1ForUB + ";" + dOP2ForUB + ";" + coefP1P2ForLB + ";" + coefP1P2ForUB + ";" + dP1P2ForLB + ";" + dP1P2ForUB;
+            return oID + "," + p1IDForUB + "," + p2IDForUB + "," + p1IDForLB + "," + p2IDForLB + "," + dOP1ForLB + "," + dOP2ForLB + "," + dOP1ForUB + "," + dOP2ForUB + "," + coefP1P2ForLB + "," + coefP1P2ForUB + "," + dP1P2ForLB + "," + dP1P2ForUB;
         }
+
+        @Override
+        public String toString() {
+            return getAsCSVString();
+        }
+
+        @Override
+        public int compareTo(ObjectMetadata t) {
+            if (t == null || t.oID == null) {
+                return -1;
+            }
+            return oID.toString().compareTo(t.oID.toString());
+        }
+
     }
 
 }
