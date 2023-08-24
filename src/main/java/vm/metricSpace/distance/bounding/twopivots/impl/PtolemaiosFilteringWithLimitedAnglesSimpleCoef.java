@@ -40,18 +40,18 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
 
     @Override
     public float upperBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID) {
-        return Float.MAX_VALUE;
-//        float ub1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 1) / CONSTANT_FOR_PRECISION;
-//        float ub2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 3);
-//        if (PRINT_DETAILS) {
-//            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
-//            if (ub1 < ub2) {
-//                System.out.println(1);
-//            } else {
-//                System.out.println(2);
-//            }
-//        }
-//        return Math.min(ub1, ub2);
+//        return Float.MAX_VALUE;
+        float ub1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 1) / CONSTANT_FOR_PRECISION;
+        float ub2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 3);
+        if (PRINT_DETAILS) {
+            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
+            if (ub1 < ub2) {
+                System.out.println(1);
+            } else {
+                System.out.println(2);
+            }
+        }
+        return Math.min(ub1, ub2);
     }
 
     private float returnBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID, int index) {

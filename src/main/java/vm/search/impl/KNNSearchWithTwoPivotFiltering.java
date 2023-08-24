@@ -117,18 +117,18 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
                         skip = true;
                         break;
                     }
-//                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                    if (distanceCheck > upperBound) {
 //                        PRINT_DETAILS = false;
 ////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
 //                        upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                    }
-//                    if (upperBound < range) {
-//                        skip = true;
-//                        float distance = df.getDistance(qData, oData);
-//                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-//                        break;
-//                    }
+                    if (upperBound < range) {
+                        skip = true;
+                        float distance = df.getDistance(qData, oData);
+                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+                        break;
+                    }
                 }
             }
             if (skip) {
