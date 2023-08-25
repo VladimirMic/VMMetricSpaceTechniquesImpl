@@ -41,7 +41,7 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
     public Map<Object, SortedSet<Object>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
         Integer pivotCountUsedInTheFileName = (Integer) params[0];
         Map<Object, SortedSet<Object>> ret = new HashMap<>();
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(10);
         int batchCounter = 0;
         long size = 0;
         Map<Object, Float> lengthOfPivotVectors = null;

@@ -1,5 +1,6 @@
 package vm.metricSpace.distance.bounding.twopivots.learning;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
 
     public Map<Object, float[]> execute() {
         Map<Object, float[]> results = new HashMap<>();
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(1);
         CountDownLatch latch = new CountDownLatch(pivots.size());
         try {
             Map<Object, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjectsAndQueries, false);
@@ -100,8 +101,8 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
             String[] qoIDs = smallDist.getKey().split(";");
             fourObjects[2] = metricObjectsAsIdObjectMap.get(qoIDs[0]);
             fourObjects[3] = metricObjectsAsIdObjectMap.get(qoIDs[1]);
-            fourObjectsData[2] = metricSpace.getDataOfMetricObject(fourObjects[2]);
-            fourObjectsData[3] = metricSpace.getDataOfMetricObject(fourObjects[3]);
+            fourObjectsData[2] = ((AbstractMap.SimpleEntry) fourObjects[2]).getValue();
+            fourObjectsData[3] = ((AbstractMap.SimpleEntry) fourObjects[3]).getValue();
             float[] sixDists = ToolsMetricDomain.getPairwiseDistsOfFourObjects(df, true, fourObjectsData);
             if (sixDists == null || Tools.isZeroInArray(sixDists)) {
                 continue;
@@ -110,7 +111,13 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
             float ef = Math.abs(sixDists[4] * sixDists[5]);
             float bd = Math.abs(sixDists[1] * sixDists[3]);
             float fractionSum = CONSTANT_FOR_PRECISION * ac / (bd + ef);
-            float fractionDiff = ac / Math.abs(bd - ef);
+            float fractionDiff = ac / (ef - bd);
+            if (fractionDiff < 1) {
+                String s = "";
+            }
+            if (fractionSum > CONSTANT_FOR_PRECISION) {
+                String s = "";
+            }
             // minSum, maxSum, minDiff, maxDiff
             extremes[0] = Math.min(extremes[0], fractionSum);
             extremes[1] = Math.max(extremes[1], fractionSum);

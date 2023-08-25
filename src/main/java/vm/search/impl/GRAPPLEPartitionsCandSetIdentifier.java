@@ -47,19 +47,16 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                     distP1P2 = df.getDistance(p1Data, p2Data);
                     distsP1P2.put(key1, distP1P2);
                 }
-                float cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
-                pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1 - 0.1f));
                 String key2 = p2ID + "-" + p1ID;
+                float cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1));
                 cosPi1 = (-distQP2 * distQP2 + distQP1 * distQP1 + distP1P2 * distP1P2) / (2 * distQP1 * distP1P2);
-                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1 - 0.1f));
                 pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1));
             }
         }
         Iterator<AbstractMap.SimpleEntry<Object, Float>> it = pivotPairs.iterator();
         Object[] ret = new Object[pivotPairs.size()];
-        for (int i = 0;
-                it.hasNext();
-                i++) {
+        for (int i = 0; it.hasNext(); i++) {
             AbstractMap.SimpleEntry<Object, Float> entry = it.next();
             ret[i] = entry.getKey();
         }
