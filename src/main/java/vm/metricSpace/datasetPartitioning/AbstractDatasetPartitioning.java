@@ -21,7 +21,7 @@ import vm.metricSpace.AbstractMetricSpace;
  */
 public abstract class AbstractDatasetPartitioning {
 
-    public static final Integer BATCH_SIZE = 10000;
+    public static final Integer BATCH_SIZE = 11112;
     protected final AbstractMetricSpace metricSpace;
 
     public AbstractDatasetPartitioning(AbstractMetricSpace metricSpace) {
