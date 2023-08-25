@@ -28,21 +28,16 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
 
     @Override
     public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
-        Iterator<Map.Entry<Object, T>> it1 = pivotsMap.entrySet().iterator();
+        Object[] pivotsArray = pivotsMap.entrySet().toArray();
         SortedSet<AbstractMap.SimpleEntry<Object, Float>> pivotPairs = new TreeSet(new Tools.MapByValueComparator<>());
         Map<String, Float> distsP1P2 = new HashMap<>();
-        for (int idx1 = 0; it1.hasNext(); idx1++) {
-            Map.Entry<Object, T> p1 = it1.next();
+        for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
+            Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
             Object p1ID = p1.getKey();
             T p1Data = p1.getValue();
             float distQP1 = df.getDistance(qData, p1Data);
-            Iterator<Map.Entry<Object, T>> it2 = pivotsMap.entrySet().iterator();
-            for (int idx2 = 0; it2.hasNext(); idx2++) {
-                if (idx2 <= idx1) {
-                    it2.next();
-                    continue;
-                }
-                Map.Entry<Object, T> p2 = it2.next();
+            for (int idx2 = idx1 + 1; idx2 < pivotsArray.length; idx2++) {
+                Map.Entry<Object, T> p2 = (Map.Entry<Object, T>) pivotsArray[idx2];
                 Object p2ID = p2.getKey();
                 T p2Data = p2.getValue();
                 String key1 = p1ID + "-" + p2ID;
@@ -52,20 +47,19 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                     distP1P2 = df.getDistance(p1Data, p2Data);
                     distsP1P2.put(key1, distP1P2);
                 }
-                float priority = 10000 * (distQP2 * distQP2 + distQP1 * distQP1 - distP1P2 * distP1P2) / (2 * distQP1 * distQP2);
+                float cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1 - 0.1f));
                 String key2 = p2ID + "-" + p1ID;
-                if (distQP1 < distQP2) {
-                    pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, priority - 0.1f));
-                    pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, priority));
-                } else {
-                    pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, priority - 0.1f));
-                    pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, priority));
-                }
+                cosPi1 = (-distQP2 * distQP2 + distQP1 * distQP1 + distP1P2 * distP1P2) / (2 * distQP1 * distP1P2);
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1 - 0.1f));
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1));
             }
         }
         Iterator<AbstractMap.SimpleEntry<Object, Float>> it = pivotPairs.iterator();
         Object[] ret = new Object[pivotPairs.size()];
-        for (int i = 0; it.hasNext(); i++) {
+        for (int i = 0;
+                it.hasNext();
+                i++) {
             AbstractMap.SimpleEntry<Object, Float> entry = it.next();
             ret[i] = entry.getKey();
         }
