@@ -208,7 +208,7 @@ public class ToolsMetricDomain {
      * @param distsToPivotsStorage
      * @return ids of the closest pivots
      */
-    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
+    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map pivotsMap, Object referentData, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }

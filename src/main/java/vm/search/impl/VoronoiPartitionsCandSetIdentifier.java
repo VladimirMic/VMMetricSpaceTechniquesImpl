@@ -23,7 +23,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
 
     private static final Logger LOG = Logger.getLogger(VoronoiPartitionsCandSetIdentifier.class.getName());
 
-    private final Map<Object, Object> pivotsMap;
+    private final Map<Object, T> pivotsMap;
     private final DistanceFunctionInterface<T> df;
     private final Map<Object, TreeSet<Object>> voronoiPartitioning;
 
@@ -60,7 +60,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
                 distsToPivots = (Map<Object, Float>) param;
             }
         }
-        Object[] pivotPerm = ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
+        Object[] keyOrdering = evaluateKeyOrdering(df, pivotsMap, qData, distsToPivots);
         List<Object> ret = new ArrayList<>();
         int idxOfNext = 0;
         TreeSet<Object> nextCell = null;
@@ -68,7 +68,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
             if (nextCell != null) {
                 ret.addAll(nextCell);
             }
-            nextCell = voronoiPartitioning.get(pivotPerm[idxOfNext]);
+            nextCell = voronoiPartitioning.get(keyOrdering[idxOfNext]);
             idxOfNext++;
         }
         if (ret.isEmpty()) {
@@ -76,6 +76,14 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         }
         LOG.log(Level.FINE, "Returning the cand set with {0} objects. It is made of {1} cells", new Object[]{ret.size(), idxOfNext});
         return ret;
+    }
+
+    public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
+        Map<Object, Float> distsToPivots = null;
+        if (params.length > 0) {
+            distsToPivots = (Map<Object, Float>) params[1];
+        }
+        return ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
     }
 
     public int getNumberOfPivots() {
