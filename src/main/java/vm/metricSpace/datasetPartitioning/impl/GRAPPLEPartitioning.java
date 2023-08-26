@@ -135,7 +135,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 }
                 ret.get(key).add(oMetadata);
                 double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
-                LOG.log(Level.INFO, "oID {0} assigned to {1}. Angle for part: {2}, dP1P2Part: {3}, dP1P2LB: {4}, coef for LB: {5}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1p2ForLB, coefP1P2ForLB});
+                LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}, coef for LB: {6}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB, coefP1P2ForLB});
             }
             latch.countDown();
             t += System.currentTimeMillis();
