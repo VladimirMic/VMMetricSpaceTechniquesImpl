@@ -48,10 +48,12 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                     distsP1P2.put(key1, distP1P2);
                 }
                 String key2 = p2ID + "-" + p1ID;
-                float cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
-                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1));
-                cosPi1 = (-distQP2 * distQP2 + distQP1 * distQP1 + distP1P2 * distP1P2) / (2 * distQP1 * distP1P2);
+                float cosPi1;
+//                cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
+                cosPi1 = distQP1 * distQP2 / distP1P2;
                 pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1));
+//                cosPi1 = (-distQP2 * distQP2 + distQP1 * distQP1 + distP1P2 * distP1P2) / (2 * distQP1 * distP1P2);
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1));
             }
         }
         Iterator<AbstractMap.SimpleEntry<Object, Float>> it = pivotPairs.iterator();

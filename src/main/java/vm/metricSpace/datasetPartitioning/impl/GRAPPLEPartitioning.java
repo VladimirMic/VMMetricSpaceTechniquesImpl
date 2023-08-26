@@ -52,7 +52,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 Object oData = metricSpace.getDataOfMetricObject(o);
                 Object oID = metricSpace.getIDOfMetricObject(o);
 
-                float minAlphaCosine = Float.MAX_VALUE;
+                float maxRadiusOfCircle = -Float.MAX_VALUE;
                 float minCosPi1DefinesFiltering = Float.MAX_VALUE;
 
                 Object p1IDForUB = null;
@@ -64,13 +64,13 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 float dp1ForLB = 0, dp2ForLB = 0, dp1ForUB = 0, dp2ForUB = 0, dp1p2ForLB = 0, dp1p2ForUB = 0;
 
                 Float oLength = objectsLengths.get(oID);
-                for (int j = 0; j < pivotsList.size() - 1; j++) {
-                    Object p1 = pivotsList.get(j);
+                for (int p1Index = 0; p1Index < pivotsList.size() - 1; p1Index++) {
+                    Object p1 = pivotsList.get(p1Index);
                     Object p1ID = metricSpace.getIDOfMetricObject(p1);
                     Object p1Data = metricSpace.getDataOfMetricObject(p1);
                     float distOP1 = df.getDistance(oData, p1Data, oLength, pivotLengths.get(p1ID));
-                    for (int k = j + 1; k < pivotsList.size(); k++) {
-                        Object p2 = pivotsList.get(k);
+                    for (int p2Index = p1Index + 1; p2Index < pivotsList.size(); p2Index++) {
+                        Object p2 = pivotsList.get(p2Index);
                         Object p2ID = metricSpace.getIDOfMetricObject(p2);
                         Object p2Data = metricSpace.getDataOfMetricObject(p2);
                         float distOP2 = df.getDistance(oData, p2Data, oLength, pivotLengths.get(p2ID));
@@ -79,10 +79,12 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             distP1P2 = df.getDistance(p1Data, p2Data, pivotLengths.get(p1ID), pivotLengths.get(p2ID));
                             interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
                         }
-                        // is this pivot pair best for the UB?
+                        // is this pivot pair best for the partitioning?
                         float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
-                        if (alphaCosine < minAlphaCosine) { // yes
-                            minAlphaCosine = alphaCosine;
+                        float alphaSin2 = 1 - alphaCosine * alphaCosine;
+                        float radiusSquared = distP1P2 * distP1P2 / alphaSin2;
+                        if (radiusSquared > maxRadiusOfCircle) { // yes
+                            maxRadiusOfCircle = radiusSquared;
                             dp1ForUB = Math.min(distOP1, distOP2);
                             dp2ForUB = Math.max(distOP1, distOP2);
                             dp1p2ForUB = distP1P2;
@@ -133,8 +135,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                     ret.put(key, new TreeSet<>());
                 }
                 ret.get(key).add(oMetadata);
-                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosPi1DefinesFiltering / 1000 * coefP1P2ForLB));
-                LOG.log(Level.INFO, "oID {0} assigned to {1}. Angle: {2}, inter-pivots dist: {3}, coef for LB: {4}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForLB, coefP1P2ForLB});
+                LOG.log(Level.INFO, "oID {0} assigned to {1}. Sq.radius {2}, dP1P2Part: {3}, dP1P2LB: {4}, coef for LB: {5}", new Object[]{oID.toString(), key, maxRadiusOfCircle, dp1p2ForUB, dp1p2ForLB, coefP1P2ForLB});
             }
             latch.countDown();
             t += System.currentTimeMillis();
