@@ -52,7 +52,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 Object oData = metricSpace.getDataOfMetricObject(o);
                 Object oID = metricSpace.getIDOfMetricObject(o);
 
-                float maxRadiusOfCircle = -Float.MAX_VALUE;
+                float minCosAlpha = Float.MAX_VALUE;
                 float minCosPi1DefinesFiltering = Float.MAX_VALUE;
 
                 Object p1IDForUB = null;
@@ -80,11 +80,10 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
                         }
                         // is this pivot pair best for the partitioning?
-                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
-                        float alphaSin2 = 1 - alphaCosine * alphaCosine;
-                        float radiusSquared = distP1P2 * distP1P2 / alphaSin2;
-                        if (radiusSquared > maxRadiusOfCircle) { // yes
-                            maxRadiusOfCircle = radiusSquared;
+//                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
+                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2);
+                        if (alphaCosine < minCosAlpha) { // yes
+                            minCosAlpha = alphaCosine;
                             dp1ForUB = Math.min(distOP1, distOP2);
                             dp2ForUB = Math.max(distOP1, distOP2);
                             dp1p2ForUB = distP1P2;
@@ -135,7 +134,8 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                     ret.put(key, new TreeSet<>());
                 }
                 ret.get(key).add(oMetadata);
-                LOG.log(Level.INFO, "oID {0} assigned to {1}. Sq.radius {2}, dP1P2Part: {3}, dP1P2LB: {4}, coef for LB: {5}", new Object[]{oID.toString(), key, maxRadiusOfCircle, dp1p2ForUB, dp1p2ForLB, coefP1P2ForLB});
+                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
+                LOG.log(Level.INFO, "oID {0} assigned to {1}. Angle for part: {2}, dP1P2Part: {3}, dP1P2LB: {4}, coef for LB: {5}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1p2ForLB, coefP1P2ForLB});
             }
             latch.countDown();
             t += System.currentTimeMillis();
