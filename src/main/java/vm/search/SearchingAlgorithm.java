@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -31,9 +32,24 @@ public abstract class SearchingAlgorithm<T> {
     protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
 
-    public abstract TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
+    public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
-    public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object ... additionalParams);
+    /**
+     * Implicit implementation that just reranks the candidate set defined in
+     * this algorithm. Feel free to override with another complete search.
+     *
+     * @param metricSpace
+     * @param queryObject
+     * @param k
+     * @param objects
+     * @param additionalParams
+     * @return
+     */
+    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+        List<Object> candSet = candSetKnnSearch(metricSpace, queryObject, k, objects, additionalParams);
+        Dataset dataset = (Dataset) additionalParams[0];
+        return rerankCandidateSet(metricSpace, queryObject, k, dataset.getDatasetName(), dataset.getKeyValueStorage(), candSet);
+    }
 
     public Map.Entry<Object, Float> adjustAndReturnLastEntry(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
         int size = currAnswer.size();

@@ -80,8 +80,8 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
                         }
                         // is this pivot pair best for the partitioning?
-//                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
-                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2);
+                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
+//                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2);
                         if (alphaCosine < minCosAlpha) { // yes
                             minCosAlpha = alphaCosine;
                             dp1ForUB = Math.min(distOP1, distOP2);
@@ -134,7 +134,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                     ret.put(key, new TreeSet<>());
                 }
                 ret.get(key).add(oMetadata);
-                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
+                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha));
                 LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}, coef for LB: {6}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB, coefP1P2ForLB});
             }
             latch.countDown();
@@ -143,7 +143,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
     }
 
-    private class ObjectMetadata implements Comparable<ObjectMetadata> {
+    public class ObjectMetadata implements Comparable<ObjectMetadata> {
 
         private final Object oID;
 
@@ -217,6 +217,10 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 return -1;
             }
             return oID.toString().compareTo(t.oID.toString());
+        }
+
+        public Object getoID() {
+            return oID;
         }
 
     }

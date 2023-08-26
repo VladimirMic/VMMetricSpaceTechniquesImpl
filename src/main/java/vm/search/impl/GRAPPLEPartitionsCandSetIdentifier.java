@@ -5,14 +5,20 @@
 package vm.search.impl;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.datatools.Tools;
+import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
+import vm.metricSpace.datasetPartitioning.impl.GRAPPLEPartitioning;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -22,15 +28,32 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCandSetIdentifier<T> {
 
+    private static final Logger LOG = Logger.getLogger(GRAPPLEPartitionsCandSetIdentifier.class.getName());
+
+    private final Map<String, Float> distsP1P2 = new HashMap<>();
+
     public GRAPPLEPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForPartitioningLearning) {
         super(dataset, voronoiPartitioningStorage, pivotCountUsedForPartitioningLearning);
+        Object[] pivotsArray = pivotsMap.entrySet().toArray();
+        for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
+            Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
+            Object p1ID = p1.getKey();
+            T p1Data = p1.getValue();
+            for (int idx2 = idx1 + 1; idx2 < pivotsArray.length; idx2++) {
+                Map.Entry<Object, T> p2 = (Map.Entry<Object, T>) pivotsArray[idx2];
+                Object p2ID = p2.getKey();
+                T p2Data = p2.getValue();
+                String key1 = p1ID + "-" + p2ID;
+                float distP1P2 = df.getDistance(p1Data, p2Data);
+                distsP1P2.put(key1, distP1P2);
+            }
+        }
     }
 
     @Override
     public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
         Object[] pivotsArray = pivotsMap.entrySet().toArray();
         SortedSet<AbstractMap.SimpleEntry<Object, Float>> pivotPairs = new TreeSet(new Tools.MapByValueComparator<>());
-        Map<String, Float> distsP1P2 = new HashMap<>();
         for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
             Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
             Object p1ID = p1.getKey();
@@ -40,20 +63,15 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 Map.Entry<Object, T> p2 = (Map.Entry<Object, T>) pivotsArray[idx2];
                 Object p2ID = p2.getKey();
                 T p2Data = p2.getValue();
-                String key1 = p1ID + "-" + p2ID;
                 float distQP2 = df.getDistance(qData, p2Data);
-                Float distP1P2 = distsP1P2.get(key1);
-                if (distP1P2 == null) {
-                    distP1P2 = df.getDistance(p1Data, p2Data);
-                    distsP1P2.put(key1, distP1P2);
-                }
+                String key1 = p1ID + "-" + p2ID;
                 String key2 = p2ID + "-" + p1ID;
-                float cosPi1;
-//                cosPi1 = (-distQP1 * distQP1 + distQP2 * distQP2 + distP1P2 * distP1P2) / (2 * distQP2 * distP1P2);
-                cosPi1 = distQP1 * distQP2 / distP1P2;
-                pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, cosPi1));
-//                cosPi1 = (-distQP2 * distQP2 + distQP1 * distQP1 + distP1P2 * distP1P2) / (2 * distQP1 * distP1P2);
-                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, cosPi1));
+                float distP1P2 = distsP1P2.get(key1);
+
+                float alphaCosine = (distQP2 * distQP2 + distQP1 * distQP1 - distP1P2 * distP1P2);
+                float diff = distQP1 > distQP2 ? 0.01f : -0.01f;
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key1, alphaCosine + diff));
+                pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, alphaCosine));
             }
         }
         Iterator<AbstractMap.SimpleEntry<Object, Float>> it = pivotPairs.iterator();
@@ -65,4 +83,35 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
         return ret;
     }
 
+    @Override
+    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+        T qData = metricSpace.getDataOfMetricObject(queryObject);
+        Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, Integer.MAX_VALUE, objects, additionalParams).iterator();
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>();
+        Dataset dataset = (Dataset) additionalParams[0];
+        Map keyValueStorage = dataset.getKeyValueStorage();
+        float range = Float.MAX_VALUE;
+        while (candSet.hasNext()) {
+            GRAPPLEPartitioning.ObjectMetadata oMetadata = (GRAPPLEPartitioning.ObjectMetadata) candSet.next();
+            boolean add;
+            if (ret.size() < k) {
+                add = true;
+            } else {
+                float lb = oMetadata.getLBdOQ(keyValueStorage);
+                add = lb < range;
+            }
+            if (add) {
+                Object oID = oMetadata.getoID();
+                T metricObjectData = (T) keyValueStorage.get(oID);
+                float distance = df.getDistance(qData, metricObjectData);
+                ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
+                if (ret.size() > k) {
+                    ret.remove(ret.last());
+                }
+                range = ret.last().getValue();
+            }
+        }
+        return ret;
+
+    }
 }
