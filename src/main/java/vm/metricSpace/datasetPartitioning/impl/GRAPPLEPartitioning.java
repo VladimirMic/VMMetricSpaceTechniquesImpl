@@ -52,7 +52,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 Object oData = metricSpace.getDataOfMetricObject(o);
                 Object oID = metricSpace.getIDOfMetricObject(o);
 
-                float minFDOverADefinesPartitioning = Float.MAX_VALUE;
+                float minAlphaCosine = Float.MAX_VALUE;
                 float minCosPi1DefinesFiltering = Float.MAX_VALUE;
 
                 Object p1IDForUB = null;
@@ -80,9 +80,9 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
                         }
                         // is this pivot pair best for the UB?
-                        float FDOverA = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
-                        if (FDOverA < minFDOverADefinesPartitioning) { // yes
-                            minFDOverADefinesPartitioning = FDOverA;
+                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2) / (2 * distOP1 * distOP2);
+                        if (alphaCosine < minAlphaCosine) { // yes
+                            minAlphaCosine = alphaCosine;
                             dp1ForUB = Math.min(distOP1, distOP2);
                             dp2ForUB = Math.max(distOP1, distOP2);
                             dp1p2ForUB = distP1P2;
