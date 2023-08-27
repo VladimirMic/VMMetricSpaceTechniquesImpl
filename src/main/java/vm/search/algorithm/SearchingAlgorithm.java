@@ -164,25 +164,22 @@ public abstract class SearchingAlgorithm<T> {
     /**
      * @param metricSpace
      * @param queryObjects
-     * @param k
+     * @param kCandSetMaxSize
      * @return
      */
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Map keyValueStorage, Object... additionalParams) {
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, int kCandSetMaxSize, Dataset dataset, Object... additionalParams) {
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
-        for (int i = 0; i < queryObjects.size(); i++) {
-            ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
-        }
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
-        Object[] params = Tools.concatArrays(keyValueStorage, additionalParams);
         try {
             CountDownLatch latch = new CountDownLatch(queryObjects.size());
             final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;
             for (int i = 0; i < queryObjects.size(); i++) {
                 final Object queryObject = queryObjects.get(i);
-                final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
+                final int iFinal = i;
                 threadPool.execute(() -> {
-                    TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, null, params);
-                    answerToQuery.addAll(completeKnnSearch);
+                    final Map keyValueStorage = dataset.getKeyValueStorage();
+                    Object[] params = Tools.concatArrays(new Object[]{keyValueStorage, kCandSetMaxSize}, additionalParams);
+                    ret[iFinal] = completeKnnSearch(metricSpaceFinal, queryObject, k, null, params);
                     latch.countDown();
                 });
             }

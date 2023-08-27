@@ -42,13 +42,12 @@ public class AlgorithmEvaluator {
         this.eodStorage = eodStorage;
     }
 
-    public void evaluate(Dataset dataset, List queries, int k, String resultName, Object... additionalParams) {
+    public void evaluate(Dataset dataset, List queries, int k, int kCandSetMaxSize, String resultName, Object... additionalParams) {
         long overallTime = -System.currentTimeMillis();
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         String datasetName = dataset.getDatasetName();
         String querySetName = dataset.getQuerySetName();
-        Map keyValueStorage = dataset.getKeyValueStorage();
-        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(metricSpace, queries, k, keyValueStorage, additionalParams);
+        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(metricSpace, queries, k, kCandSetMaxSize, dataset, additionalParams);
         overallTime += System.currentTimeMillis();
 
         LOG.log(Level.INFO, "Storing statistics of queries");

@@ -89,11 +89,14 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
         AtomicInteger distComps = new AtomicInteger();
         Object qID = metricSpace.getIDOfMetricObject(queryObject);
         T qData = metricSpace.getDataOfMetricObject(queryObject);
-        Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, Integer.MAX_VALUE, objects, additionalParams).iterator();
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
         Map keyValueStorage = (Map) additionalParams[0];
+        int kCandSetMaxSize = (int) additionalParams[1];
+        Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
         Map<Object, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
+        int nok = 0;
+        int ok = 0;
         while (candSet.hasNext()) {
             GRAPPLEPartitioning.ObjectMetadata oMetadata = (GRAPPLEPartitioning.ObjectMetadata) candSet.next();
             boolean add;
@@ -101,14 +104,16 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 add = true;
             } else {
                 float lb = oMetadata.getLBdOQ(queryToPivotsDists);
-                System.out.println("AAA " + lb);
-                System.out.println("BBB " + range);
-                System.out.println();
+//                System.out.println("AAA " + lb);
+//                System.out.println("BBB " + range);
+//                System.out.println();
                 add = lb < range;
             }
             if (add) {
+                nok++;
                 Object oID = oMetadata.getoID();
-                T metricObjectData = (T) keyValueStorage.get(oID);
+                T metricObjectData;
+                metricObjectData = (T) keyValueStorage.get(oID);
                 float distance = df.getDistance(qData, metricObjectData);
                 distComps.incrementAndGet();
                 ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
@@ -116,11 +121,15 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                     ret.remove(ret.last());
                 }
                 range = ret.last().getValue();
+            } else {
+                ok++;
+                System.out.println(ok + "+" + nok + " XXXXXX " + ((float) nok) / ok);
             }
         }
         t.addAndGet(System.currentTimeMillis());
         timesPerQueries.put(qID, t);
         distCompsPerQueries.put(qID, distComps);
+        System.out.println(ok + "+" + nok);
         return ret;
 
     }
