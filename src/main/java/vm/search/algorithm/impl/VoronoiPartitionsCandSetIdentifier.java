@@ -55,21 +55,21 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
                 distsToPivots = (Map<Object, Float>) param;
             }
         }
-        Object[] keyOrdering = evaluateKeyOrdering(df, pivotsMap, qData, distsToPivots);
+        Object[] priorityQueue = evaluateKeyOrdering(df, pivotsMap, qData, distsToPivots);
         List<Object> ret = new ArrayList<>();
         int idxOfNext = 0;
         TreeSet<Object> nextCell = null;
-        while ((nextCell == null || ret.size() + nextCell.size() < k) && idxOfNext < datasetPartitioning.size() - 1) {
+        while ((nextCell == null || ret.size() + nextCell.size() < k) && idxOfNext < priorityQueue.length) {
             if (nextCell != null) {
                 ret.addAll(nextCell);
             }
-            nextCell = datasetPartitioning.get(keyOrdering[idxOfNext]);
+            nextCell = datasetPartitioning.get(priorityQueue[idxOfNext]);
             idxOfNext++;
         }
         if (ret.isEmpty()) {
             ret.addAll(nextCell);
         }
-        LOG.log(Level.FINE, "Returning the cand set with {0} objects. It is made of {1} cells", new Object[]{ret.size(), idxOfNext});
+        LOG.log(Level.FINE, "Returning candSet with {0} objects. It is made of {1} cells", new Object[]{ret.size(), idxOfNext});
         return ret;
     }
 

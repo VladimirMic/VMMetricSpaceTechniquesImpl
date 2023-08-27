@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.metricSpace.datasetPartitioning.impl.GRAPPLEPartitioning;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -31,8 +32,8 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
 
     private final Map<String, Float> distsP1P2 = new HashMap<>();
 
-    public GRAPPLEPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForPartitioningLearning) {
-        super(dataset, voronoiPartitioningStorage, pivotCountUsedForPartitioningLearning);
+    public GRAPPLEPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface GRAPPLEPartitioningStorage, int pivotCountUsedForPartitioningLearning) {
+        super(dataset, GRAPPLEPartitioningStorage, pivotCountUsedForPartitioningLearning);
         Object[] pivotsArray = pivotsMap.entrySet().toArray();
         for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
             Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
@@ -89,9 +90,9 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
         Object qID = metricSpace.getIDOfMetricObject(queryObject);
         T qData = metricSpace.getDataOfMetricObject(queryObject);
         Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, Integer.MAX_VALUE, objects, additionalParams).iterator();
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>();
-        Dataset dataset = (Dataset) additionalParams[0];
-        Map keyValueStorage = dataset.getKeyValueStorage();
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+        Map keyValueStorage = (Map) additionalParams[0];
+        Map<Object, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
         while (candSet.hasNext()) {
             GRAPPLEPartitioning.ObjectMetadata oMetadata = (GRAPPLEPartitioning.ObjectMetadata) candSet.next();
@@ -99,7 +100,10 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
             if (ret.size() < k) {
                 add = true;
             } else {
-                float lb = oMetadata.getLBdOQ(keyValueStorage);
+                float lb = oMetadata.getLBdOQ(queryToPivotsDists);
+                System.out.println("AAA " + lb);
+                System.out.println("BBB " + range);
+                System.out.println();
                 add = lb < range;
             }
             if (add) {

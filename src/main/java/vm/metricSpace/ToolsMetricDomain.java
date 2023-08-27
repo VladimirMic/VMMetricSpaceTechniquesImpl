@@ -329,4 +329,13 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static <T> Map<Object, Float> evaluateDistsToPivots(T qData, Map<Object, T> pivotsMap, DistanceFunctionInterface<T> df) {
+        Map<Object, Float> ret = new HashMap<>();
+        for (Map.Entry<Object, T> entry : pivotsMap.entrySet()) {
+            float dist = df.getDistance(qData, entry.getValue());
+            ret.put(entry.getKey(), dist);
+        }
+        return ret;
+    }
+
 }

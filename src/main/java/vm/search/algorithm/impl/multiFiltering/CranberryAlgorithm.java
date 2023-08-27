@@ -313,7 +313,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnFilteringWithQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
         Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
         int queriesCount = -1;

@@ -142,7 +142,25 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
     }
 
-    public class ObjectMetadata implements Comparable<ObjectMetadata> {
+    public static final ObjectMetadata getObjectMetadataInstance(String string) {
+        String[] split = string.split(",");
+        return new ObjectMetadata(
+                split[0],
+                split[1],
+                split[2],
+                split[3],
+                split[4],
+                Float.parseFloat(split[5]),
+                Float.parseFloat(split[6]),
+                Float.parseFloat(split[7]),
+                Float.parseFloat(split[8]),
+                Float.parseFloat(split[9]),
+                Float.parseFloat(split[10]),
+                Float.parseFloat(split[11]),
+                Float.parseFloat(split[12]));
+    }
+
+    public static class ObjectMetadata implements Comparable<ObjectMetadata> {
 
         private final Object oID;
 
@@ -181,6 +199,10 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             this.dP1P2ForUB = dP1P2ForUB;
         }
 
+        public String getAsCSVString() {
+            return oID + "," + p1IDForUB + "," + p2IDForUB + "," + p1IDForLB + "," + p2IDForLB + "," + dOP1ForLB + "," + dOP2ForLB + "," + dOP1ForUB + "," + dOP2ForUB + "," + coefP1P2ForLB + "," + coefP1P2ForUB + "," + dP1P2ForLB + "," + dP1P2ForUB;
+        }
+
         public float getUBdOQ(Map<Object, Float> queryToPivotsDists) {
             float dQP1 = queryToPivotsDists.get(p1IDForUB);
             float dQP2 = queryToPivotsDists.get(p2IDForUB);
@@ -198,11 +220,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
 
         public float getLBdOQ(float dQP1, float dQP2) {
-            return coefP1P2ForLB * (dQP1 * dOP2ForLB - dQP2 * dOP1ForLB) / (dP1P2ForLB);
-        }
-
-        public String getAsCSVString() {
-            return oID + "," + p1IDForUB + "," + p2IDForUB + "," + p1IDForLB + "," + p2IDForLB + "," + dOP1ForLB + "," + dOP2ForLB + "," + dOP1ForUB + "," + dOP2ForUB + "," + coefP1P2ForLB + "," + coefP1P2ForUB + "," + dP1P2ForLB + "," + dP1P2ForUB;
+            return coefP1P2ForLB * Math.abs(dQP1 * dOP2ForLB - dQP2 * dOP1ForLB) / (dP1P2ForLB);
         }
 
         @Override

@@ -110,7 +110,7 @@ public abstract class SearchingAlgorithm<T> {
      * @return evaluates all query objects in parallel. Parallelisation is done
      * over the query objects
      */
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchOfQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnFilteringWithQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
         final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
@@ -156,6 +156,39 @@ public abstract class SearchingAlgorithm<T> {
             } catch (InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
+        }
+        threadPool.shutdown();
+        return ret;
+    }
+
+    /**
+     * @param metricSpace
+     * @param queryObjects
+     * @param k
+     * @return
+     */
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Map keyValueStorage, Object... additionalParams) {
+        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        for (int i = 0; i < queryObjects.size(); i++) {
+            ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
+        }
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        Object[] params = Tools.concatArrays(keyValueStorage, additionalParams);
+        try {
+            CountDownLatch latch = new CountDownLatch(queryObjects.size());
+            final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;
+            for (int i = 0; i < queryObjects.size(); i++) {
+                final Object queryObject = queryObjects.get(i);
+                final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
+                threadPool.execute(() -> {
+                    TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, null, params);
+                    answerToQuery.addAll(completeKnnSearch);
+                    latch.countDown();
+                });
+            }
+            latch.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         }
         threadPool.shutdown();
         return ret;
