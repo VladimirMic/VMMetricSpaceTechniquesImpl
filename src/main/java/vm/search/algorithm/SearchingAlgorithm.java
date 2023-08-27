@@ -1,4 +1,4 @@
-package vm.search;
+package vm.search.algorithm;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public abstract class SearchingAlgorithm<T> {
 
-    private final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
+    private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 100000;
 
     protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
@@ -204,5 +204,11 @@ public abstract class SearchingAlgorithm<T> {
     public long getTimeOfQuery(Object qId) {
         return timesPerQueries.get(qId).get();
     }
+
+    public Map<Object, AtomicLong>[] getAddditionalStats() {
+        return null;
+    }
+
+    public abstract String getResultName();
 
 }

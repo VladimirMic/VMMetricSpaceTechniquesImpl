@@ -1,4 +1,4 @@
-package vm.search.impl;
+package vm.search.algorithm.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,7 +11,7 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.search.SearchingAlgorithm;
+import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 
 /**
@@ -83,6 +83,11 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
 
     public int getNumberOfPivots() {
         return pivotsMap.size();
+    }
+
+    @Override
+    public String getResultName() {
+        return "VoronoiPartitionsCandSetIdentifier";
     }
 
 }

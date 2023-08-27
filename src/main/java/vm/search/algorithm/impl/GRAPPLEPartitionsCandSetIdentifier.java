@@ -2,17 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vm.search.impl;
+package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
@@ -85,6 +84,9 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+        AtomicLong t = new AtomicLong(-System.currentTimeMillis());
+        AtomicInteger distComps = new AtomicInteger();
+        Object qID = metricSpace.getIDOfMetricObject(queryObject);
         T qData = metricSpace.getDataOfMetricObject(queryObject);
         Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, Integer.MAX_VALUE, objects, additionalParams).iterator();
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>();
@@ -104,6 +106,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 Object oID = oMetadata.getoID();
                 T metricObjectData = (T) keyValueStorage.get(oID);
                 float distance = df.getDistance(qData, metricObjectData);
+                distComps.incrementAndGet();
                 ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
                 if (ret.size() > k) {
                     ret.remove(ret.last());
@@ -111,6 +114,9 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 range = ret.last().getValue();
             }
         }
+        t.addAndGet(System.currentTimeMillis());
+        timesPerQueries.put(qID, t);
+        distCompsPerQueries.put(qID, distComps);
         return ret;
 
     }

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vm.search.impl.multiFiltering;
+package vm.search.algorithm.impl.multiFiltering;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -25,8 +25,8 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
-import vm.search.SearchingAlgorithm;
-import vm.search.impl.VoronoiPartitionsCandSetIdentifier;
+import vm.search.algorithm.SearchingAlgorithm;
+import vm.search.algorithm.impl.VoronoiPartitionsCandSetIdentifier;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
 
@@ -308,7 +308,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object ... additionalParams) {
+    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
@@ -374,6 +374,11 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     public Integer getMaxDistComps() {
         return maxDistComps;
+    }
+
+    @Override
+    public String getResultName() {
+        return "CRANBERRY";
     }
 
 }

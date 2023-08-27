@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
-import static vm.search.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETAILS;
+import static vm.search.algorithm.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETAILS;
 
 /**
  *

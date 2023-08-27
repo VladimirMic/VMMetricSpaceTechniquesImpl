@@ -49,6 +49,7 @@ public class RecallOfCandsSetsEvaluator {
             System.out.println("Query ID: " + queryID + ", recall: " + recall);
             ret.put(queryID, recall);
         }
+        recallStorage.save();
         return ret;
     }
 

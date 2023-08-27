@@ -1,4 +1,4 @@
-package vm.search.impl;
+package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
 import java.util.Iterator;
@@ -10,9 +10,9 @@ import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
-import vm.search.SearchingAlgorithm;
+import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
+import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -20,41 +20,28 @@ import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
  * @author Vlada
  * @param <T>
  */
-public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
+public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(KNNSearchWithTwoPivotFiltering.class.getName());
 
-    private final TwoPivotsFilter filter;
+    private final OnePivotFilter filter;
     private final String[] pivotIDs;
     private final List<T> pivotsData;
     private final float[][] poDists;
     private final Map<String, Integer> rowHeaders;
     private final Map<String, Integer> columnHeaders;
-    private final float[][] pivotPivotDists;
     private final DistanceFunctionInterface<T> df;
-    private final boolean pivotPairsFromFilter;
 
-    public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
-        this(metricSpace, filter, pivots, poDists, rowHeaders, columnHeaders, pivotPivotDists, df, false);
-    }
-
-    public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df, boolean createAllPivotPairs) {
+    public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, OnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
-        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);// correct!
-        this.pivotPairsFromFilter = createAllPivotPairs;
-        if (createAllPivotPairs) {
-            pivots = Tools.createAllPairs(pivots);
-        }
         List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
         this.pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
+        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
-        this.pivotPivotDists = pivotPivotDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
         this.columnHeaders = columnHeaders;
     }
-
-    public static boolean PRINT_DETAILS = false;
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
@@ -71,7 +58,6 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             qpDists[i] = df.getDistance(qData, pData);
         }
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
-        int step = pivotPairsFromFilter ? 2 : 1;
         while (objects.hasNext()) {
             boolean skip = false;
             Object o = objects.next();
@@ -82,47 +68,28 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             int oIdx = rowHeaders.get(oId.toString());
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
-//            float distanceCheck = df.getDistance(qData, oData);;
-            if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotIDs.length; p += step) {
-                    PRINT_DETAILS = false;
-                    String p1ID = pivotIDs[p];
-                    String p2ID = pivotIDs[(p + 1) % pivotIDs.length];
-                    if (!columnHeaders.containsKey(p1ID)) {
-                        throw new RuntimeException("Precomputed distances dost not contain pivot " + p1ID);
+//            float maxLB = 0;
+//            float minUB = Float.MAX_VALUE;
+            if (range < Float.MAX_VALUE && range > 0) {
+                for (int p = 0; p < pivotIDs.length; p++) {
+                    String pId = pivotIDs[p];
+                    if (!columnHeaders.containsKey(pId)) {
+                        throw new RuntimeException("Precomputed distances dost not contain pivot " + pId);
                     }
-                    if (!columnHeaders.containsKey(p2ID)) {
-                        throw new RuntimeException("Precomputed distances dost not contain pivot " + p2ID);
-                    }
-                    int p1 = columnHeaders.get(p1ID);
-                    int p2 = columnHeaders.get(p2ID);
-                    float distP1P2 = pivotPivotDists[p1][p2];
-                    float distP2O = poDists[oIdx][p2];
-                    float distQP1 = qpDists[p1];
-                    float distP1O = poDists[oIdx][p1];
-                    float distP2Q = qpDists[p2];
-                    float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                    if (distanceCheck < lowerBound) {
-//                        PRINT_DETAILS = false;
-////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
-//                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                    }
+                    int pIdx = columnHeaders.get(pId);
+                    float distQP = qpDists[pIdx];
+                    float distPO = poDists[oIdx][pIdx];
+                    float lowerBound = filter.lowerBound(distQP, distPO, pId);
+//                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
+//                    maxLB = Math.max(maxLB, lowerBound);
                     if (lowerBound > range) {
-//                        PRINT_DETAILS = true;
-//                        if (PRINT_DETAILS) {
-//                            System.out.println("Skipped. Radius: " + range + ", lb: " + lowerBound);
-//                            filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                        }
-//                        PRINT_DETAILS = false;
                         skip = true;
+//                        System.out.println();
                         break;
                     }
-                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                    if (distanceCheck > upperBound) {
-//                        PRINT_DETAILS = false;
-////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
-//                        upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                    }
+                    float upperBound = filter.upperBound(distQP, distPO, pId);
+//                    minUB = Math.min(minUB, upperBound);
+//                    System.out.println(";upper bound;" + upperBound + "   extremes:;" + maxLB + ";" + minUB);
                     if (upperBound < range) {
                         skip = true;
                         float distance = df.getDistance(qData, oData);
@@ -148,6 +115,11 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getResultName() {
+        return filter.getTechFullName();
     }
 
 }
