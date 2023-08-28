@@ -5,11 +5,9 @@
 package vm.search;
 
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.queryResults.QueryExecutionStatsStoreInterface;
@@ -47,7 +45,7 @@ public class AlgorithmEvaluator {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         String datasetName = dataset.getDatasetName();
         String querySetName = dataset.getQuerySetName();
-        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(metricSpace, queries, k, kCandSetMaxSize, dataset, additionalParams);
+        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(metricSpace, queries, k, kCandSetMaxSize, dataset.getKeyValueStorage(), additionalParams);
         overallTime += System.currentTimeMillis();
 
         LOG.log(Level.INFO, "Storing statistics of queries");

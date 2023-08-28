@@ -164,10 +164,13 @@ public abstract class SearchingAlgorithm<T> {
     /**
      * @param metricSpace
      * @param queryObjects
+     * @param k
      * @param kCandSetMaxSize
+     * @param keyValueStorage
+     * @param additionalParams
      * @return
      */
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, int kCandSetMaxSize, Dataset dataset, Object... additionalParams) {
+    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, int kCandSetMaxSize, Map<Object, T> keyValueStorage, Object... additionalParams) {
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         try {
@@ -177,7 +180,6 @@ public abstract class SearchingAlgorithm<T> {
                 final Object queryObject = queryObjects.get(i);
                 final int iFinal = i;
                 threadPool.execute(() -> {
-                    final Map keyValueStorage = dataset.getKeyValueStorage();
                     Object[] params = Tools.concatArrays(new Object[]{keyValueStorage, kCandSetMaxSize}, additionalParams);
                     ret[iFinal] = completeKnnSearch(metricSpaceFinal, queryObject, k, null, params);
                     latch.countDown();

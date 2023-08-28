@@ -95,7 +95,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
         Map<Object, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
-        int nok = 0;
+        int total = 0;
         int ok = 0;
         while (candSet.hasNext()) {
             GRAPPLEPartitioning.ObjectMetadata oMetadata = (GRAPPLEPartitioning.ObjectMetadata) candSet.next();
@@ -110,7 +110,6 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 add = lb < range;
             }
             if (add) {
-                nok++;
                 Object oID = oMetadata.getoID();
                 T metricObjectData;
                 metricObjectData = (T) keyValueStorage.get(oID);
@@ -123,13 +122,13 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 range = ret.last().getValue();
             } else {
                 ok++;
-                System.out.println(ok + "+" + nok + " XXXXXX " + ((float) nok) / ok);
             }
+            total++;
         }
         t.addAndGet(System.currentTimeMillis());
         timesPerQueries.put(qID, t);
         distCompsPerQueries.put(qID, distComps);
-        System.out.println(ok + "+" + nok);
+        System.out.println(ok + ";" + total + ";" + ((float) ok * 100) / total + "; %");
         return ret;
 
     }
