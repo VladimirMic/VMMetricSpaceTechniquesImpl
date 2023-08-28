@@ -103,11 +103,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
             if (ret.size() < k) {
                 add = true;
             } else {
-                float lb = oMetadata.getLBdOQ(queryToPivotsDists);
-//                System.out.println("AAA " + lb);
-//                System.out.println("BBB " + range);
-//                System.out.println();
-                add = lb < range;
+                add = oMetadata.getLBdOQ(queryToPivotsDists, range);
             }
             if (add) {
                 Object oID = oMetadata.getoID();

@@ -26,6 +26,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     public static final Logger LOG = Logger.getLogger(GRAPPLEPartitioning.class.getName());
+    public static final Integer LB_COUNT = 24;
     private final PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter;
 
     public GRAPPLEPartitioning(PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
@@ -45,6 +46,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         }
 
         @Override
+        @SuppressWarnings("null")
         public void run() {
             long t = -System.currentTimeMillis();
             Iterator dataObjects = batch.iterator();
@@ -56,11 +58,8 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
                 float minCosAlpha = Float.MAX_VALUE;
 
-                Object p1IDForUB = null;
-                Object p2IDForUB = null;
-
-                String p1IDForLB = null;
-                String p2IDForLB = null;
+                String p1IDForUB = null;
+                String p2IDForUB = null;
 
                 float dp1ForUB = 0, dp2ForUB = 0, dp1p2ForUB = 0;
 
@@ -82,7 +81,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
                         }
                         // is this pivot pair best for the partitioning?
-                        float alphaCosine = (distOP2 * distOP2 + distOP1 * distOP1 - distP1P2 * distP1P2);
+                        float alphaCosine = (distOP1 * distOP1 + distOP2 * distOP2 - distP1P2 * distP1P2);
 
                         if (alphaCosine < minCosAlpha) { // yes
                             minCosAlpha = alphaCosine;
@@ -90,30 +89,31 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                             dp2ForUB = Math.max(distOP1, distOP2);
                             dp1p2ForUB = distP1P2;
                             if (distOP1 < distOP2) {
-                                p1IDForUB = p1ID;
-                                p2IDForUB = p2ID;
+                                p1IDForUB = p1ID.toString();
+                                p2IDForUB = p2ID.toString();
                             } else {
-                                p1IDForUB = p2ID;
-                                p2IDForUB = p1ID;
+                                p1IDForUB = p2ID.toString();
+                                p2IDForUB = p1ID.toString();
                             }
                         }
                         float coefP1P2ForLB = filter.getCoef(p1ID.toString(), p2ID.toString(), 2);
                         // is this pivot pair best for the filtering? -- the order of pivots matters!                        
-                        float cosPi1 = -coefP1P2ForLB * (distOP1 * distOP1 + distP1P2 * distP1P2 - distOP2 * distOP2) / (2 * distP1P2 * distOP1);
-                        oMetadata.addDataForLB(cosPi1, distOP1, distOP2, distP1P2, p1ID.toString(), p2ID.toString(), coefP1P2ForLB);
+                        float cosPi = -coefP1P2ForLB * (distOP1 * distOP1 + distP1P2 * distP1P2 - distOP2 * distOP2) / (2 * distP1P2 * distOP1);
+                        oMetadata.addDataForLB(cosPi, distOP1, distOP2, distP1P2, p1ID.toString(), p2ID.toString(), coefP1P2ForLB);
                         // -- opposite order
-                        cosPi1 = -coefP1P2ForLB * (-distOP1 * distOP1 + distP1P2 * distP1P2 + distOP2 * distOP2) / (2 * distP1P2 * distOP2);
-                        oMetadata.addDataForLB(cosPi1, distOP2, distOP1, distP1P2, p2ID.toString(), p1ID.toString(), coefP1P2ForLB);
+                        cosPi = -coefP1P2ForLB * (-distOP1 * distOP1 + distP1P2 * distP1P2 + distOP2 * distOP2) / (2 * distP1P2 * distOP2);
+                        oMetadata.addDataForLB(cosPi, distOP2, distOP1, distP1P2, p2ID.toString(), p1ID.toString(), coefP1P2ForLB);
                     }
                 }
-                float coefP1P2ForLB = filter.getCoef(p1IDForLB, p2IDForLB, 2);
+                float coefP1P2ForUB = filter.getCoef(p1IDForUB, p2IDForUB, 2);
+                oMetadata.setDataForUB(dp1ForUB, dp2ForUB, dp1p2ForUB, coefP1P2ForUB, p1IDForUB, p2IDForUB);
                 String key = p1IDForUB + "-" + p2IDForUB;
                 if (!ret.containsKey(key)) {
                     ret.put(key, new TreeSet<>());
                 }
                 ret.get(key).add(oMetadata);
-                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha));
-                LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}, coef for LB: {6}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB, coefP1P2ForLB});
+                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
+                LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB});
             }
             latch.countDown();
             t += System.currentTimeMillis();
@@ -128,7 +128,6 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
     public static class ObjectMetadata implements Comparable<ObjectMetadata> {
 
-        public static final Integer LB_COUNT = 20;
         private final Object oID;
         private final SortedSet<LBMetadata> lbData;
 
@@ -155,11 +154,11 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             }
         }
 
-        public void setDataForUB(float distOP1, float distOP2, float distP1P2, float coefP1P2ForLB, String p1IDForUB, String p2IDForUB) {
+        public void setDataForUB(float distOP1, float distOP2, float distP1P2, float coefP1P2ForUB, String p1IDForUB, String p2IDForUB) {
             this.dOP1ForUB = distOP1;
             this.dOP2ForUB = distOP2;
             this.dP1P2ForUB = distP1P2;
-            this.coefP1P2ForUB = coefP1P2ForLB;
+            this.coefP1P2ForUB = coefP1P2ForUB;
             this.p1IDForUB = p1IDForUB;
             this.p2IDForUB = p2IDForUB;
         }
@@ -189,10 +188,10 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 float dQP2 = queryToPivotsDists.get(lBMetadata.p2IDForLB);
                 float lb = lBMetadata.coefP1P2ForLB * Math.abs(dQP1 * lBMetadata.dOP2ForLB - dQP2 * lBMetadata.dOP1ForLB) / (lBMetadata.dP1P2ForLB);
                 if (lb > range) {
-                    return true;
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
 
         @Override
