@@ -28,8 +28,6 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  */
 public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCandSetIdentifier<T> {
 
-    private static final Logger LOG = Logger.getLogger(GRAPPLEPartitionsCandSetIdentifier.class.getName());
-
     private final Map<String, Float> distsP1P2 = new HashMap<>();
 
     public GRAPPLEPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface GRAPPLEPartitioningStorage, int pivotCountUsedForPartitioningLearning) {
