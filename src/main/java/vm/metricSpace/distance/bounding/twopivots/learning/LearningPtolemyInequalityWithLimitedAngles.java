@@ -68,8 +68,8 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
                                 synchronized (LearningPtolemyInequalityWithLimitedAngles.class) {
                                     String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]) + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]);
                                     results.put(pivotPairsID, extremes);
+                                    LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                                 }
-//                            LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                             }
                         }
                     } else {
@@ -103,21 +103,15 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
             fourObjects[3] = metricObjectsAsIdObjectMap.get(qoIDs[1]);
             fourObjectsData[2] = ((AbstractMap.SimpleEntry) fourObjects[2]).getValue();
             fourObjectsData[3] = ((AbstractMap.SimpleEntry) fourObjects[3]).getValue();
-            float[] sixDists = ToolsMetricDomain.getPairwiseDistsOfFourObjects(df, true, fourObjectsData);
+            float[] sixDists = ToolsMetricDomain.getPairwiseDistsOfFourObjects(df, false, fourObjectsData);
             if (sixDists == null || Tools.isZeroInArray(sixDists)) {
                 continue;
             }
-            float ac = Math.abs(sixDists[0] * sixDists[2]);
+            float c = Math.abs(sixDists[2]);
             float ef = Math.abs(sixDists[4] * sixDists[5]);
             float bd = Math.abs(sixDists[1] * sixDists[3]);
-            float fractionSum = CONSTANT_FOR_PRECISION * ac / (bd + ef);
-            float fractionDiff = ac / (ef - bd);
-            if (fractionDiff < 1) {
-                String s = "";
-            }
-            if (fractionSum > CONSTANT_FOR_PRECISION) {
-                String s = "";
-            }
+            float fractionSum = CONSTANT_FOR_PRECISION * c / (bd + ef);
+            float fractionDiff = c / Math.abs(ef - bd);
             // minSum, maxSum, minDiff, maxDiff
             extremes[0] = Math.min(extremes[0], fractionSum);
             extremes[1] = Math.max(extremes[1], fractionSum);

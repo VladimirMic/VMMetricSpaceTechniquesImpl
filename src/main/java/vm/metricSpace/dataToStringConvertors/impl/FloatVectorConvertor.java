@@ -15,12 +15,7 @@ public class FloatVectorConvertor implements MetricObjectDataToStringInterface<f
 
     @Override
     public float[] parseString(String dbString) {
-        try {
-            return DataTypeConvertor.stringToFloats(dbString, columnDelimiter);
-        } catch (NumberFormatException ex) {
-            Logger.getLogger(FloatVectorConvertor.class.getName()).log(Level.SEVERE, "Wrong string: " + dbString);
-            throw ex;
-        }
+        return DataTypeConvertor.stringToFloats(dbString, columnDelimiter);
     }
 
     @Override
