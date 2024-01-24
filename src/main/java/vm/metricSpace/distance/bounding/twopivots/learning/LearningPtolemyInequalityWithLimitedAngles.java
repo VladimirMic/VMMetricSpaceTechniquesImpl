@@ -47,7 +47,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
 
     public Map<Object, float[]> execute() {
         Map<Object, float[]> results = new HashMap<>();
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(1);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         CountDownLatch latch = new CountDownLatch(pivots.size());
         try {
             Map<Object, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjectsAndQueries, false);
