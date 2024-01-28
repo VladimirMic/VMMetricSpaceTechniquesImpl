@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
@@ -23,6 +26,7 @@ import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
 public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(KNNSearchWithTwoPivotFiltering.class.getName());
+    public static final Boolean CHECK_ALSO_UB = false;
 
     private final OnePivotFilter filter;
     private final String[] pivotIDs;
@@ -31,6 +35,8 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final Map<String, Integer> rowHeaders;
     private final Map<String, Integer> columnHeaders;
     private final DistanceFunctionInterface<T> df;
+
+    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
 
     public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, OnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
@@ -41,11 +47,13 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         this.df = df;
         this.rowHeaders = rowHeaders;
         this.columnHeaders = columnHeaders;
+        lbCheckedForQ = new ConcurrentHashMap();
     }
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
+        long lbChecked = 0;
         TreeSet<Map.Entry<Object, Float>> currAnswer = null;
         if (params.length > 0) {
             currAnswer = (TreeSet<Map.Entry<Object, Float>>) params[0];
@@ -80,6 +88,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                     float distQP = qpDists[pIdx];
                     float distPO = poDists[oIdx][pIdx];
                     float lowerBound = filter.lowerBound(distQP, distPO, pId);
+                    lbChecked++;
 //                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
 //                    maxLB = Math.max(maxLB, lowerBound);
                     if (lowerBound > range) {
@@ -87,7 +96,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 //                        System.out.println();
                         break;
                     }
-                    float upperBound = filter.upperBound(distQP, distPO, pId);
+                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, pId) : Float.MAX_VALUE;
 //                    minUB = Math.min(minUB, upperBound);
 //                    System.out.println(";upper bound;" + upperBound + "   extremes:;" + maxLB + ";" + minUB);
                     if (upperBound < range) {
@@ -108,6 +117,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         adjustAndReturnSearchRadius(ret, k);
         t += System.currentTimeMillis();
         incTime(qId, t);
+        incLBChecked(qId, lbChecked);
         LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
         return ret;
     }
@@ -120,6 +130,20 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public String getResultName() {
         return filter.getTechFullName();
+    }
+
+    private void incLBChecked(Object qId, long lbChecked) {
+        AtomicLong ai = lbCheckedForQ.get(qId);
+        if (ai != null) {
+            ai.addAndGet(lbChecked);
+        } else {
+            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
+        }
+    }
+
+    @Override
+    public Map<Object, AtomicLong>[] getAddditionalStats() {
+        return new Map[]{lbCheckedForQ};
     }
 
 }

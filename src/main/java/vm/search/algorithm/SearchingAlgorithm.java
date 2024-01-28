@@ -3,6 +3,7 @@ package vm.search.algorithm;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -238,7 +239,7 @@ public abstract class SearchingAlgorithm<T> {
     }
 
     public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return null;
+        return new HashMap[0];
     }
 
     public abstract String getResultName();

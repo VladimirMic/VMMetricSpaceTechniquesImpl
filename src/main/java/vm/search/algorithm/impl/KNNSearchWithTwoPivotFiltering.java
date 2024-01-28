@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
@@ -13,6 +15,7 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
+import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.CHECK_ALSO_UB;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -34,6 +37,8 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     private final DistanceFunctionInterface<T> df;
     private final boolean pivotPairsFromFilter;
 
+    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
+
     public KNNSearchWithTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, TwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
         this(metricSpace, filter, pivots, poDists, rowHeaders, columnHeaders, pivotPivotDists, df, false);
     }
@@ -52,6 +57,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
         this.df = df;
         this.rowHeaders = rowHeaders;
         this.columnHeaders = columnHeaders;
+        lbCheckedForQ = new ConcurrentHashMap();
     }
 
     public static boolean PRINT_DETAILS = false;
@@ -59,6 +65,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
+        long lbChecked = 0;
         TreeSet<Map.Entry<Object, Float>> currAnswer = null;
         if (params.length > 0) {
             currAnswer = (TreeSet<Map.Entry<Object, Float>>) params[0];
@@ -102,7 +109,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
                     float distP1O = poDists[oIdx][p1];
                     float distP2Q = qpDists[p2];
                     float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
-//                    if (distanceCheck < lowerBound) {
+                    lbChecked++;//                    if (distanceCheck < lowerBound) {
 //                        PRINT_DETAILS = false;
 ////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
 //                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
@@ -117,7 +124,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
                         skip = true;
                         break;
                     }
-                    float upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
+                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID) : Float.MAX_VALUE;
 //                    if (distanceCheck > upperBound) {
 //                        PRINT_DETAILS = false;
 ////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
@@ -141,6 +148,7 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
         adjustAndReturnSearchRadius(ret, k);
         t += System.currentTimeMillis();
         incTime(qId, t);
+        incLBChecked(qId, lbChecked);
         LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
         return ret;
     }
@@ -153,6 +161,20 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public String getResultName() {
         return filter.getTechFullName();
+    }
+
+    private void incLBChecked(Object qId, long lbChecked) {
+        AtomicLong ai = lbCheckedForQ.get(qId);
+        if (ai != null) {
+            ai.addAndGet(lbChecked);
+        } else {
+            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
+        }
+    }
+
+    @Override
+    public Map<Object, AtomicLong>[] getAddditionalStats() {
+        return new Map[]{lbCheckedForQ};
     }
 
 }

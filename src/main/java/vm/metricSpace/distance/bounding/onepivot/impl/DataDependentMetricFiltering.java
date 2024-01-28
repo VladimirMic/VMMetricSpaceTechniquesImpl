@@ -7,11 +7,11 @@ import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
  *
  * @author Vlada
  */
-public class TriangleInequalityWithLimitedAngles extends OnePivotFilter {
+public class DataDependentMetricFiltering extends OnePivotFilter {
 
     private final Map<String, Float> pivotToCoefMapping;
 
-    public TriangleInequalityWithLimitedAngles(String resultPreffixName, Map<String, Float> pivotToCoefMapping) {
+    public DataDependentMetricFiltering(String resultPreffixName, Map<String, Float> pivotToCoefMapping) {
         super(resultPreffixName);
         this.pivotToCoefMapping = pivotToCoefMapping;
     }
@@ -32,7 +32,7 @@ public class TriangleInequalityWithLimitedAngles extends OnePivotFilter {
 
     @Override
     public String getTechName() {
-        return "triangle_ineq_lim_angles";
+        return "data-dependent_metric_filtering";
     }
 
 }

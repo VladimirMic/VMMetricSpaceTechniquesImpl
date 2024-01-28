@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.datasetPartitioning.AbstractDatasetPartitioning;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaiosFilteringWithLimitedAnglesSimpleCoef;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
 
 /**
  *
@@ -27,9 +27,9 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     public static final Logger LOG = Logger.getLogger(GRAPPLEPartitioning.class.getName());
     public static final Integer LB_COUNT = 24;
-    private final PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter;
+    private final DataDependentGeneralisedPtolemaicFiltering filter;
 
-    public GRAPPLEPartitioning(PtolemaiosFilteringWithLimitedAnglesSimpleCoef filter, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
+    public GRAPPLEPartitioning(DataDependentGeneralisedPtolemaicFiltering filter, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
         super(metricSpace, df, pivots);
         this.filter = filter;
     }

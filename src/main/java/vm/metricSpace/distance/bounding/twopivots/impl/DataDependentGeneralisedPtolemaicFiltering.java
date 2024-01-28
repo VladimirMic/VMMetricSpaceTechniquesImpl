@@ -10,32 +10,32 @@ import static vm.search.algorithm.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETA
  *
  * @author xmic
  */
-public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFilter {
+public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter {
 
     private final Map<String, float[]> coefs;
-    private static final Logger LOGGER = Logger.getLogger(PtolemaiosFilteringWithLimitedAnglesSimpleCoef.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DataDependentGeneralisedPtolemaicFiltering.class.getName());
     public static final Integer CONSTANT_FOR_PRECISION = 10000;
     public static final Float RATIO_OF_IGNORED_SMALLEST = 0.0f / 100f; // percentile defining the minimum and the maximum. I.e., 2 times this is ignored.
-    public static final Integer NUMBER_OF_TETRAHEDRONS_FOR_LEARNING = 40000000;
 
-    public PtolemaiosFilteringWithLimitedAnglesSimpleCoef(String namePrefix, Map<String, float[]> coefs) {
+    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, Map<String, float[]> coefs) {
         super(namePrefix);
         this.coefs = coefs;
     }
 
     @Override
     public float lowerBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID) {
-        float lb1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 0) / CONSTANT_FOR_PRECISION;
+//        float lb1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 0) / CONSTANT_FOR_PRECISION;
         float lb2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 2);
-        if (PRINT_DETAILS) {
-            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
-            if (lb1 > lb2) {
-                System.out.println(1);
-            } else {
-                System.out.println(2);
-            }
-        }
-        return Math.max(lb1, lb2);
+//        if (PRINT_DETAILS) {
+//            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
+//            if (lb1 > lb2) {
+//                System.out.println(1);
+//            } else {
+//                System.out.println(2);
+//            }
+//        }
+        return lb2;
+//        return Math.max(lb1, lb2);
     }
 
     @Override
@@ -80,6 +80,6 @@ public class PtolemaiosFilteringWithLimitedAnglesSimpleCoef extends TwoPivotsFil
 
     @Override
     protected String getTechName() {
-        return "ptolemaios_limited_angles_simpleCoefs_" + NUMBER_OF_TETRAHEDRONS_FOR_LEARNING;
+        return "data-dependent_generalised_ptolemaic_filtering";
     }
 }

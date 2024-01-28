@@ -1,10 +1,10 @@
 package vm.metricSpace.distance.bounding.twopivots.learning;
 
 import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
@@ -13,7 +13,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import static vm.metricSpace.distance.bounding.twopivots.impl.PtolemaiosFilteringWithLimitedAnglesSimpleCoef.CONSTANT_FOR_PRECISION;
+import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering.CONSTANT_FOR_PRECISION;
 import vm.metricSpace.distance.bounding.twopivots.storeLearned.PtolemyInequalityWithLimitedAnglesCoefsStoreInterface;
 
 /**
@@ -34,19 +34,22 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> sampleObjectsAndQueries;
     private final PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage;
     private final TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries;
+    
+    private final boolean allPivotPairs;
 
-    public LearningPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName) {
+    public LearningPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
         this.metricSpace = metricSpace;
         this.df = df;
         this.pivots = pivots;
         this.sampleObjectsAndQueries = sampleObjectsAndQueries;
         this.storage = storage;
         this.smallDistsOfSampleObjectsAndQueries = smallDistsOfSampleObjectsAndQueries;
-        this.resultName = storage.getResultDescription(datasetName, smallDistsOfSampleObjectsAndQueries.size(), objectsCount, queriesCount, pivots.size(), ALL_PIVOT_PAIRS);
+        this.allPivotPairs = allPivotPairs;
+        this.resultName = storage.getResultDescription(datasetName, smallDistsOfSampleObjectsAndQueries.size(), objectsCount, queriesCount, pivots.size(), allPivotPairs);
     }
 
     public Map<Object, float[]> execute() {
-        Map<Object, float[]> results = new HashMap<>();
+        ConcurrentHashMap<Object, float[]> results = new ConcurrentHashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         CountDownLatch latch = new CountDownLatch(pivots.size());
         try {
@@ -59,7 +62,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
                     fourObjects[0] = pivots.get(finalP1);
                     fourObjectsData[0] = metricSpace.getDataOfMetricObject(fourObjects[0]);
 
-                    if (ALL_PIVOT_PAIRS) {
+                    if (allPivotPairs) {
                         if (finalP1 != pivots.size() - 1) {
                             for (int p2 = finalP1 + 1; p2 < pivots.size(); p2++) {
                                 fourObjects[1] = pivots.get(p2);
