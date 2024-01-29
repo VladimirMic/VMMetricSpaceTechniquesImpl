@@ -18,7 +18,7 @@ public class FourPointBasedFiltering extends TwoPivotsFilter {
     }
 
     @Override
-    public float lowerBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, String p1ID, String p2ID) {
+    public float lowerBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range) {
         double xO = evaluateXFunc(distP1O, distP2O, distP1P2);
         double xQ = evaluateXFunc(distP1Q, distP2Q, distP1P2);
         double yO = evaluateYFunc(xO, distP1O, distP1P2);
@@ -29,7 +29,7 @@ public class FourPointBasedFiltering extends TwoPivotsFilter {
     }
 
     @Override
-    public float upperBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, String p1ID, String p2ID) {
+    public float upperBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range) {
         double xO = evaluateXFunc(distP1O, distP2O, distP1P2);
         double xQ = evaluateXFunc(distP1Q, distP2Q, distP1P2);
         double yO = evaluateYFunc(xO, distP1O, distP1P2);

@@ -25,7 +25,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
 
     public static final Logger LOG = Logger.getLogger(LearningPtolemyInequalityWithLimitedAngles.class.getName());
 
-    public static final Boolean ALL_PIVOT_PAIRS = true;
+    public static final Boolean ALL_PIVOT_PAIRS = false;
 
     private final String resultName;
     private final AbstractMetricSpace<T> metricSpace;

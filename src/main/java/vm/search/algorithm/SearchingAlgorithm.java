@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
@@ -192,6 +193,21 @@ public abstract class SearchingAlgorithm<T> {
         }
         threadPool.shutdown();
         return ret;
+    }
+
+    public final void checkOrdersOfPivots(List<Object> pivots, Map<String, Integer> columnHeaders, AbstractMetricSpace<T> metricSpace) {
+        List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
+        String[] pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
+        for (int p = 0; p < pivotIDsList.size(); p++) {
+            String pId = pivotIDs[p];
+            if (!columnHeaders.containsKey(pId)) {
+                throw new IllegalArgumentException("Precomputed distances dost not contain pivot " + pId);
+            }
+            int pIdx = columnHeaders.get(pId);
+            if (pIdx != p) {
+                throw new IllegalArgumentException("Wrong pivot ordering " + pId + ", " + p);
+            }
+        }
     }
 
     public void incTime(Object qId, long time) {

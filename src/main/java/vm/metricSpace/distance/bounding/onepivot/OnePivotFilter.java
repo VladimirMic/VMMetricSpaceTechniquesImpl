@@ -12,18 +12,18 @@ public abstract class OnePivotFilter extends BoundsOnDistanceEstimation {
         super(resultNamePreffixNumberOfPivotsPlusPivots);
     }
 
-    public abstract float lowerBound(float distQP, float distOP, String pivotID);
+    public abstract float lowerBound(float distQP, float distOP, int pivotIdx);
 
-    public abstract float upperBound(float distQP, float distOP, String pivotID);
+    public abstract float upperBound(float distQP, float distOP, int pivotIdx);
 
     @Override
     public float lowerBound(Object... args) {
-        return lowerBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), args[2].toString());
+        return lowerBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), (int) args[2]);
     }
 
     @Override
     public float upperBound(Object... args) {
-        return upperBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), args[2].toString());
+        return upperBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), (int) args[2]);
     }
 
 }

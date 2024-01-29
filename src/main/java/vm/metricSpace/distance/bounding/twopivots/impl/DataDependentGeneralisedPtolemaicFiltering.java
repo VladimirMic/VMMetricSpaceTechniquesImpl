@@ -1,8 +1,5 @@
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 import static vm.search.algorithm.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETAILS;
 
@@ -12,20 +9,30 @@ import static vm.search.algorithm.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETA
  */
 public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter {
 
-    private final Map<String, float[]> coefs;
-    private static final Logger LOGGER = Logger.getLogger(DataDependentGeneralisedPtolemaicFiltering.class.getName());
-    public static final Integer CONSTANT_FOR_PRECISION = 10000;
+    private final float[][][] coefs;
+    public static final Integer CONSTANT_FOR_PRECISION = 1024 * 8;
     public static final Float RATIO_OF_IGNORED_SMALLEST = 0.0f / 100f; // percentile defining the minimum and the maximum. I.e., 2 times this is ignored.
 
-    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, Map<String, float[]> coefs) {
+    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, float[][][] coefs) {
         super(namePrefix);
         this.coefs = coefs;
     }
 
     @Override
-    public float lowerBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID) {
-//        float lb1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 0) / CONSTANT_FOR_PRECISION;
-        float lb2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 2);
+    public float lowerBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range) {
+        float ef = distP1O * distP2Q;
+        float bd = distP1Q * distP2O;
+
+        float coef = coefs[p1Idx][p2Idx][2];
+        float fraction = Math.abs(bd - ef);
+        float lb2 = coef * fraction;
+        if (lb2 > range) {
+            return lb2;
+        }
+        coef = coefs[p1Idx][p2Idx][0];
+        fraction = bd + ef;
+        float lb1 = (coef * fraction) / CONSTANT_FOR_PRECISION;
+
 //        if (PRINT_DETAILS) {
 //            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
 //            if (lb1 > lb2) {
@@ -34,52 +41,41 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
 //                System.out.println(2);
 //            }
 //        }
-        return lb2;
-//        return Math.max(lb1, lb2);
+        return lb1;
     }
 
     @Override
-    public float upperBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID) {
-//        return Float.MAX_VALUE;
-        float ub1 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 1) / CONSTANT_FOR_PRECISION;
-        float ub2 = returnBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID, 3);
-        if (PRINT_DETAILS) {
-            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
-            if (ub1 < ub2) {
-                System.out.println(1);
-            } else {
-                System.out.println(2);
-            }
+    public float upperBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range) {
+        float coef = coefs[p1Idx][p2Idx][1];
+        float ef = distP1O * distP2Q;
+        float bd = distP1Q * distP2O;
+        float fraction = bd + ef;
+        float ub1 = (coef * fraction) / CONSTANT_FOR_PRECISION;
+        if (ub1 >= range) {
+            return ub1;
         }
-        return Math.min(ub1, ub2);
-    }
-
-    private float returnBound(float distP1P2, float distP2O, float distQP1, float distP1O, float distP2Q, String p1ID, String p2ID, int index) {
-        int signum = index > 1 ? -1 : 1;
-        float coef = getCoef(p1ID, p2ID, index);
-        double a = distP1P2;
-        double ef = distP1O * distP2Q;
-        double bd = distQP1 * distP2O;
-        double fraction = Math.abs(bd + signum * ef) / a;
-        if (PRINT_DETAILS && signum < 0) {
-            System.out.println(a + ";" + distP1O + ";" + distP2O + ";" + distQP1 + ";" + distP2Q + ";;;" + bd + ";" + ef + ";;;" + fraction + ";" + coef);
-        }
-        return (float) (coef * fraction);
-    }
-
-    public float getCoef(String p1ID, String p2ID, int index) {
-        if (coefs.containsKey(p1ID + "-" + p2ID)) {
-            return coefs.get(p1ID + "-" + p2ID)[index];
-        }
-        if (coefs.containsKey(p2ID + "-" + p1ID)) {
-            return coefs.get(p2ID + "-" + p1ID)[index];
-        }
-        LOGGER.log(Level.SEVERE, "No coef for pivots ({0}-{1}). Coefs for pivot pairs provided: {2}", new Object[]{p1ID, p2ID, coefs.size()});
-        throw new Error("No coef provided");
+        coef = coefs[p1Idx][p2Idx][3];
+        fraction = Math.abs(bd - ef);
+        float ub2 = coef * fraction;
+//        if (PRINT_DETAILS) {
+//            System.out.println(a + ";" + distP1O + ";" + distP2O + ";" + distP1Q + ";" + distP2Q + ";;;" + bd + ";" + ef + ";;;" + fraction + ";" + coef);
+//            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
+//            if (ub1 < ub2) {
+//                System.out.println(1);
+//            } else {
+//                System.out.println(2);
+//            }
+//        }
+        return ub2;
     }
 
     @Override
     protected String getTechName() {
         return "data-dependent_generalised_ptolemaic_filtering";
     }
+
+    public float getCoef(int p1Idx, int p2Idx, int coefIdx) {
+        return coefs[p1Idx][p2Idx][coefIdx];
+    }
+
 }

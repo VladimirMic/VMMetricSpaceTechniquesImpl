@@ -13,12 +13,12 @@ public class TriangleInequality extends OnePivotFilter {
     }
 
     @Override
-    public float lowerBound(float distQP, float distOP, String pivotID) {
+    public float lowerBound(float distQP, float distOP, int pivotIdx) {
         return Math.abs(distQP - distOP);
     }
 
     @Override
-    public float upperBound(float distQP, float distOP, String pivotID) {
+    public float upperBound(float distQP, float distOP, int pivotIdx) {
         return distQP + distOP;
     }
 

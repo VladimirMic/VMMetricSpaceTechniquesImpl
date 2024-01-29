@@ -1,6 +1,5 @@
 package vm.metricSpace.distance.bounding.onepivot.impl;
 
-import java.util.Map;
 import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
 
 /**
@@ -9,24 +8,20 @@ import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
  */
 public class DataDependentMetricFiltering extends OnePivotFilter {
 
-    private final Map<String, Float> pivotToCoefMapping;
+    private final float[] coefsForPivot;
 
-    public DataDependentMetricFiltering(String resultPreffixName, Map<String, Float> pivotToCoefMapping) {
+    public DataDependentMetricFiltering(String resultPreffixName, float[] coefsForPivot) {
         super(resultPreffixName);
-        this.pivotToCoefMapping = pivotToCoefMapping;
+        this.coefsForPivot = coefsForPivot;
     }
 
     @Override
-    public float lowerBound(float distQP, float distOP, String pivotID) {
-        if (!pivotToCoefMapping.containsKey(pivotID)) {
-            throw new IllegalArgumentException("No coefficient for pivot " + pivotID + " provided. Loaded info about " + pivotToCoefMapping.size() + " pivots");
-        }
-        float coef = pivotToCoefMapping.get(pivotID);
-        return Math.abs(distQP - distOP) * coef;
+    public float lowerBound(float distQP, float distOP, int pivotdx) {
+        return Math.abs(distQP - distOP) * coefsForPivot[pivotdx];
     }
 
     @Override
-    public float upperBound(float distQP, float distOP, String pivotID) {
+    public float upperBound(float distQP, float distOP, int pivotIdx) {
         return Float.MAX_VALUE;
     }
 

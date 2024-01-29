@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.search.algorithm.SearchingAlgorithm;
@@ -29,25 +27,21 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     public static final Boolean CHECK_ALSO_UB = false;
 
     private final OnePivotFilter filter;
-    private final String[] pivotIDs;
     private final List<T> pivotsData;
     private final float[][] poDists;
     private final Map<String, Integer> rowHeaders;
-    private final Map<String, Integer> columnHeaders;
     private final DistanceFunctionInterface<T> df;
 
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
 
     public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, OnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
-        List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
-        this.pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
-        this.columnHeaders = columnHeaders;
-        lbCheckedForQ = new ConcurrentHashMap();
+        this.lbCheckedForQ = new ConcurrentHashMap();
+        checkOrdersOfPivots(pivots, columnHeaders, metricSpace);
     }
 
     @Override
@@ -70,24 +64,16 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
             boolean skip = false;
             Object o = objects.next();
             Object oId = metricSpace.getIDOfMetricObject(o);
-            if (!rowHeaders.containsKey(oId.toString())) {
-                throw new RuntimeException("Precomputed distances dost not contain object " + oId.toString());
-            }
-            int oIdx = rowHeaders.get(oId.toString());
+            int oIdx = rowHeaders.get(oId.toString()); //                 throw new RuntimeException("Precomputed distances dost not contain object " + oId.toString());
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
 //            float maxLB = 0;
 //            float minUB = Float.MAX_VALUE;
             if (range < Float.MAX_VALUE && range > 0) {
-                for (int p = 0; p < pivotIDs.length; p++) {
-                    String pId = pivotIDs[p];
-                    if (!columnHeaders.containsKey(pId)) {
-                        throw new RuntimeException("Precomputed distances dost not contain pivot " + pId);
-                    }
-                    int pIdx = columnHeaders.get(pId);
-                    float distQP = qpDists[pIdx];
-                    float distPO = poDists[oIdx][pIdx];
-                    float lowerBound = filter.lowerBound(distQP, distPO, pId);
+                for (int p = 0; p < pivotsData.size(); p++) {
+                    float distQP = qpDists[p];
+                    float distPO = poDists[oIdx][p];
+                    float lowerBound = filter.lowerBound(distQP, distPO, p);
                     lbChecked++;
 //                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
 //                    maxLB = Math.max(maxLB, lowerBound);
@@ -96,7 +82,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 //                        System.out.println();
                         break;
                     }
-                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, pId) : Float.MAX_VALUE;
+                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, p) : Float.MAX_VALUE;
 //                    minUB = Math.min(minUB, upperBound);
 //                    System.out.println(";upper bound;" + upperBound + "   extremes:;" + maxLB + ";" + minUB);
                     if (upperBound < range) {
@@ -145,5 +131,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     public Map<Object, AtomicLong>[] getAddditionalStats() {
         return new Map[]{lbCheckedForQ};
     }
+
 
 }
