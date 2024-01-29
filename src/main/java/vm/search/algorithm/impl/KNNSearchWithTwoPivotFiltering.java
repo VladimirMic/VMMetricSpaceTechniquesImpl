@@ -11,10 +11,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.ToolsMetricDomain;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
 import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.CHECK_ALSO_UB;
+import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.SORT_PIVOTS;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -71,6 +73,10 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             T pData = pivotsData.get(i);
             qpDists[i] = df.getDistance(qData, pData);
         }
+        int[] pivotPermutation = null;
+        if (SORT_PIVOTS) {
+            pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+        }
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
         int step = pivotPairsFromFilter ? 2 : 1;
         while (objects.hasNext()) {
@@ -84,44 +90,57 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
 //            float distanceCheck = df.getDistance(qData, oData);;
+            int pivotPairsChecked = 0;
             if (range < Float.MAX_VALUE) {
-                for (int p1Idx = 0; p1Idx < pivotsData.size(); p1Idx += step) {
-                    int p2Idx = p1Idx + 1;
-                    if (p2Idx == pivotsData.size()) {
-                        p2Idx = 0;
+                pivotsCheck:
+                for (int p = 0; p < pivotsData.size(); p += step) {
+                    int p1Idx = pivotPermutation == null ? p : pivotPermutation[p];
+                    int[] p2Idxs = pivotPermutation == null ? new int[]{p1Idx + 1} : getP2ToCheck(p, pivotPermutation);
+                    if (p2Idxs.length == 0) {
+                        continue;
                     }
-                    float distP1P2 = pivotPivotDists[p1Idx][p2Idx];
-                    float distP2O = poDists[oIdx][p2Idx];
-                    float distQP1 = qpDists[p1Idx];
-                    float distP1O = poDists[oIdx][p1Idx];
-                    float distP2Q = qpDists[p2Idx];
-                    float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range);
-                    lbChecked++;//                    if (distanceCheck < lowerBound) {
+                    if (pivotPermutation == null && p2Idxs[0] == pivotsData.size()) {
+                        p2Idxs[0] = 0;
+                    }
+                    for (int p2Idx : p2Idxs) {
+                        if (pivotPairsChecked == pivotsData.size()) {
+                            break pivotsCheck;
+                        }
+                        pivotPairsChecked++;
+                        float distP1P2 = pivotPivotDists[p1Idx][p2Idx];
+                        float distP2O = poDists[oIdx][p2Idx];
+                        float distQP1 = qpDists[p1Idx];
+                        float distP1O = poDists[oIdx][p1Idx];
+                        float distP2Q = qpDists[p2Idx];
+                        float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range);
+                        lbChecked++;
+//                    if (distanceCheck < lowerBound) {
 //                        PRINT_DETAILS = false;
 ////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
 //                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                    }
-                    if (lowerBound > range) {
+                        if (lowerBound > range) {
 //                        PRINT_DETAILS = true;
 //                        if (PRINT_DETAILS) {
 //                            System.out.println("Skipped. Radius: " + range + ", lb: " + lowerBound);
 //                            filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                        }
 //                        PRINT_DETAILS = false;
-                        skip = true;
-                        break;
-                    }
-                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range) : Float.MAX_VALUE;
+                            skip = true;
+                            break pivotsCheck;
+                        }
+                        float upperBound = CHECK_ALSO_UB ? filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range) : Float.MAX_VALUE;
 //                    if (distanceCheck > upperBound) {
 //                        PRINT_DETAILS = false;
 ////                        System.out.print("XXX range;" + range + ";realDist;" + distanceCheck + ";");
 //                        upperBound = filter.upperBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1ID, p2ID);
 //                    }
-                    if (upperBound < range) {
-                        skip = true;
-                        float distance = df.getDistance(qData, oData);
-                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                        break;
+                        if (upperBound < range) {
+                            skip = true;
+                            float distance = df.getDistance(qData, oData);
+                            ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+                            break pivotsCheck;
+                        }
                     }
                 }
             }
@@ -162,6 +181,12 @@ public class KNNSearchWithTwoPivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public Map<Object, AtomicLong>[] getAddditionalStats() {
         return new Map[]{lbCheckedForQ};
+    }
+
+    private int[] getP2ToCheck(int pIndex, int[] pivotPermutation) {
+        int[] ret = new int[pIndex];
+        System.arraycopy(pivotPermutation, 0, ret, 0, pIndex);
+        return ret;
     }
 
 }

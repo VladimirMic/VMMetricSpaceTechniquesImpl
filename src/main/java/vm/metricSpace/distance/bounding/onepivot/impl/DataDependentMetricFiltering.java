@@ -17,7 +17,7 @@ public class DataDependentMetricFiltering extends OnePivotFilter {
 
     @Override
     public float lowerBound(float distQP, float distOP, int pivotdx) {
-        return Math.abs(distQP - distOP) * coefsForPivot[pivotdx];
+        return Math.abs(distOP - distQP) * coefsForPivot[pivotdx];
     }
 
     @Override

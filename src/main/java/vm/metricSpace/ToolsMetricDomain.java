@@ -3,6 +3,7 @@ package vm.metricSpace;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -197,6 +199,25 @@ public class ToolsMetricDomain {
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
         Object referentData = metricSpace.getDataOfMetricObject(referent);
         return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength, distsToPivotsStorage);
+    }
+
+    public static int[] getPivotPermutationIndexes(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List pivotsData, Object referentData, int prefixLength) {
+        if (prefixLength < 0) {
+            prefixLength = Integer.MAX_VALUE;
+        }
+        Comparator comp = new vm.datatools.Tools.MapByValueComparator<Integer>();
+        SortedSet<Map.Entry<Integer, Float>> perm = new TreeSet<>(comp);
+        for (int i = 0; i < pivotsData.size(); i++) {
+            float distance = df.getDistance(pivotsData.get(i), referentData);
+            perm.add(new AbstractMap.SimpleEntry<>(i, distance));
+        }
+        prefixLength = Math.min(prefixLength, pivotsData.size());
+        int[] ret = new int[prefixLength];
+        Iterator<Map.Entry<Integer, Float>> it = perm.iterator();
+        for (int i = 0; i < prefixLength && it.hasNext(); i++) {
+            ret[i] = it.next().getKey();
+        }
+        return ret;
     }
 
     /**

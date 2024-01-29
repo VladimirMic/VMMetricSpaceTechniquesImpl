@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.ToolsMetricDomain;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
@@ -25,6 +26,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(KNNSearchWithTwoPivotFiltering.class.getName());
     public static final Boolean CHECK_ALSO_UB = false;
+    public static final Boolean SORT_PIVOTS = true;
 
     private final OnePivotFilter filter;
     private final List<T> pivotsData;
@@ -59,6 +61,10 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
             T pData = pivotsData.get(i);
             qpDists[i] = df.getDistance(qData, pData);
         }
+        int[] pivotPermutation = null;
+        if (SORT_PIVOTS) {
+            pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+        }
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
         while (objects.hasNext()) {
             boolean skip = false;
@@ -71,9 +77,10 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 //            float minUB = Float.MAX_VALUE;
             if (range < Float.MAX_VALUE && range > 0) {
                 for (int p = 0; p < pivotsData.size(); p++) {
-                    float distQP = qpDists[p];
-                    float distPO = poDists[oIdx][p];
-                    float lowerBound = filter.lowerBound(distQP, distPO, p);
+                    int pIdx = pivotPermutation == null ? p : pivotPermutation[p];
+                    float distQP = qpDists[pIdx];
+                    float distPO = poDists[oIdx][pIdx];
+                    float lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     lbChecked++;
 //                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
 //                    maxLB = Math.max(maxLB, lowerBound);
@@ -82,7 +89,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 //                        System.out.println();
                         break;
                     }
-                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, p) : Float.MAX_VALUE;
+                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, pIdx) : Float.MAX_VALUE;
 //                    minUB = Math.min(minUB, upperBound);
 //                    System.out.println(";upper bound;" + upperBound + "   extremes:;" + maxLB + ";" + minUB);
                     if (upperBound < range) {
@@ -131,6 +138,5 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     public Map<Object, AtomicLong>[] getAddditionalStats() {
         return new Map[]{lbCheckedForQ};
     }
-
 
 }

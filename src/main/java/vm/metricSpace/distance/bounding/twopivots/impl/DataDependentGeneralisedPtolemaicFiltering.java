@@ -1,7 +1,6 @@
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
 import vm.metricSpace.distance.bounding.twopivots.TwoPivotsFilter;
-import static vm.search.algorithm.impl.KNNSearchWithTwoPivotFiltering.PRINT_DETAILS;
 
 /**
  *
@@ -24,14 +23,17 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
         float bd = distP1Q * distP2O;
 
         float coef = coefs[p1Idx][p2Idx][2];
-        float fraction = Math.abs(bd - ef);
-        float lb2 = coef * fraction;
-        if (lb2 > range) {
-            return lb2;
+        float fraction;
+        if (coef != 0) {
+            fraction = Math.abs(bd - ef);
+            float lb2 = coef * fraction;
+            if (lb2 > range) {
+                return lb2;
+            }
         }
         coef = coefs[p1Idx][p2Idx][0];
         fraction = bd + ef;
-        float lb1 = (coef * fraction) / CONSTANT_FOR_PRECISION;
+        return (coef * fraction) / CONSTANT_FOR_PRECISION;
 
 //        if (PRINT_DETAILS) {
 //            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
@@ -41,7 +43,6 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
 //                System.out.println(2);
 //            }
 //        }
-        return lb1;
     }
 
     @Override
@@ -56,17 +57,7 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
         }
         coef = coefs[p1Idx][p2Idx][3];
         fraction = Math.abs(bd - ef);
-        float ub2 = coef * fraction;
-//        if (PRINT_DETAILS) {
-//            System.out.println(a + ";" + distP1O + ";" + distP2O + ";" + distP1Q + ";" + distP2Q + ";;;" + bd + ";" + ef + ";;;" + fraction + ";" + coef);
-//            System.out.print("ub1;" + ub1 + ";ub2;" + ub2 + ";");
-//            if (ub1 < ub2) {
-//                System.out.println(1);
-//            } else {
-//                System.out.println(2);
-//            }
-//        }
-        return ub2;
+        return coef * fraction;
     }
 
     @Override
