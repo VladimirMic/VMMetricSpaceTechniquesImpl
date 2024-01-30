@@ -13,11 +13,11 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
     /*
     Mapping of object IDs to column indexes
      */
-    protected Map<String, Integer> columnHeaders;
+    protected Map<Object, Integer> columnHeaders;
     /*
     Mapping of object IDs to row indexes
      */
-    protected Map<String, Integer> rowHeaders;
+    protected Map<Object, Integer> rowHeaders;
 
     public AbstractPrecomputedDistancesMatrixLoader() {
         this.rowHeaders = new HashMap<>();
@@ -39,11 +39,11 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
         return this.loadPrecomPivotsToObjectsDists(datasetName, pivotSetName, -1);
     }
 
-    public Map<String, Integer> getRowHeaders() {
+    public Map<Object, Integer> getRowHeaders() {
         return Collections.unmodifiableMap(rowHeaders);
     }
 
-    public Map<String, Integer> getColumnHeaders() {
+    public Map<Object, Integer> getColumnHeaders() {
         return Collections.unmodifiableMap(columnHeaders);
     }
 

@@ -277,8 +277,8 @@ public class ToolsMetricDomain {
 
     public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator metricObjectsFromDataset, List pivots, AbstractMetricSpace metricSpace, DistanceFunctionInterface df) {
         List<float[]> dists = new ArrayList<>();
-        Map<String, Integer> columnHeaders = new HashMap<>();
-        Map<String, Integer> rowHeaders = new HashMap<>();
+        Map<Object, Integer> columnHeaders = new HashMap<>();
+        Map<Object, Integer> rowHeaders = new HashMap<>();
         for (int i = 0; i < pivots.size(); i++) {
             Object p = pivots.get(i);
             Object pID = metricSpace.getIDOfMetricObject(p);

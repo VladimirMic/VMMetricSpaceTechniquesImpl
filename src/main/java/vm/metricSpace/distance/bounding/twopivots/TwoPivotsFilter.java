@@ -12,6 +12,8 @@ public abstract class TwoPivotsFilter extends BoundsOnDistanceEstimation {
         super(resultNamePrefix);
     }
 
+    public abstract boolean isPivotPairValid(int p1Idx, int p2Idx);
+
     public abstract float lowerBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range);
 
     public abstract float upperBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range);

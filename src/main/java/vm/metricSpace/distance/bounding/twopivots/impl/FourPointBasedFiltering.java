@@ -60,4 +60,9 @@ public class FourPointBasedFiltering extends TwoPivotsFilter {
         return Math.sqrt(distOP1 * distOP1 - pom * pom);
     }
 
+    @Override
+    public boolean isPivotPairValid(int p1Idx, int p2Idx) {
+        return true;
+    }
+
 }

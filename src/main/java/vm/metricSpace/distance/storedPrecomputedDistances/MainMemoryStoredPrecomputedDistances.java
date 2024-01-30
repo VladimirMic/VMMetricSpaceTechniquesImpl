@@ -14,7 +14,7 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
 
     private final float[][] dists;
 
-    public MainMemoryStoredPrecomputedDistances(float[][] dists, Map<String, Integer> columnHeaders, Map<String, Integer> rowHeaders) {
+    public MainMemoryStoredPrecomputedDistances(float[][] dists, Map<Object, Integer> columnHeaders, Map<Object, Integer> rowHeaders) {
         super.columnHeaders = columnHeaders;
         super.rowHeaders = rowHeaders;
         this.dists = dists;

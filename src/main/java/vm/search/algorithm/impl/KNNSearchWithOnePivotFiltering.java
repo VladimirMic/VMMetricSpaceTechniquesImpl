@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
@@ -31,12 +30,12 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final OnePivotFilter filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
-    private final Map<String, Integer> rowHeaders;
+    private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
 
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
 
-    public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, OnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<String, Integer> rowHeaders, Map<String, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, OnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
@@ -56,28 +55,36 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         }
         T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
-        float[] qpDists = new float[pivotsData.size()];
-        for (int i = 0; i < qpDists.length; i++) {
-            T pData = pivotsData.get(i);
-            qpDists[i] = df.getDistance(qData, pData);
+        float[] qpDists = qpDistsCached.get(qId);
+        if (qpDists == null) {
+            qpDists = new float[pivotsData.size()];
+            for (int i = 0; i < qpDists.length; i++) {
+                T pData = pivotsData.get(i);
+                qpDists[i] = df.getDistance(qData, pData);
+            }
+            qpDistsCached.put(qId, qpDists);
         }
         int[] pivotPermutation = null;
         if (SORT_PIVOTS) {
-            pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+            pivotPermutation = pivotPermutationCached.get(qId);
+            if (pivotPermutation == null) {
+                pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+                pivotPermutationCached.put(qId, pivotPermutation);
+            }
         }
         TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
+        objectsLoop:
         while (objects.hasNext()) {
-            boolean skip = false;
             Object o = objects.next();
             Object oId = metricSpace.getIDOfMetricObject(o);
-            int oIdx = rowHeaders.get(oId.toString()); //                 throw new RuntimeException("Precomputed distances dost not contain object " + oId.toString());
+            int oIdx = rowHeaders.get(oId.toString());
             T oData = metricSpace.getDataOfMetricObject(o);
             float range = adjustAndReturnSearchRadius(ret, k);
 //            float maxLB = 0;
 //            float minUB = Float.MAX_VALUE;
             if (range < Float.MAX_VALUE && range > 0) {
                 for (int p = 0; p < pivotsData.size(); p++) {
-                    int pIdx = pivotPermutation == null ? p : pivotPermutation[p];
+                    int pIdx = SORT_PIVOTS ? pivotPermutation[p] : p;
                     float distQP = qpDists[pIdx];
                     float distPO = poDists[oIdx][pIdx];
                     float lowerBound = filter.lowerBound(distQP, distPO, pIdx);
@@ -85,23 +92,17 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 //                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
 //                    maxLB = Math.max(maxLB, lowerBound);
                     if (lowerBound > range) {
-                        skip = true;
-//                        System.out.println();
-                        break;
+                        continue objectsLoop;
                     }
-                    float upperBound = CHECK_ALSO_UB ? filter.upperBound(distQP, distPO, pIdx) : Float.MAX_VALUE;
-//                    minUB = Math.min(minUB, upperBound);
-//                    System.out.println(";upper bound;" + upperBound + "   extremes:;" + maxLB + ";" + minUB);
-                    if (upperBound < range) {
-                        skip = true;
-                        float distance = df.getDistance(qData, oData);
-                        ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                        break;
-                    }
+//                    if (CHECK_ALSO_UB) {
+//                        float upperBound = filter.upperBound(distQP, distPO, pIdx);
+//                        if (upperBound < range) {
+//                            float distance = df.getDistance(qData, oData);
+//                            ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+//                            continue objectsLoop;
+//                        }
+//                    }
                 }
-            }
-            if (skip) {
-                continue;
             }
             incDistsComps(qId);
             float distance = df.getDistance(qData, oData);
@@ -111,7 +112,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         t += System.currentTimeMillis();
         incTime(qId, t);
         incLBChecked(qId, lbChecked);
-        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
+//        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
         return ret;
     }
 

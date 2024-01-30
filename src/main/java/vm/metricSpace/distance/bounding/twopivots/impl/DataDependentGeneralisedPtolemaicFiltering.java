@@ -21,28 +21,13 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
     public float lowerBound(float distP1P2, float distP2O, float distP1Q, float distP1O, float distP2Q, int p1Idx, int p2Idx, Float range) {
         float ef = distP1O * distP2Q;
         float bd = distP1Q * distP2O;
-
         float coef = coefs[p1Idx][p2Idx][2];
-        float fraction;
-        if (coef != 0) {
-            fraction = Math.abs(bd - ef);
-            float lb2 = coef * fraction;
-            if (lb2 > range) {
-                return lb2;
-            }
-        }
-        coef = coefs[p1Idx][p2Idx][0];
-        fraction = bd + ef;
-        return (coef * fraction) / CONSTANT_FOR_PRECISION;
-
-//        if (PRINT_DETAILS) {
-//            System.out.print("lb1;" + lb1 + ";lb2;" + lb2 + ";");
-//            if (lb1 > lb2) {
-//                System.out.println(1);
-//            } else {
-//                System.out.println(2);
-//            }
+        return Math.abs(bd - ef) * coef;
+//        if (lb2 > range) {
+//            return lb2;
 //        }
+//        coef = coefs[p1Idx][p2Idx][0];
+//        return (coef * (bd + ef)) / CONSTANT_FOR_PRECISION;
     }
 
     @Override
@@ -67,6 +52,11 @@ public class DataDependentGeneralisedPtolemaicFiltering extends TwoPivotsFilter 
 
     public float getCoef(int p1Idx, int p2Idx, int coefIdx) {
         return coefs[p1Idx][p2Idx][coefIdx];
+    }
+
+    @Override
+    public boolean isPivotPairValid(int p1Idx, int p2Idx) {
+        return coefs[p1Idx][p2Idx][2] != 0;
     }
 
 }

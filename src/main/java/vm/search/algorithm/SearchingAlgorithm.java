@@ -33,6 +33,8 @@ public abstract class SearchingAlgorithm<T> {
 
     protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Object, float[]> qpDistsCached = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Object, int[]> pivotPermutationCached = new ConcurrentHashMap<>();
 
     public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
@@ -195,17 +197,17 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public final void checkOrdersOfPivots(List<Object> pivots, Map<String, Integer> columnHeaders, AbstractMetricSpace<T> metricSpace) {
+    public final void checkOrdersOfPivots(List<Object> pivots, Map<Object, Integer> columnHeaders, AbstractMetricSpace<T> metricSpace) {
         List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
         String[] pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
         for (int p = 0; p < pivotIDsList.size(); p++) {
-            String pId = pivotIDs[p];
+            Object pId = pivotIDs[p];
             if (!columnHeaders.containsKey(pId)) {
                 throw new IllegalArgumentException("Precomputed distances dost not contain pivot " + pId);
             }
             int pIdx = columnHeaders.get(pId);
             if (pIdx != p) {
-                throw new IllegalArgumentException("Wrong pivot ordering " + pId + ", " + p);
+                throw new IllegalArgumentException("Wrong pivot ordering " + pIdx + ", " + p);
             }
         }
     }

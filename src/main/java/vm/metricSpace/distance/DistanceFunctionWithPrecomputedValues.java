@@ -13,8 +13,8 @@ import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDis
 public class DistanceFunctionWithPrecomputedValues<T> extends DistanceFunctionInterface {
 
     private final float[][] dists;
-    private final Map<String, Integer> columnHeaders;
-    private final Map<String, Integer> rowHeaders;
+    private final Map<Object, Integer> columnHeaders;
+    private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
     private final AbstractMetricSpace<T> metricSpace;
 

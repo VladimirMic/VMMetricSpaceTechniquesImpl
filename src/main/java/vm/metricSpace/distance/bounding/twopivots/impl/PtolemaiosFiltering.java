@@ -27,4 +27,9 @@ public class PtolemaiosFiltering extends TwoPivotsFilter {
         return "ptolemaios";
     }
 
+    @Override
+    public boolean isPivotPairValid(int p1Idx, int p2Idx) {
+        return true;
+    }
+
 }
