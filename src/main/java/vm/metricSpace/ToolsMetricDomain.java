@@ -201,6 +201,26 @@ public class ToolsMetricDomain {
         return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength, distsToPivotsStorage);
     }
 
+    public static int[] getPivotPermutationIndexes(float[] dists, int prefixLength) {
+        if (prefixLength < 0) {
+            prefixLength = Integer.MAX_VALUE;
+        }
+        Comparator comp = new vm.datatools.Tools.MapByValueComparator<Integer>();
+        SortedSet<Map.Entry<Integer, Float>> perm = new TreeSet<>(comp);
+        for (int i = 0; i < dists.length; i++) {
+            float distance = dists[i];
+            perm.add(new AbstractMap.SimpleEntry<>(i, distance));
+        }
+        prefixLength = Math.min(prefixLength, dists.length);
+        int[] ret = new int[prefixLength];
+        Iterator<Map.Entry<Integer, Float>> it = perm.iterator();
+        for (int i = 0; i < prefixLength && it.hasNext(); i++) {
+            ret[i] = it.next().getKey();
+        }
+        return ret;
+
+    }
+
     public static int[] getPivotPermutationIndexes(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List pivotsData, Object referentData, int prefixLength) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;

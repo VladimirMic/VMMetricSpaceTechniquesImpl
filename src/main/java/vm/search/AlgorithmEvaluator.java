@@ -53,7 +53,7 @@ public class AlgorithmEvaluator {
         statsStorage.save();
 
         LOG.log(Level.INFO, "Storing results of queries");
-        resultsStorage.storeQueryResults(metricSpace, queries, results, datasetName, querySetName, resultName);
+        resultsStorage.storeQueryResults(metricSpace, queries, results, k, datasetName, querySetName, resultName);
 
         LOG.log(Level.INFO, "Evaluating accuracy of queries");
         RecallOfCandsSetsEvaluator evaluator = new RecallOfCandsSetsEvaluator(resultsStorage, recallStorage);
@@ -61,7 +61,7 @@ public class AlgorithmEvaluator {
         recallStorage.save();
         LOG.log(Level.INFO, "Evaluating error on distance");
         ErrorOnDistEvaluator eodEvaluator = new ErrorOnDistEvaluator(resultsStorage, eodStorage);
-        eodEvaluator.evaluateAndStoreErrorsOnDist(datasetName, querySetName, k, datasetName, querySetName, resultName);
+        eodEvaluator.evaluateAndStoreErrorsOnDist(datasetName, querySetName, k, datasetName, querySetName, resultName, k);;
         recallStorage.save();
 
         LOG.log(Level.INFO, "Overall time: {0}", overallTime);

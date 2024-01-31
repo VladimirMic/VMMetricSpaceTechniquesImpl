@@ -86,7 +86,7 @@ public class GroundTruthEvaluator {
                 datasetName = paramsToStoreWithGroundTruth[0].toString();
                 querySetName = paramsToStoreWithGroundTruth[1].toString();
             }
-            storage.storeQueryResults(queryObjectsIDs, queryResults, datasetName, querySetName, "ground_truth");
+            storage.storeQueryResults(queryObjectsIDs, queryResults, k, datasetName, querySetName, "ground_truth");
         }
         if (threadPool != null) {
             threadPool.shutdown();

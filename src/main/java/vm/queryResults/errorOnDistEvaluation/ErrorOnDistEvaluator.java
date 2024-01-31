@@ -22,10 +22,10 @@ public class ErrorOnDistEvaluator {
     }
 
     public Map<String, Float> evaluateAndStoreErrorsOnDist(String groundTruthDatasetName, String groundTruthQuerySetName, int objCount,
-            String candSetName, String candSetQuerySetName, String resultSetName) {
+            String candSetName, String candSetQuerySetName, String resultSetName, Integer kForCandSet) {
 
         Map<String, TreeSet<Map.Entry<Object, Float>>> groundTruthForDataset = resultsStorage.getGroundTruthForDataset(groundTruthDatasetName, groundTruthQuerySetName);
-        Map<String, TreeSet<Map.Entry<Object, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName);
+        Map<String, TreeSet<Map.Entry<Object, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName, kForCandSet);
 
         Map<String, Float> ret = new HashMap<>();
         Set<String> queryIDs = groundTruthForDataset.keySet();

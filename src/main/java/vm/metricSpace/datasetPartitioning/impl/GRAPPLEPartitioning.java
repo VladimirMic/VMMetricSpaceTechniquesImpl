@@ -96,7 +96,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                                 p2IdxForUB = p1Index;
                             }
                         }
-                        float coefP1P2ForLB = filter.getCoef(p1Index, p2Index, 2);
+                        float coefP1P2ForLB = filter.getCoefPivotPivotForLB(p1Index, p2Index);
                         // is this pivot pair best for the filtering? -- the order of pivots matters!                        
                         float cosPi = -coefP1P2ForLB * (distOP1 * distOP1 + distP1P2 * distP1P2 - distOP2 * distOP2) / (2 * distP1P2 * distOP1);
                         oMetadata.addDataForLB(cosPi, distOP1, distOP2, distP1P2, p1Index, p2Index, coefP1P2ForLB);
@@ -105,7 +105,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                         oMetadata.addDataForLB(cosPi, distOP2, distOP1, distP1P2, p1Index, p2Index, coefP1P2ForLB);
                     }
                 }
-                float coefP1P2ForUB = filter.getCoef(p1IdxForUB, p2IdxForUB, 2);
+                float coefP1P2ForUB = filter.getCoefPivotPivotForLB(p1IdxForUB, p2IdxForUB);
                 oMetadata.setDataForUB(dp1ForUB, dp2ForUB, dp1p2ForUB, coefP1P2ForUB, p1IdxForUB, p2IdxForUB);
                 String key = p1IdxForUB + "-" + p2IdxForUB;
                 if (!ret.containsKey(key)) {

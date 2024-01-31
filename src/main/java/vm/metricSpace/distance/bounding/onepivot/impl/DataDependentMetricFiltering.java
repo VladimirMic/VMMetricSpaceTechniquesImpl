@@ -1,12 +1,12 @@
 package vm.metricSpace.distance.bounding.onepivot.impl;
 
-import vm.metricSpace.distance.bounding.onepivot.OnePivotFilter;
+import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
 
 /**
  *
  * @author Vlada
  */
-public class DataDependentMetricFiltering extends OnePivotFilter {
+public class DataDependentMetricFiltering extends AbstractOnePivotFilter {
 
     private final float[] coefsForPivot;
 

@@ -28,7 +28,7 @@ public class RecallOfCandsSetsEvaluator {
             String candSetName, String candSetQuerySetName, String resultSetName, Integer candidateNNCount) {
 
         Map<String, TreeSet<Map.Entry<Object, Float>>> groundTruthForDataset = resultsStorage.getGroundTruthForDataset(groundTruthDatasetName, groundTruthQuerySetName);
-        Map<String, TreeSet<Map.Entry<Object, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName);
+        Map<String, TreeSet<Map.Entry<Object, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName, candidateNNCount);
 
         Map<String, Float> ret = new HashMap<>();
         Set<String> queryIDs = groundTruthForDataset.keySet();
