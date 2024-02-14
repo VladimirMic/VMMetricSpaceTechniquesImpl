@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.objTransforms.MetricObjectTransformerInterface;
-import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
+import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
  *
@@ -68,6 +68,6 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
 
     public abstract void preserveJustGivenBits(int[] bitsToPreserve);
 
-    public abstract void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String sketchingTechniqueName);
+    public abstract void setPivotPairsFromStorage(PivotPairsStoreInterface storage, String sketchingTechniqueName);
 
 }

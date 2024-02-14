@@ -7,7 +7,7 @@ import vm.metricSpace.AbstractMetricSpace;
  *
  * @author xmic
  */
-public interface GHPSketchingPivotPairsStoreInterface {
+public interface PivotPairsStoreInterface {
 
     /**
      *

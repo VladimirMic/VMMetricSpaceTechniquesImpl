@@ -13,7 +13,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
+import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
  *
@@ -23,12 +23,12 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String pivotPairsFileName, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String pivotPairsFileName, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
         String pivotPairsFileName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
@@ -54,7 +54,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
      * @param pivotPairsFileName
      */
     @Override
-    public final void setPivotPairsFromStorage(GHPSketchingPivotPairsStoreInterface storage, String pivotPairsFileName) {
+    public final void setPivotPairsFromStorage(PivotPairsStoreInterface storage, String pivotPairsFileName) {
         List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(pivotPairsFileName);
         Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots), false);
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];

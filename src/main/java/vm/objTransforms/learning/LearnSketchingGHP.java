@@ -18,7 +18,7 @@ import vm.metricSpace.Dataset;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
+import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
  *
@@ -32,13 +32,13 @@ public class LearnSketchingGHP {
     private final int numberOfPivotsForMakingAllPairs;
     private final int maxNumberOfBalancedForGeneticHeuristic;
 
-    private final GHPSketchingPivotPairsStoreInterface storage;
+    private final PivotPairsStoreInterface storage;
 
-    public LearnSketchingGHP(Dataset dataset, GHPSketchingPivotPairsStoreInterface sketchingStorage) {
+    public LearnSketchingGHP(Dataset dataset, PivotPairsStoreInterface sketchingStorage) {
         this(dataset, sketchingStorage, 512, 15000);
     }
 
-    public LearnSketchingGHP(Dataset dataset, GHPSketchingPivotPairsStoreInterface sketchingStorage, int numberOfPivotsForMakingAllPairs, int maxNumberOfBalancedForGeneticHeuristic) {
+    public LearnSketchingGHP(Dataset dataset, PivotPairsStoreInterface sketchingStorage, int numberOfPivotsForMakingAllPairs, int maxNumberOfBalancedForGeneticHeuristic) {
         this.storage = sketchingStorage;
         this.numberOfPivotsForMakingAllPairs = numberOfPivotsForMakingAllPairs;
         this.maxNumberOfBalancedForGeneticHeuristic = maxNumberOfBalancedForGeneticHeuristic;

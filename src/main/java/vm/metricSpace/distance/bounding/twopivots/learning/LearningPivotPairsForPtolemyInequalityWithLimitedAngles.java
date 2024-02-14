@@ -16,6 +16,7 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
+import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
@@ -34,17 +35,19 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> sampleQueries;
     private final DataDependentGeneralisedPtolemaicFiltering filter;
     private final Integer K = 30;
+    private final PivotPairsStoreInterface storage;
 
-    public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentGeneralisedPtolemaicFiltering filter, String datasetName) {
+    public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentGeneralisedPtolemaicFiltering filter, String datasetName, PivotPairsStoreInterface storage) {
         this.metricSpace = metricSpace;
         this.df = df;
         this.pivots = pivots;
         this.sampleQueries = Tools.getAndRemoveFirst(sampleObjectsAndQueries, queriesSampleCount);
         this.sampleObjects = Tools.getAndRemoveFirst(sampleObjectsAndQueries, objectsSampleCount);
         this.filter = filter;
+        this.storage = storage;
     }
 
-    public TreeSet<Map.Entry<String, Integer>> execute() {
+    public void execute() {
         Map<Object, Object> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjects, true);
         Object[] sampleQueryArray = ToolsMetricDomain.getData(sampleQueries.toArray(), metricSpace);
         Map<String, Integer> sumsForQueries = new HashMap<>();
@@ -64,6 +67,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
         for (Map.Entry<String, Integer> entry : sumsForQueries.entrySet()) {
             ret.add(entry);
         }
+        storage.storeSketching(filter.getTechFullName(), metricSpace, pivots, ret);
         return ret;
     }
 
@@ -122,7 +126,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                 range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K);
             }
             counter--;
-            LOG.log(Level.INFO, "Remains {0} objects", counter);
+            LOG.log(Level.INFO, "Remains {0} objects. Previous discarded by {1} lower bounds", new Object[]{counter, discarded});
         }
         return ret;
     }

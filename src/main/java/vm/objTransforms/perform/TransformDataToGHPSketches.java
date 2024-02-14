@@ -9,7 +9,7 @@ import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.objTransforms.MetricObjectsParallelTransformerImpl;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
-import vm.objTransforms.storeLearned.GHPSketchingPivotPairsStoreInterface;
+import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
  *
@@ -21,17 +21,17 @@ public class TransformDataToGHPSketches {
     private static final Integer IMPLICIT_PIVOT_COUNT = 512;
 
     private final Dataset dataset;
-    private final GHPSketchingPivotPairsStoreInterface storageOfPivotPairs;
+    private final PivotPairsStoreInterface storageOfPivotPairs;
     private final AbstractMetricSpacesStorage storageForSketches;
     private final float balance;
     private final int pivotCount;
 
-    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches) {
+    public TransformDataToGHPSketches(Dataset dataset, PivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches) {
         this(dataset, storageOfPivotPairs, storageForSketches, 0.5f, IMPLICIT_PIVOT_COUNT);
         LOG.log(Level.WARNING, "Using implicit pivot count {0}", IMPLICIT_PIVOT_COUNT);
     }
 
-    public TransformDataToGHPSketches(Dataset dataset, GHPSketchingPivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches, float balance, int pivotCount) {
+    public TransformDataToGHPSketches(Dataset dataset, PivotPairsStoreInterface storageOfPivotPairs, AbstractMetricSpacesStorage storageForSketches, float balance, int pivotCount) {
         this.dataset = dataset;
         this.storageOfPivotPairs = storageOfPivotPairs;
         this.balance = balance;
