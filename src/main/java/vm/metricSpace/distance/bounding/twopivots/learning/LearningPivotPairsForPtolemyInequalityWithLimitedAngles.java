@@ -5,6 +5,7 @@
 package vm.metricSpace.distance.bounding.twopivots.learning;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> sampleQueries;
     private final DataDependentGeneralisedPtolemaicFiltering filter;
     private final Integer K = 30;
-    private final PivotPairsStoreInterface storage;
+    private final PivotPairsStoreInterface<T> storage;
 
     public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentGeneralisedPtolemaicFiltering filter, String datasetName, PivotPairsStoreInterface storage) {
         this.metricSpace = metricSpace;
@@ -67,8 +68,14 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
         for (Map.Entry<String, Integer> entry : sumsForQueries.entrySet()) {
             ret.add(entry);
         }
-        storage.storeSketching(filter.getTechFullName(), metricSpace, pivots, ret);
-        return ret;
+        Map<Object, Object> pMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, false);
+        List<Object> retList = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : ret) {
+            String[] split = entry.getKey().split("-");
+            retList.add(pMap.get(split[0]));
+            retList.add(pMap.get(split[1]));
+        }
+        storage.storePivotPairs(filter.getTechFullName(), metricSpace, retList);
     }
 
     private Map<String, Integer> evaluateQuery(T qData, Map<Object, Object> oMap) {

@@ -6,8 +6,9 @@ import vm.metricSpace.AbstractMetricSpace;
 /**
  *
  * @author xmic
+ * @param <T>
  */
-public interface PivotPairsStoreInterface {
+public interface PivotPairsStoreInterface<T> {
 
     /**
      *
@@ -17,7 +18,7 @@ public interface PivotPairsStoreInterface {
      * @param pivots
      * @param additionalInfoToStoreWithLearningSketching
      */
-    public void storeSketching(String resultName, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, Object... additionalInfoToStoreWithLearningSketching);
+    public void storePivotPairs(String resultName, AbstractMetricSpace<T> metricSpace, List<Object> pivots, Object... additionalInfoToStoreWithLearningSketching);
 
     /**
      *

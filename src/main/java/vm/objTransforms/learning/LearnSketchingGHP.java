@@ -78,7 +78,7 @@ public class LearnSketchingGHP {
             String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
             int[] lowCorrelatedBits = selectLowCorrelatedBits(sketchLength, columnWiseSketches, sketchesCorrelations);
             sketchingTechnique.preserveJustGivenBits(lowCorrelatedBits);
-            storage.storeSketching(resultName, metricSpace, Tools.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
+            storage.storePivotPairs(resultName, metricSpace, Tools.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
             sketchingTechnique = new SketchingGHP(df, metricSpace, pivotsBalancedBackup, false, true);
         }
     }
