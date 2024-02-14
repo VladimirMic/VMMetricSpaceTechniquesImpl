@@ -66,7 +66,7 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last();
     }
 
-    public float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+    public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
         int size = currAnswer.size();
         if (size < k) {
             return Float.MAX_VALUE;
