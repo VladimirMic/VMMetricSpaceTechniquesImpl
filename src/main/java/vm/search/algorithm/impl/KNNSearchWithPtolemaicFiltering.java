@@ -57,9 +57,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
         T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
-
         float[][] qpDistMultipliedByCoefForPivots = getOrComputeqpDistMultipliedByCoefForPivots(qpMultipliedByCoefCached, qId, qData);
-
         int[] pivotPermutation = null;
         if (SORT_PIVOTS) {
             pivotPermutation = pivotPermutationCached.get(qId);
@@ -68,15 +66,17 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 pivotPermutationCached.put(qId, pivotPermutation);
             }
         }
-        int[] p2Idxs = null;
+        int[] p2Idxs;
         if (SORT_PIVOTS) {
             p2Idxs = new int[pivotsEndBigDists];
             for (int i = 0; i < p2Idxs.length; i++) {
                 p2Idxs[i] = pivotPermutation[pivotPermutation.length - i - 1];
             }
+        } else {
+            p2Idxs = new int[1];
         }
         int distComps = 0;
-        float range = adjustAndReturnSearchRadius(ret, k);
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
@@ -87,16 +87,14 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 for (int p = 0; p < pivotsEndSmallDists; p++) {
                     int p1Idx = SORT_PIVOTS ? pivotPermutation[p] : p;
                     if (!SORT_PIVOTS) {
-                        p2Idxs = new int[]{p + 1};
+                        p2Idxs[0] = p + 1;
                     }
+                    float distP1O = poDists[oIdx][p1Idx];
                     for (int p2Idx : p2Idxs) {
                         float distP2O = poDists[oIdx][p2Idx];
-                        float distQP1 = qpDistMultipliedByCoefForPivots[p1Idx][p2Idx];
-                        float distP1O = poDists[oIdx][p1Idx];
                         float distP2Q = qpDistMultipliedByCoefForPivots[p2Idx][p1Idx];
-//                tLB -= System.currentTimeMillis();
+                        float distQP1 = qpDistMultipliedByCoefForPivots[p1Idx][p2Idx];
                         float lowerBound = filter.lowerBound(distP2O, distQP1, distP1O, distP2Q);
-//                tLB += System.currentTimeMillis();
                         lbChecked++;
                         if (lowerBound > range) {
                             continue objectsLoop;
@@ -108,7 +106,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             float distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                range = adjustAndReturnSearchRadius(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
             }
         }
         t += System.currentTimeMillis();

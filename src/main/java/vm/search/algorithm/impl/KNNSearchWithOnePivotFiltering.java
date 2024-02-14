@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
@@ -23,7 +22,6 @@ import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
  */
 public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
-    private static final Logger LOG = Logger.getLogger(KNNSearchWithGenericTwoPivotFiltering.class.getName());
     public static final Boolean CHECK_ALSO_UB = false;
     public static Boolean SORT_PIVOTS = true;
 
@@ -70,7 +68,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
             }
         }
         int distComps = 0;
-        float range = adjustAndReturnSearchRadius(ret, k);
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
@@ -103,7 +101,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
             float distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                range = adjustAndReturnSearchRadius(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
             }
         }
         t += System.currentTimeMillis();

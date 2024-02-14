@@ -66,7 +66,18 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last();
     }
 
-    public float adjustAndReturnSearchRadius(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+    public float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+        int size = currAnswer.size();
+        if (size < k) {
+            return Float.MAX_VALUE;
+        }
+        if (currAnswer.size() > k) {
+            currAnswer.remove(currAnswer.last());
+        }
+        return currAnswer.last().getValue();
+    }
+
+    public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
         int size = currAnswer.size();
         if (size < k) {
             return Float.MAX_VALUE;
@@ -151,7 +162,7 @@ public abstract class SearchingAlgorithm<T> {
                         TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
-                        adjustAndReturnSearchRadius(answerToQuery, k);
+                        adjustAndReturnSearchRadiusAfterAddingMore(answerToQuery, k);
 //                        LOG.log(Level.INFO, "Query obj {0} evaluated in the batch {1} (batch size: {2})", new Object[]{iFinal, batchFinal, BATCH_SIZE});
                     });
                 }

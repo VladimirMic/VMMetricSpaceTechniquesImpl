@@ -59,6 +59,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         if (justIDsProvided) {
             fullObjectsStorage = (Map) params[0];
         }
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         while (objects.hasNext()) {
             Object fullO = objects.next();
             Object oId;
@@ -67,7 +68,6 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
             } else {
                 oId = hammingSpace.getIDOfMetricObject(fullO);
             }
-            float range = adjustAndReturnSearchRadius(ret, k);
             if (range < Float.MAX_VALUE) {
                 float lowerBound = filter.lowerBound(qSketchData, oId, range);
                 if (lowerBound == Float.MAX_VALUE) {
@@ -82,10 +82,11 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
                 oData = fullDatasetMetricSpace.getDataOfMetricObject(fullO);
             }
             float distance = fullDF.getDistance(qData, oData);
-            ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+            if (distance < range) {
+                ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+            }
         }
-
-        adjustAndReturnSearchRadius(ret, k);
         t += System.currentTimeMillis();
         incTime(qId, t);
 

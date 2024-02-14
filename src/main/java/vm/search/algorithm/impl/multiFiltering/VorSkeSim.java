@@ -110,7 +110,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
             // zkusit skece pokud je ret plna
             if (ret.size() >= k) {
                 if (ret.size() > k) {
-                    range = adjustAndReturnSearchRadius(ret, k);
+                    range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k);
                 }
                 float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
                 if (lowerBound == Float.MAX_VALUE) {
@@ -146,7 +146,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
                 continue;
             }
             addToRet(ret, candID, fullQData);
-            range = adjustAndReturnSearchRadius(ret, k);
+            range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         }
 
         t += System.currentTimeMillis();

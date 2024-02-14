@@ -21,11 +21,9 @@ import vm.metricSpace.distance.bounding.twopivots.storeLearned.PtolemyInequality
  * @author xmic
  * @param <T>
  */
-public class LearningPtolemyInequalityWithLimitedAngles<T> {
+public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
 
-    public static final Logger LOG = Logger.getLogger(LearningPtolemyInequalityWithLimitedAngles.class.getName());
-
-    public static Boolean ALL_PIVOT_PAIRS = true;
+    public static final Logger LOG = Logger.getLogger(LearningCoefsForPtolemyInequalityWithLimitedAngles.class.getName());
 
     private final String resultName;
     private final AbstractMetricSpace<T> metricSpace;
@@ -37,7 +35,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
     
     private final boolean allPivotPairs;
 
-    public LearningPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
+    public LearningCoefsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
         this.metricSpace = metricSpace;
         this.df = df;
         this.pivots = pivots;
@@ -68,7 +66,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
                                 fourObjects[1] = pivots.get(p2);
                                 fourObjectsData[1] = metricSpace.getDataOfMetricObject(fourObjects[1]);
                                 float[] extremes = learnForPivots(fourObjects, fourObjectsData, metricObjectsAsIdObjectMap);
-                                synchronized (LearningPtolemyInequalityWithLimitedAngles.class) {
+                                synchronized (LearningCoefsForPtolemyInequalityWithLimitedAngles.class) {
                                     String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]) + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]);
                                     results.put(pivotPairsID, extremes);
                                     LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
@@ -89,7 +87,7 @@ public class LearningPtolemyInequalityWithLimitedAngles<T> {
             }
             latch.await();
         } catch (InterruptedException ex) {
-            Logger.getLogger(LearningPtolemyInequalityWithLimitedAngles.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(LearningCoefsForPtolemyInequalityWithLimitedAngles.class.getName()).log(Level.SEVERE, null, ex);
         }
         threadPool.shutdown();
         storage.storeCoefficients(results, resultName);

@@ -81,7 +81,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
             }
         }
         int distComps = 0;
-        float range = adjustAndReturnSearchRadius(ret, k);
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
@@ -114,7 +114,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
             float distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                range = adjustAndReturnSearchRadius(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
             }
         }
         t += System.currentTimeMillis();
