@@ -37,6 +37,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     private final DataDependentGeneralisedPtolemaicFiltering filter;
     private final Integer K = 30;
     private final PivotPairsStoreInterface<T> storage;
+    private final String datasetName;
 
     public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentGeneralisedPtolemaicFiltering filter, String datasetName, PivotPairsStoreInterface storage) {
         this.metricSpace = metricSpace;
@@ -46,13 +47,15 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
         this.sampleObjects = Tools.getAndRemoveFirst(sampleObjectsAndQueries, objectsSampleCount);
         this.filter = filter;
         this.storage = storage;
+        this.datasetName = datasetName;
     }
 
     public void execute() {
         Map<Object, Object> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjects, true);
         Object[] sampleQueryArray = ToolsMetricDomain.getData(sampleQueries.toArray(), metricSpace);
         Map<String, Integer> sumsForQueries = new HashMap<>();
-        for (Object qData : sampleQueryArray) {
+        for (int i = 0; i < sampleQueryArray.length; i++) {
+            Object qData = sampleQueryArray[i];
             Map<String, Integer> evaluatedQuery = evaluateQuery((T) qData, oMap);
             for (String key : evaluatedQuery.keySet()) {
                 int value = evaluatedQuery.get(key);
@@ -63,8 +66,9 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                     sumsForQueries.put(key, value);
                 }
             }
+            LOG.log(Level.INFO, "Processed query {0}", i);
         }
-        TreeSet<Map.Entry<String, Integer>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+        TreeSet<Map.Entry<String, Integer>> ret = new TreeSet<>(new Tools.MapByValueIntComparator<>());
         for (Map.Entry<String, Integer> entry : sumsForQueries.entrySet()) {
             ret.add(entry);
         }
@@ -75,11 +79,11 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
             retList.add(pMap.get(split[0]));
             retList.add(pMap.get(split[1]));
         }
-        storage.storePivotPairs(filter.getTechFullName(), metricSpace, retList);
+        storage.storePivotPairs(datasetName + "_" + pivots.size() + "p_" + sampleQueryArray.length + "q_" + sampleObjects.size() + "o", metricSpace, retList);
     }
 
     private Map<String, Integer> evaluateQuery(T qData, Map<Object, Object> oMap) {
-        TreeSet<Map.Entry<Object, Float>> queryAnswer = new TreeSet<>(new Tools.MapByValueComparator());
+        TreeSet<Map.Entry<Object, Float>> queryAnswer = new TreeSet<>(new Tools.MapByFloatValueComparator());
         Map<String, Integer> ret = new HashMap<>();
 
         Object[] pivotsData = ToolsMetricDomain.getData(pivots.toArray(), metricSpace);

@@ -205,7 +205,7 @@ public class ToolsMetricDomain {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
-        Comparator comp = new vm.datatools.Tools.MapByValueComparator<Integer>();
+        Comparator comp = new vm.datatools.Tools.MapByFloatValueComparator<Integer>();
         SortedSet<Map.Entry<Integer, Float>> perm = new TreeSet<>(comp);
         for (int i = 0; i < dists.length; i++) {
             float distance = dists[i];
@@ -225,7 +225,7 @@ public class ToolsMetricDomain {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
-        Comparator comp = new vm.datatools.Tools.MapByValueComparator<Integer>();
+        Comparator comp = new vm.datatools.Tools.MapByFloatValueComparator<Integer>();
         SortedSet<Map.Entry<Integer, Float>> perm = new TreeSet<>(comp);
         for (int i = 0; i < pivotsData.size(); i++) {
             float distance = df.getDistance(pivotsData.get(i), referentData);
@@ -269,7 +269,7 @@ public class ToolsMetricDomain {
     }
 
     public static TreeSet<Map.Entry<Object, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByValueComparator());
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByFloatValueComparator());
         for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
             Float dist = df.getDistance(referentData, pivot.getValue());
             Map.Entry<Object, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);

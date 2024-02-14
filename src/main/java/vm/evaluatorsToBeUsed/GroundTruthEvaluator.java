@@ -122,7 +122,7 @@ public class GroundTruthEvaluator {
     public static TreeSet<Entry<Object, Float>>[] initKNNResultSets(int numberOfQueries) {
         TreeSet<Entry<Object, Float>>[] ret = new TreeSet[numberOfQueries];
         for (int i = 0; i < numberOfQueries; i++) {
-            ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
+            ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
         return ret;
     }

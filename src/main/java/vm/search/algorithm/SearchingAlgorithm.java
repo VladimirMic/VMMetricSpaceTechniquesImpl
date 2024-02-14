@@ -91,7 +91,7 @@ public abstract class SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, String datasetName, Map<Object, Object> mapOfAllFullObjects, List<Object> candsIDs) {
         DistanceFunctionInterface df = metricSpace.getDistanceFunctionForDataset(datasetName);
         T queryObjData = metricSpace.getDataOfMetricObject(queryObj);
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         if (mapOfAllFullObjects == null) {
             for (int i = 0; i < Math.min(candsIDs.size(), k); i++) {
                 Object id = candsIDs.get(i);
@@ -131,7 +131,7 @@ public abstract class SearchingAlgorithm<T> {
         for (int i = 0; i < queryObjects.size(); i++) {
             Object qID = metricSpace.getIDOfMetricObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
-            ret[i] = new TreeSet<>(new Tools.MapByValueComparator());
+            ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         int batchCounter = 0;

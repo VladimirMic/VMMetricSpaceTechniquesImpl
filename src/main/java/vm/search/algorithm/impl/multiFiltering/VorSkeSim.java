@@ -80,7 +80,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         }
         Object qId = fullMetricSpace.getIDOfMetricObject(fullQ);
         T fullQData = fullMetricSpace.getDataOfMetricObject(fullQ);
-        TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByValueComparator()) : currAnswer;
+        TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
 
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;

@@ -51,7 +51,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
     @Override
     public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
         Object[] pivotsArray = pivotsMap.entrySet().toArray();
-        SortedSet<AbstractMap.SimpleEntry<Object, Float>> pivotPairs = new TreeSet(new Tools.MapByValueComparator<>());
+        SortedSet<AbstractMap.SimpleEntry<Object, Float>> pivotPairs = new TreeSet(new Tools.MapByFloatValueComparator<>());
         for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
             Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
             Object p1ID = p1.getKey();
@@ -90,7 +90,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
         Map keyValueStorage = (Map) additionalParams[0];
         int kCandSetMaxSize = (int) additionalParams[1];
         Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         Map<Object, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
         int total = 0;

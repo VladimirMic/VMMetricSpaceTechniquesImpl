@@ -108,7 +108,7 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
         AbstractMap.SimpleEntry<Object, float[]> uCand = upperQSubset.next();
 
         Set<Object> checkedIDs = new HashSet<>();
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByValueComparator());
+        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         List<Object> ansOfSimRel = new ArrayList<>();
         float deltaZeroQLast = Float.MAX_VALUE;
         boolean addedFromAnsSimRel = false;

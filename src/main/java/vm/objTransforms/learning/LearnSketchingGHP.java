@@ -122,7 +122,7 @@ public class LearnSketchingGHP {
     private int[] filterOutMostCorrelatedByGreedyHeuristic(float[][] correlationMatrix, int retSize) {
         SortedSet<Map.Entry<Integer, Float>> sumOfCorrelations = Tools.evaluateSumsPerRow(correlationMatrix);
         Set<Integer> indexesToRemove = new HashSet<>();
-        Tools.MapByValueComparator comparator = new Tools.MapByValueComparator();
+        Tools.MapByFloatValueComparator comparator = new Tools.MapByFloatValueComparator();
         while (sumOfCorrelations.size() > retSize) {
             Map.Entry<Integer, Float> lastEntry = sumOfCorrelations.last();
             int removeIndex = lastEntry.getKey();
