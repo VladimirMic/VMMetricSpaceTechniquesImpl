@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
@@ -44,11 +45,11 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     }
 
     public TreeSet<Map.Entry<String, Integer>> execute() {
-        Map<Object, Object> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjects, false);
+        Map<Object, Object> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjects, true);
         Object[] sampleQueryArray = ToolsMetricDomain.getData(sampleQueries.toArray(), metricSpace);
         Map<String, Integer> sumsForQueries = new HashMap<>();
-        for (Object sampleQueryArray1 : sampleQueryArray) {
-            Map<String, Integer> evaluatedQuery = evaluateQuery((T) sampleQueryArray1, oMap);
+        for (Object qData : sampleQueryArray) {
+            Map<String, Integer> evaluatedQuery = evaluateQuery((T) qData, oMap);
             for (String key : evaluatedQuery.keySet()) {
                 int value = evaluatedQuery.get(key);
                 if (sumsForQueries.containsKey(key)) {
@@ -80,12 +81,15 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
 
         float[][] qp1p2MultipliedByCoef = computeqpDistMultipliedByCoefForPivots(qpDists, pivotsData);
         float range = 0;
+        int counter = oMap.size();
         for (Map.Entry<Object, Object> o : oMap.entrySet()) {
+            int discarded = 0;
             T oData = (T) o.getValue();
             if (queryAnswer.size() < K) {
                 float distance = df.getDistance((T) qData, oData);
                 queryAnswer.add(new AbstractMap.SimpleEntry<>(o.getKey(), distance));
                 range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K);
+                counter--;
                 continue;
             }
             for (int p1Idx = 0; p1Idx < pivots.size() - 1; p1Idx++) {
@@ -100,6 +104,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                     float p2O = df.getDistance(p2Data, oData);
                     float lb = filter.lowerBound(p2O, qp1p2MultipliedByCoef[p1Idx][p2Idx], p1O, qp1p2MultipliedByCoef[p2Idx][p1Idx]);
                     if (lb >= range) {
+                        discarded++;
                         String key = p1ID.toString() + "-" + p2ID.toString();
                         if (!ret.containsKey(key)) {
                             ret.put(key, 1);
@@ -111,6 +116,13 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                     }
                 }
             }
+            if (discarded == 0) {
+                float distance = df.getDistance(qData, oData);
+                queryAnswer.add(new AbstractMap.SimpleEntry<>(o.getKey(), distance));
+                range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K);
+            }
+            counter--;
+            LOG.log(Level.INFO, "Remains {0} objects", counter);
         }
         return ret;
     }
