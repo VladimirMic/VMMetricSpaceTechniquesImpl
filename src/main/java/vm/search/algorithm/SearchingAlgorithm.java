@@ -133,7 +133,7 @@ public abstract class SearchingAlgorithm<T> {
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(1);
         int batchCounter = 0;
         while (objects.hasNext()) {
             try {

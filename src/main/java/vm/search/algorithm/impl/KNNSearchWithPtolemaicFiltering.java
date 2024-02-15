@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -73,6 +75,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 for (int p = 0; p < pivotPermutation.length; p += 2) {
                     int p1Idx = pivotPermutation[p];
                     int p2Idx = pivotPermutation[p + 1];
+
+                    tmpPrintMaxAndMin(poDists[oIdx]);
+
                     float distP1O = poDists[oIdx][p1Idx];
                     float distP2O = poDists[oIdx][p2Idx];
                     float distP2Q = qpDistMultipliedByCoefForPivots[p2Idx][p1Idx];
@@ -144,7 +149,36 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             }
             cache.put(qId, ret);
         }
+        float min = Float.MAX_VALUE;
+        float max = 0;
+        for (int i = 0; i < ret.length; i++) {
+            float[] row = ret[i];
+            for (int j = 0; j < row.length; j++) {
+                float val = row[j];
+                if (val > 0) {
+                    min = Math.min(min, val);
+                }
+                max = Math.max(max, val);
+            }
+        }
+        tmpMax = max;
+        tmpMin = min;
+        Logger.getLogger(KNNSearchWithPtolemaicFiltering.class.getName()).log(Level.INFO, "Min and max values in table:;{0};{1}", new Object[]{min, max});
         return ret;
+    }
+
+    private float tmpMax;
+    private float tmpMin;
+
+    private void tmpPrintMaxAndMin(float[] poDist) {
+        float min = Float.MAX_VALUE;
+        float max = 0;
+        for (float f : poDist) {
+            min = Math.min(min, f);
+            max = Math.max(max, f);
+        }
+        float maxLB = tmpMax * min - tmpMin * max;
+        System.err.println("minLB;" + maxLB);
     }
 
 }
