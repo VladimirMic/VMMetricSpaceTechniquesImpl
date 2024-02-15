@@ -177,8 +177,8 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             min = Math.min(min, f);
             max = Math.max(max, f);
         }
-        float maxLB = tmpMax * min - tmpMin * max;
-        System.err.println("minLB;" + maxLB);
+        float maxLB = tmpMax * max - tmpMin * min;
+        System.err.println("XXX;" + maxLB);
     }
 
 }
