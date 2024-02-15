@@ -13,11 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
-import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.SORT_PIVOTS;
 
 /**
  *
@@ -31,9 +29,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     private final float[][] poDists;
     private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
-
-    private final int pivotsEndSmallDists;
-    private final int pivotsEndBigDists;
+    private final int[] pivotPermutation;
 
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
     private final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
@@ -45,9 +41,16 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.df = df;
         this.rowHeaders = rowHeaders;
         this.lbCheckedForQ = new ConcurrentHashMap();
-        pivotsEndBigDists = (int) (SORT_PIVOTS ? Math.ceil(Math.sqrt(pivotsData.size())) : pivotsData.size() - 1);
-        pivotsEndSmallDists = SORT_PIVOTS ? pivotsEndBigDists : pivotsData.size() - 1;
         checkOrdersOfPivots(pivots, columnHeaders, metricSpace);
+
+        pivotPermutation = new int[pivots.size()];
+        List<String[]> pivotPairsIDs = filter.getPivotPairs();
+        int pCounter = 0;
+        for (int i = pivotPairsIDs.size() - 1; i >= 0 && pCounter < pivotPermutation.length; i--) {
+            String[] ids = pivotPairsIDs.get(i);
+            pivotPermutation[pCounter++] = columnHeaders.get(ids[0]);
+            pivotPermutation[pCounter++] = columnHeaders.get(ids[1]);
+        }
     }
 
     @Override
@@ -58,23 +61,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
         float[][] qpDistMultipliedByCoefForPivots = getOrComputeqpDistMultipliedByCoefForPivots(qpMultipliedByCoefCached, qId, qData);
-        int[] pivotPermutation = null;
-        if (SORT_PIVOTS) {
-            pivotPermutation = pivotPermutationCached.get(qId);
-            if (pivotPermutation == null) {
-                pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(qpDistsCached.get(qId), -1);
-                pivotPermutationCached.put(qId, pivotPermutation);
-            }
-        }
-        int[] p2Idxs;
-        if (SORT_PIVOTS) {
-            p2Idxs = new int[pivotsEndBigDists];
-            for (int i = 0; i < p2Idxs.length; i++) {
-                p2Idxs[i] = pivotPermutation[pivotPermutation.length - i - 1];
-            }
-        } else {
-            p2Idxs = new int[1];
-        }
         int distComps = 0;
         float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         objectsLoop:
@@ -84,21 +70,17 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             T oData = metricSpace.getDataOfMetricObject(o);
             int oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotsEndSmallDists; p++) {
-                    int p1Idx = SORT_PIVOTS ? pivotPermutation[p] : p;
-                    if (!SORT_PIVOTS) {
-                        p2Idxs[0] = p + 1;
-                    }
+                for (int p = 0; p < pivotPermutation.length; p += 2) {
+                    int p1Idx = pivotPermutation[p];
+                    int p2Idx = pivotPermutation[p + 1];
                     float distP1O = poDists[oIdx][p1Idx];
-                    for (int p2Idx : p2Idxs) {
-                        float distP2O = poDists[oIdx][p2Idx];
-                        float distP2Q = qpDistMultipliedByCoefForPivots[p2Idx][p1Idx];
-                        float distQP1 = qpDistMultipliedByCoefForPivots[p1Idx][p2Idx];
-                        float lowerBound = filter.lowerBound(distP2O, distQP1, distP1O, distP2Q);
-                        lbChecked++;
-                        if (lowerBound > range) {
-                            continue objectsLoop;
-                        }
+                    float distP2O = poDists[oIdx][p2Idx];
+                    float distP2Q = qpDistMultipliedByCoefForPivots[p2Idx][p1Idx];
+                    float distQP1 = qpDistMultipliedByCoefForPivots[p1Idx][p2Idx];
+                    float lowerBound = filter.lowerBound(distP2O, distQP1, distP1O, distP2Q);
+                    lbChecked++;
+                    if (lowerBound > range) {
+                        continue objectsLoop;
                     }
                 }
             }

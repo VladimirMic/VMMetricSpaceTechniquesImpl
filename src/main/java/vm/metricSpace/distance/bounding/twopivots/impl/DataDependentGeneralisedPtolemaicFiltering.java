@@ -1,5 +1,6 @@
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
+import java.util.List;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 
 /**
@@ -10,9 +11,10 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
 
     private final float[][][] coefsPivotPivot;
     public static final Integer CONSTANT_FOR_PRECISION = 1024 * 8;
+    
 
-    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot) {
-        super(namePrefix);
+    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot, List pivotPairs) {
+        super(namePrefix, pivotPairs);
         this.coefsPivotPivot = coefsPivotPivot;
     }
 
@@ -55,7 +57,7 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
 //    }
     @Override
     protected String getTechName() {
-        return "data-dependent_generalised_ptolemaic_filtering";
+        return "data-dependent_generalised_ptolemaic_filtering_pivot_selection";
     }
 
     @Override

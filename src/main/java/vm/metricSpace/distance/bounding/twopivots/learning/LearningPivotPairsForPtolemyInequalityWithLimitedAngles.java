@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
@@ -32,6 +31,9 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
 
     public static final Logger LOG = Logger.getLogger(LearningPivotPairsForPtolemyInequalityWithLimitedAngles.class.getName());
     public static final Boolean BREAK_AFTER_FIRST_LB = true;
+    public static final Boolean RELATIVELY = true && BREAK_AFTER_FIRST_LB;
+
+    private static final Integer K = 5;
 
     private final AbstractMetricSpace<T> metricSpace;
     private final DistanceFunctionInterface<T> df;
@@ -39,7 +41,6 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> sampleObjects;
     private final List<Object> sampleQueries;
     private final DataDependentGeneralisedPtolemaicFiltering filter;
-    private final Integer K = 5;
     private final PivotPairsStoreInterface<T> storage;
     private final String datasetName;
 
@@ -57,21 +58,23 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     public void execute() throws InterruptedException {
         Map<Object, Object> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjects, true);
         Object[] sampleQueryArray = ToolsMetricDomain.getData(sampleQueries.toArray(), metricSpace);
-        Map<String, Integer> sumsForQueries = new HashMap<>();
+        Map<String, Float> sumsForQueries = new HashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
-        threadPool = Executors.newFixedThreadPool(1);
+//        threadPool = Executors.newFixedThreadPool(1);
         CountDownLatch latch = new CountDownLatch(sampleQueryArray.length);
+
+        int[][] checkedPivotPairs = new int[pivots.size()][pivots.size()];
 
         for (int i = 0; i < sampleQueryArray.length; i++) {
             int iFinal = i;
             threadPool.execute(() -> {
                 long time = -System.currentTimeMillis();
                 Object qData = sampleQueryArray[iFinal];
-                Map<String, Integer> evaluatedQuery = evaluateQuery((T) qData, oMap);
+                Map<String, Integer> evaluatedQuery = evaluateQuery((T) qData, oMap, checkedPivotPairs);
                 for (String key : evaluatedQuery.keySet()) {
-                    int value = evaluatedQuery.get(key);
+                    float value = evaluatedQuery.get(key);
                     if (sumsForQueries.containsKey(key)) {
-                        int value2 = sumsForQueries.get(key);
+                        float value2 = sumsForQueries.get(key);
                         sumsForQueries.put(key, value + value2);
                     } else {
                         sumsForQueries.put(key, value);
@@ -83,25 +86,53 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
             });
         }
         latch.await();
-        TreeSet<Map.Entry<String, Integer>> ret = new TreeSet<>(new Tools.MapByValueIntComparator<>());
-        for (Map.Entry<String, Integer> entry : sumsForQueries.entrySet()) {
+
+        if (RELATIVELY) {
+            for (int p1Idx = 0; p1Idx < pivots.size() - 1; p1Idx++) {
+                Object p1 = pivots.get(p1Idx);
+                Object p1ID = metricSpace.getIDOfMetricObject(p1);
+                for (int p2Idx = p1Idx + 1; p2Idx < pivots.size(); p2Idx++) {
+                    Object p2 = pivots.get(p2Idx);
+                    Object p2ID = metricSpace.getIDOfMetricObject(p2);
+                    String key = p1ID.toString() + "-" + p2ID.toString();
+                    Float abs = sumsForQueries.get(key);
+                    if (abs == null) {
+                        continue;
+                    }
+                    float rel = abs / checkedPivotPairs[p1Idx][p2Idx];
+                    sumsForQueries.put(key, rel);
+                }
+            }
+        }
+
+        TreeSet<Map.Entry<String, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
+        for (Map.Entry<String, Float> entry : sumsForQueries.entrySet()) {
             ret.add(entry);
         }
         Map<Object, Object> pMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, false);
         List<Object> retList = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : ret) {
+        for (Map.Entry<String, Float> entry : ret) {
             String[] split = entry.getKey().split("-");
             retList.add(pMap.get(split[0]));
             retList.add(pMap.get(split[1]));
         }
-        String name = datasetName + "_" + pivots.size() + "p_" + sampleQueryArray.length + "q_" + sampleObjects.size() + "o_" + K + "k";
-        if (BREAK_AFTER_FIRST_LB) {
-            name += "_dependent";
-        }
+        threadPool.shutdown();
+        String name = getNameOfFile(datasetName, pivots.size(), sampleQueryArray.length, sampleObjects.size());
         storage.storePivotPairs(name, metricSpace, retList);
     }
 
-    private Map<String, Integer> evaluateQuery(T qData, Map<Object, Object> oMap) {
+    public static String getNameOfFile(String datasetName, int pivotCount, int sampleQCount, int sampleOCount) {
+        String name = datasetName + "_" + pivotCount + "p_" + sampleQCount + "q_" + sampleOCount + "o_" + K + "k";
+        if (BREAK_AFTER_FIRST_LB) {
+            name += "_dependent";
+        }
+        if (RELATIVELY) {
+            name += "_rel";
+        }
+        return name;
+    }
+
+    private Map<String, Integer> evaluateQuery(T qData, Map<Object, Object> oMap, int[][] checkedPivotPairs) {
         TreeSet<Map.Entry<Object, Float>> queryAnswer = new TreeSet<>(new Tools.MapByFloatValueComparator());
         Map<String, Integer> ret = new HashMap<>();
 
@@ -134,6 +165,9 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                 Object p1ID = metricSpace.getIDOfMetricObject(p1);
                 float p1O = df.getDistance(p1Data, oData);
                 for (int p2Idx = p1Idx + 1; p2Idx < pivots.size(); p2Idx++) {
+                    if (RELATIVELY) {
+                        checkedPivotPairs[p1Idx][p2Idx]++;
+                    }
                     Object p2 = pivots.get(p2Idx);
                     T p2Data = metricSpace.getDataOfMetricObject(p2);
                     Object p2ID = metricSpace.getIDOfMetricObject(p2);
@@ -146,8 +180,8 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
                         if (!ret.containsKey(key)) {
                             ret.put(key, 1);
                         } else {
-                            Integer value = ret.get(key);
-                            value++;
+                            int value = ret.get(key);
+                            value += 1;
                             ret.put(key, value);
                         }
                         if (BREAK_AFTER_FIRST_LB) {

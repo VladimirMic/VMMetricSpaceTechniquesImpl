@@ -22,10 +22,10 @@ public interface PivotPairsStoreInterface<T> {
 
     /**
      *
-     * @param sketchesName see
+     * @param pivotPairsSetName see e.g.
      * @AbstractObjectToSketchTransformator.getNameOfTransformedSetOfObjects()
      * @return list of pivot pairs, the order in the list defines the bits order
      */
-    public List<String[]> loadPivotPairsIDs(String sketchesName);
+    public List<String[]> loadPivotPairsIDs(String pivotPairsSetName);
 
 }
