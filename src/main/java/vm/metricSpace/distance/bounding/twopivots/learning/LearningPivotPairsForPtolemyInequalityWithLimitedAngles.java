@@ -27,6 +27,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  * @author Vlada
  * @param <T>
  */
+@Deprecated
 public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
 
     public static final Logger LOG = Logger.getLogger(LearningPivotPairsForPtolemyInequalityWithLimitedAngles.class.getName());

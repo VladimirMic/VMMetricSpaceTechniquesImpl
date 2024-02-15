@@ -8,11 +8,10 @@ import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -31,7 +30,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     private final float[][] poDists;
     private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
-    private final int[] pivotPermutation;
 
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
     private final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
@@ -44,15 +42,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.rowHeaders = rowHeaders;
         this.lbCheckedForQ = new ConcurrentHashMap();
         checkOrdersOfPivots(pivots, columnHeaders, metricSpace);
-
-        pivotPermutation = new int[pivots.size()];
-        List<String[]> pivotPairsIDs = filter.getPivotPairs();
-        int pCounter = 0;
-        for (int i = pivotPairsIDs.size() - 1; i >= 0 && pCounter < pivotPermutation.length; i--) {
-            String[] ids = pivotPairsIDs.get(i);
-            pivotPermutation[pCounter++] = columnHeaders.get(ids[0]);
-            pivotPermutation[pCounter++] = columnHeaders.get(ids[1]);
-        }
     }
 
     @Override
@@ -63,6 +52,11 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
         float[][] qpDistMultipliedByCoefForPivots = getOrComputeqpDistMultipliedByCoefForPivots(qpMultipliedByCoefCached, qId, qData);
+        int[] pivotPairs = pivotPermutationCached.get(qId);
+        if (pivotPairs == null) {
+            pivotPairs = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, pivotsData.size());
+            pivotPermutationCached.put(qId, pivotPairs);
+        }
         int distComps = 0;
         float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
         objectsLoop:
@@ -72,11 +66,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             T oData = metricSpace.getDataOfMetricObject(o);
             int oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotPermutation.length; p += 2) {
-                    int p1Idx = pivotPermutation[p];
-                    int p2Idx = pivotPermutation[p + 1];
-
-                    tmpPrintMaxAndMin(poDists[oIdx]);
+                for (int p = 0; p < pivotPairs.length; p += 2) {
+                    int p1Idx = pivotPairs[p];
+                    int p2Idx = pivotPairs[p + 1];
 
                     float distP1O = poDists[oIdx][p1Idx];
                     float distP2O = poDists[oIdx][p2Idx];
@@ -149,36 +141,29 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             }
             cache.put(qId, ret);
         }
-        float min = Float.MAX_VALUE;
-        float max = 0;
-        for (int i = 0; i < ret.length; i++) {
-            float[] row = ret[i];
-            for (int j = 0; j < row.length; j++) {
-                float val = row[j];
-                if (val > 0) {
-                    min = Math.min(min, val);
-                }
-                max = Math.max(max, val);
-            }
-        }
-        tmpMax = max;
-        tmpMin = min;
-        Logger.getLogger(KNNSearchWithPtolemaicFiltering.class.getName()).log(Level.INFO, "Min and max values in table:;{0};{1}", new Object[]{min, max});
         return ret;
     }
 
-    private float tmpMax;
-    private float tmpMin;
-
-    private void tmpPrintMaxAndMin(float[] poDist) {
-        float min = Float.MAX_VALUE;
-        float max = 0;
-        for (float f : poDist) {
-            min = Math.min(min, f);
-            max = Math.max(max, f);
+    private int[] identifyExtremePivotPairs(float[][] coefs, int size) {
+        SortedSet<Map.Entry<Integer, Float>> sorted = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
+        for (int i = 0; i < coefs.length; i++) {
+            float[] row = coefs[i];
+            for (int j = 0; j < row.length; j++) {
+                sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, row[j]));
+            }
         }
-        float maxLB = tmpMax * max - tmpMin * min;
-        System.err.println("XXX;" + maxLB);
+        Iterator<Map.Entry<Integer, Float>> it = sorted.iterator();
+        int[] ret = new int[size * 2];
+        for (int i = 0; i < ret.length; i += 2) {
+            Map.Entry<Integer, Float> entry = it.next();
+            int row = entry.getKey();
+            int column = row % coefs.length;
+            row -= column;
+            row = row / coefs.length;
+            ret[i] = row;
+            ret[i + 1] = column;
+        }
+        return ret;
     }
 
 }
