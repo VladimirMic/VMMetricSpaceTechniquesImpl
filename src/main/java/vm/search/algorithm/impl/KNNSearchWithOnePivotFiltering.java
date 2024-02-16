@@ -23,7 +23,7 @@ import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
 public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
     public static final Boolean CHECK_ALSO_UB = false;
-    public static Boolean SORT_PIVOTS = true;
+    public static final Boolean SORT_PIVOTS = false;
 
     private final AbstractOnePivotFilter filter;
     private final List<T> pivotsData;
