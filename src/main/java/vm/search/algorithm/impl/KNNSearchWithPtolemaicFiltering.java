@@ -150,6 +150,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             float[] row = coefs[i];
             for (int j = 0; j < row.length; j++) {
                 sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, row[j]));
+                if (sorted.size() > size) {
+                    sorted.remove(sorted.last());
+                }
             }
         }
         Iterator<Map.Entry<Integer, Float>> it = sorted.iterator();

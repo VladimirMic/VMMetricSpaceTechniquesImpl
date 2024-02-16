@@ -133,7 +133,7 @@ public abstract class SearchingAlgorithm<T> {
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor(1);
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         int batchCounter = 0;
         while (objects.hasNext()) {
             try {
@@ -154,17 +154,14 @@ public abstract class SearchingAlgorithm<T> {
                 System.gc();
                 CountDownLatch latch = new CountDownLatch(queryObjects.size());
                 final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;
-//                final int batchFinal = batchCounter;
                 for (int i = 0; i < queryObjects.size(); i++) {
                     final Object queryObject = queryObjects.get(i);
                     final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
-//                    final int iFinal = i + 1;
                     threadPool.execute(() -> {
                         TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
                         adjustAndReturnSearchRadiusAfterAddingMore(answerToQuery, k);
-//                        LOG.log(Level.INFO, "Query obj {0} evaluated in the batch {1} (batch size: {2})", new Object[]{iFinal, batchFinal, BATCH_SIZE});
                     });
                 }
                 latch.await();
