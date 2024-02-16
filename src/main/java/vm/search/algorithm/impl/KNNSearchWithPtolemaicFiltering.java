@@ -145,11 +145,13 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     private int[] identifyExtremePivotPairs(float[][] coefs, int size) {
-        SortedSet<Map.Entry<Integer, Float>> sorted = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
-        for (int i = 0; i < coefs.length; i++) {
-            float[] row = coefs[i];
-            for (int j = 0; j < row.length; j++) {
-                sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, row[j]));
+        TreeSet<Map.Entry<Integer, Float>> sorted = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
+        for (int i = 0; i < coefs.length - 1; i++) {
+            for (int j = i + 1; j < coefs.length; j++) {
+                float a = coefs[i][j];
+                float b = coefs[j][i];
+                float value = Math.min(a, b) / Math.max(a, b);
+                sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, value));
                 if (sorted.size() > size) {
                     sorted.remove(sorted.last());
                 }
