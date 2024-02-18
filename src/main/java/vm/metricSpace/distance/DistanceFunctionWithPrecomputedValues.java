@@ -2,6 +2,7 @@ package vm.metricSpace.distance;
 
 import java.util.Map;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixLoader;
 
 /**
@@ -18,8 +19,8 @@ public class DistanceFunctionWithPrecomputedValues<T> extends DistanceFunctionIn
     private final DistanceFunctionInterface<T> df;
     private final AbstractMetricSpace<T> metricSpace;
 
-    public DistanceFunctionWithPrecomputedValues(AbstractMetricSpace<T> metricSpace, AbstractPrecomputedDistancesMatrixLoader pd, String datasetName, String pivotSetName, DistanceFunctionInterface<T> encapsulatedDF, int numberOfPivots) {
-        this.dists = pd.loadPrecomPivotsToObjectsDists(datasetName, pivotSetName, numberOfPivots);
+    public DistanceFunctionWithPrecomputedValues(AbstractMetricSpace<T> metricSpace, AbstractPrecomputedDistancesMatrixLoader pd, Dataset dataset, DistanceFunctionInterface<T> encapsulatedDF, int numberOfPivots) {
+        this.dists = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
         this.columnHeaders = pd.getColumnHeaders();
         this.rowHeaders = pd.getRowHeaders();
         this.df = encapsulatedDF;

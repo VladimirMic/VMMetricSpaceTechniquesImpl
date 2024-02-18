@@ -40,7 +40,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         this.df = df;
         this.rowHeaders = rowHeaders;
         this.lbCheckedForQ = new ConcurrentHashMap();
-        checkOrdersOfPivots(pivots, columnHeaders, metricSpace);
     }
 
     @Override
@@ -61,10 +60,10 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         }
         int[] pivotPermutation = null;
         if (SORT_PIVOTS) {
-            pivotPermutation = pivotPermutationCached.get(qId);
+            pivotPermutation = qPivotPermutationCached.get(qId);
             if (pivotPermutation == null) {
                 pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
-                pivotPermutationCached.put(qId, pivotPermutation);
+                qPivotPermutationCached.put(qId, pivotPermutation);
             }
         }
         int distComps = 0;

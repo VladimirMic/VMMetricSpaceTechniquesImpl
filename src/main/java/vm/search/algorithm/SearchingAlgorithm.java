@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
@@ -34,7 +33,7 @@ public abstract class SearchingAlgorithm<T> {
     protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Object, float[]> qpDistsCached = new ConcurrentHashMap<>();
-    protected final ConcurrentHashMap<Object, int[]> pivotPermutationCached = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Object, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
 
     public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
@@ -204,21 +203,6 @@ public abstract class SearchingAlgorithm<T> {
         }
         threadPool.shutdown();
         return ret;
-    }
-
-    public final void checkOrdersOfPivots(List<Object> pivots, Map<Object, Integer> columnHeaders, AbstractMetricSpace<T> metricSpace) {
-        List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
-        String[] pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
-        for (int p = 0; p < pivotIDsList.size(); p++) {
-            Object pId = pivotIDs[p];
-            if (!columnHeaders.containsKey(pId)) {
-                throw new IllegalArgumentException("Precomputed distances dost not contain pivot " + pId);
-            }
-            int pIdx = columnHeaders.get(pId);
-            if (pIdx != p) {
-                throw new IllegalArgumentException("Wrong pivot ordering " + pIdx + ", " + p);
-            }
-        }
     }
 
     public void incTime(Object qId, long time) {

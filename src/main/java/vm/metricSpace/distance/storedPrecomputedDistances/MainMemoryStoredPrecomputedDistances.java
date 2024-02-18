@@ -5,6 +5,7 @@
 package vm.metricSpace.distance.storedPrecomputedDistances;
 
 import java.util.Map;
+import vm.metricSpace.Dataset;
 
 /**
  *
@@ -21,7 +22,7 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
     }
 
     @Override
-    public float[][] loadPrecomPivotsToObjectsDists(String datasetName, String pivotSetName, int pivotCount) {
+    public float[][] loadPrecomPivotsToObjectsDists(Dataset dataset, int pivotCount) {
         return dists;
     }
 

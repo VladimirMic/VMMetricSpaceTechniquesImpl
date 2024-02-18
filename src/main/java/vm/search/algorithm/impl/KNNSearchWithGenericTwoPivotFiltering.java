@@ -46,7 +46,6 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         this.lbCheckedForQ = new ConcurrentHashMap();
         pivotsEndBigDists = 8;
         pivotsEndSmallDists = SORT_PIVOTS ? (pivotsData.size() / pivotsEndBigDists) : pivotsData.size() - 1;
-        checkOrdersOfPivots(pivots, columnHeaders, metricSpace);
     }
 
     @Override
@@ -67,10 +66,10 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         }
         int[] pivotPermutation = null;
         if (SORT_PIVOTS) {
-            pivotPermutation = pivotPermutationCached.get(qId);
+            pivotPermutation = qPivotPermutationCached.get(qId);
             if (pivotPermutation == null) {
                 pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
-                pivotPermutationCached.put(qId, pivotPermutation);
+                qPivotPermutationCached.put(qId, pivotPermutation);
             }
         }
         int[] p2Idxs = null;
