@@ -56,7 +56,7 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
 //    }
     @Override
     protected String getTechName() {
-        return "data-dependent_generalised_ptolemaic_filtering_pivot_array_selection_pp";
+        return "data-dependent_generalised_ptolemaic_filtering_pivot_array_selection";
     }
 
     @Override
