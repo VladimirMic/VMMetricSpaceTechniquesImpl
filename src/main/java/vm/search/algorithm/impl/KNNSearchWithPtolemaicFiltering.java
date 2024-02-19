@@ -62,12 +62,12 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         float distP1O, distP2O, distP2Q, distQP1, lowerBound, distance;
         float[] poDistsArray;
         Object o, oId;
-        long tmp = -System.currentTimeMillis();
+        T oData;
         objectsLoop:
         while (objects.hasNext()) {
             o = objects.next();
             oId = metricSpace.getIDOfMetricObject(o);
-            T oData = metricSpace.getDataOfMetricObject(o);
+            oData = metricSpace.getDataOfMetricObject(o);
             oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
                 poDistsArray = poDists[oIdx];
