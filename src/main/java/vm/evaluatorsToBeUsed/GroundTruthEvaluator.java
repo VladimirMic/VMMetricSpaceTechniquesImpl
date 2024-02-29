@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
 
@@ -53,8 +54,8 @@ public class GroundTruthEvaluator {
     public GroundTruthEvaluator(AbstractMetricSpace metricSpace, DistanceFunctionInterface distanceFunction, List<Object> queryObjects, int k, float range, QueryNearestNeighboursStoreInterface storage) {
         this.metricSpace = metricSpace;
         this.storage = storage;
-        this.queryObjectsIDs = getIDsOfObjects(queryObjects);
-        this.queryObjectsData = getDataOfObjects(queryObjects);
+        this.queryObjectsIDs = ToolsMetricDomain.getIDsAsList(queryObjects.iterator(), metricSpace);
+        this.queryObjectsData = ToolsMetricDomain.getDataAsList(queryObjects.iterator(), metricSpace);
         this.k = k;
         this.range = range;
         this.distanceFunction = distanceFunction;
@@ -146,22 +147,6 @@ public class GroundTruthEvaluator {
         }
     }
 
-    private List<Object> getDataOfObjects(List<Object> queryObjects) {
-        List<Object> ret = new ArrayList<>();
-        for (Object queryObject : queryObjects) {
-            ret.add(metricSpace.getDataOfMetricObject(queryObject));
-        }
-        return ret;
-    }
-
-    private List<Object> getIDsOfObjects(List<Object> queryObjects) {
-        List<Object> ret = new ArrayList<>();
-        for (Object queryObject : queryObjects) {
-            ret.add(metricSpace.getIDOfMetricObject(queryObject));
-        }
-        return ret;
-    }
-
     private class UpdateAnswers implements Runnable {
 
         private final List<Object> batch;
@@ -186,11 +171,7 @@ public class GroundTruthEvaluator {
                 updateSimQueryAnswer(qData, obj, queryResult);
             }
             t += System.currentTimeMillis();
-            if (t > 10000) {
-                LOG.log(Level.INFO, "Latch: {0}, time: {1}, {2}", new Object[]{latch.getCount(), t, qID});
-            } else {
-                LOG.log(Level.INFO, "Latch: {0}, time: {1}, {2}", new Object[]{latch.getCount(), t, qID});
-            }
+            LOG.log(Level.INFO, "Batch for a query {2} evaluated in {1} ms. Remains {0} queries", new Object[]{latch.getCount(), t, qID});
             latch.countDown();
         }
 

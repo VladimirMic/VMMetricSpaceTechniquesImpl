@@ -171,6 +171,15 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static List<Object> getDataAsList(Iterator objects, AbstractMetricSpace metricSpace) {
+        List ret = new ArrayList<>();
+        while (objects.hasNext()) {
+            Object next = objects.next();
+            ret.add(metricSpace.getDataOfMetricObject(next));
+        }
+        return ret;
+    }
+
     public static Set<Object> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
         Set<Object> ret = new HashSet<>();
         for (int i = 1; objects.hasNext(); i++) {

@@ -105,8 +105,8 @@ public class LearningSecondaryFilteringWithSketches<T> {
                 LOG.log(Level.INFO, "iDim evaluation: {0} distances", i);
             }
         }
-        LOG.log(Level.INFO, "Finished iDim evaluation: {0} distances", i);
         double iDim = Tools.getIDim(distances, true);
+        LOG.log(Level.INFO, "Finished iDim evaluation: {0} distances", i);
         return iDim;
     }
 
