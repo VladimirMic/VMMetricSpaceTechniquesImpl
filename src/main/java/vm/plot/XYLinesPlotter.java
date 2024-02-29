@@ -7,6 +7,10 @@ package vm.plot;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.Locale;
 import org.jfree.chart.ChartFactory;
@@ -14,6 +18,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -30,6 +35,7 @@ public class XYLinesPlotter extends AbstractPlotter {
     public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC = 8;
 
     public static final Integer Y_TICKS_IMPLICIT_NUMBER = 14;
+
     public static final Float SERIES_STROKE = 2f;
     public static final Float GRID_STROKE = 0.4f;
 
@@ -40,6 +46,12 @@ public class XYLinesPlotter extends AbstractPlotter {
             dataset.addSeries(trace);
         }
         JFreeChart chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
+        if (traces.length == 1) {
+            String traceName = traces[0].getKey().toString().toLowerCase();
+            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()) || traceName.equals(xAxisLabel.toLowerCase()))) {
+                chart.removeLegend();
+            }
+        }
         chart.setBackgroundPaint(Color.WHITE);
         XYPlot plot = (XYPlot) chart.getPlot();
         plot.setBackgroundAlpha(0);
@@ -50,7 +62,12 @@ public class XYLinesPlotter extends AbstractPlotter {
         Font fontAxisTitle = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_LABEL);
         yAxis.setLabelFont(fontAxisTitle);
         xAxis.setLabelFont(fontAxisTitle);
-        chart.getLegend().setItemFont(fontAxisTitle);
+        LegendTitle legend = chart.getLegend();
+
+        if (legend != null) {
+            legend.setItemFont(fontAxisTitle);
+        }
+
         Font fontAxisMarkers = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_TICKS);
         yAxis.setTickLabelFont(fontAxisMarkers);
         xAxis.setTickLabelFont(fontAxisMarkers);
@@ -59,9 +76,11 @@ public class XYLinesPlotter extends AbstractPlotter {
         plot.setRangeGridlineStroke(new BasicStroke(GRID_STROKE));
 
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        AffineTransform resize = new AffineTransform();
+        resize.scale(1000, 1000);
         for (int i = 0; i < traces.length; i++) {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
-            renderer.setSeriesShapesVisible(i, Boolean.TRUE);
+            renderer.setSeriesShapesVisible(i, true);
         }
         plot.setRangeGridlinePaint(Color.BLACK);
 
@@ -79,9 +98,13 @@ public class XYLinesPlotter extends AbstractPlotter {
 
         // x
         Double xStep = setAxisUnits(xAxisStep, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC);
-        if (xStep >= 50 && xStep <= 1000) {
+        double ub = xAxis.getUpperBound();
+        int ubLength = Double.toString(ub).length();
+        if (ubLength >= 3 || Double.toString(xAxis.getLowerBound()).length() >= 3) {
             xStep = setAxisUnits(xAxisStep, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
-            nf = nfBig;
+            if (ubLength >= 3 && ub >= 1000) {
+                nf = nfBig;
+            }
         }
         if (xStep >= 1000) {
             nf = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);

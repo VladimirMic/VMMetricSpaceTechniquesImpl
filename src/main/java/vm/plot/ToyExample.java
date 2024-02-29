@@ -7,13 +7,13 @@ import org.jfree.data.xy.XYSeries;
 public class ToyExample {
 
     public static void main(String args[]) {
-        XYSeries[] traces = prepareTraces();
+        XYSeries[] traces = prepareToyExampleTraces();
         AbstractPlotter plotter = new XYLinesPlotter();
         JFreeChart plot = plotter.createPlot(null, "x label", "y label", null, null, traces);
         plotter.storePlot("c:\\Data\\tmp.png", plot);
     }
 
-    private static XYSeries[] prepareTraces() {
+    private static XYSeries[] prepareToyExampleTraces() {
         XYSeries[] ret = new XYSeries[]{new XYSeries("First trace"), new XYSeries("Second trace")};
         Random r = new Random();
         for (int i = 0; i < 10; i++) {
