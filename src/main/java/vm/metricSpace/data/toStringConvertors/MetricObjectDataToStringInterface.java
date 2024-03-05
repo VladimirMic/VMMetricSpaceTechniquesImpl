@@ -1,4 +1,4 @@
-package vm.metricSpace.dataToStringConvertors;
+package vm.metricSpace.data.toStringConvertors;
 
 /**
  *

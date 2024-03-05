@@ -1,6 +1,6 @@
-package vm.metricSpace.dataToStringConvertors.impl;
+package vm.metricSpace.data.toStringConvertors.impl;
 
-import vm.metricSpace.dataToStringConvertors.MetricObjectDataToStringInterface;
+import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
 
 /**
  *

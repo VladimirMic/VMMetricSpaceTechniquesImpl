@@ -1,9 +1,9 @@
-package vm.metricSpace.dataToStringConvertors.impl;
+package vm.metricSpace.data.toStringConvertors.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import vm.datatools.DataTypeConvertor;
-import vm.metricSpace.dataToStringConvertors.MetricObjectDataToStringInterface;
+import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
 
 /**
  *

@@ -7,10 +7,7 @@ package vm.plot;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.Locale;
 import org.jfree.chart.ChartFactory;
@@ -31,8 +28,8 @@ public class XYLinesPlotter extends AbstractPlotter {
     public static final Integer FONT_SIZE_AXIS_LABEL = 30;
     public static final Integer FONT_SIZE_AXIS_TICKS = 28;
 
-    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC = 15;
-    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC = 8;
+    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC = 14;
+    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC = 8; // 9 is too much // pripadne udelat mapu pro ruzne max delky popisu. 8 by bylo pro delku 5
 
     public static final Integer Y_TICKS_IMPLICIT_NUMBER = 14;
 
@@ -57,7 +54,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         plot.setBackgroundAlpha(0);
         NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
-        xAxis.setUpperMargin(0.2);
+        xAxis.setUpperMargin(0.15);
 
         Font fontAxisTitle = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_LABEL);
         yAxis.setLabelFont(fontAxisTitle);
@@ -90,7 +87,11 @@ public class XYLinesPlotter extends AbstractPlotter {
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
         NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
         nfBig.setMinimumFractionDigits(1);
-        if (yStep >= 1000) {
+        double ub = yAxis.getUpperBound();
+        double lb = yAxis.getLowerBound();
+        int maxTickLength = getMaxTickLabelLength(lb, ub, yStep);
+        double thr = getThresholdForXStepForUB(ub);
+        if (maxTickLength >= 3 && ub >= 1000 && yStep >= thr) {
             yAxis.setNumberFormatOverride(nfBig);
         } else {
             yAxis.setNumberFormatOverride(nf);
@@ -98,17 +99,21 @@ public class XYLinesPlotter extends AbstractPlotter {
 
         // x
         Double xStep = setAxisUnits(xAxisStep, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC);
-        double ub = xAxis.getUpperBound();
-        int ubLength = Double.toString(ub).length();
-        if (ubLength >= 3 || Double.toString(xAxis.getLowerBound()).length() >= 3) {
+        ub = xAxis.getUpperBound();
+        lb = xAxis.getLowerBound();
+        maxTickLength = getMaxTickLabelLength(lb, ub, xStep);
+        if (maxTickLength >= 4) {
             xStep = setAxisUnits(xAxisStep, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
-            if (ubLength >= 3 && ub >= 1000) {
+            thr = getThresholdForXStepForUB(ub);
+            if (maxTickLength >= 3 && ub >= 1000 && xStep >= thr) {
                 nf = nfBig;
             }
         }
-        if (xStep >= 1000) {
+        if (xStep
+                >= 1000) {
             nf = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
         }
+
         xAxis.setNumberFormatOverride(nf);
         return chart;
     }

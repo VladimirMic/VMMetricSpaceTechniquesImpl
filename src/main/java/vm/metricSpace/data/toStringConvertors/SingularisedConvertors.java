@@ -1,9 +1,9 @@
-package vm.metricSpace.dataToStringConvertors;
+package vm.metricSpace.data.toStringConvertors;
 
-import vm.metricSpace.dataToStringConvertors.impl.FloatMatrixConvertor;
-import vm.metricSpace.dataToStringConvertors.impl.FloatVectorConvertor;
-import vm.metricSpace.dataToStringConvertors.impl.MPEG7Convertor3;
-import vm.metricSpace.dataToStringConvertors.impl.LongVectorConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.FloatMatrixConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.FloatVectorConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.MPEG7Convertor3;
+import vm.metricSpace.data.toStringConvertors.impl.LongVectorConvertor;
 
 /**
  *

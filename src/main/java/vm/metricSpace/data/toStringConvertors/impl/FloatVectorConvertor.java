@@ -1,9 +1,7 @@
-package vm.metricSpace.dataToStringConvertors.impl;
+package vm.metricSpace.data.toStringConvertors.impl;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
-import vm.metricSpace.dataToStringConvertors.MetricObjectDataToStringInterface;
+import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
 
 /**
  *

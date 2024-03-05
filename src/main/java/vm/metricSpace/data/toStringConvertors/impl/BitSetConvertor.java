@@ -1,7 +1,7 @@
-package vm.metricSpace.dataToStringConvertors.impl;
+package vm.metricSpace.data.toStringConvertors.impl;
 
 import java.util.BitSet;
-import vm.metricSpace.dataToStringConvertors.MetricObjectDataToStringInterface;
+import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
 
 /**
  *

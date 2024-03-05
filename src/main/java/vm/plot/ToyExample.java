@@ -17,8 +17,8 @@ public class ToyExample {
         XYSeries[] ret = new XYSeries[]{new XYSeries("First trace"), new XYSeries("Second trace")};
         Random r = new Random();
         for (int i = 0; i < 10; i++) {
-            float x = r.nextFloat(1000);
-            float y = r.nextFloat(100000);
+            float x = r.nextFloat(0.76f);
+            float y = r.nextFloat(0.9f);
             System.out.println(x + ", " + y);
             ret[0].add(x, y);
             ret[1].add(x / 2f, y / 2f);
