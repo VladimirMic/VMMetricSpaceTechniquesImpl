@@ -17,7 +17,7 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
- *
+ * SHould be merged with the Algorithm ...
  * @author Vlada
  */
 public class GroundTruthEvaluator {
