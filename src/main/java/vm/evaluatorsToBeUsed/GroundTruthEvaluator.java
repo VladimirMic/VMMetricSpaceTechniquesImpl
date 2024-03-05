@@ -1,7 +1,6 @@
 package vm.evaluatorsToBeUsed;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -15,6 +14,7 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
+import vm.search.algorithm.SearchingAlgorithm;
 
 /**
  *
@@ -23,7 +23,7 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
 public class GroundTruthEvaluator {
 
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
-    public static final Integer BATCH_SIZE = 5000000;
+    public static final Integer BATCH_SIZE = SearchingAlgorithm.BATCH_SIZE; // note that small batches might be more efficient due to CPU caching.
 
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
