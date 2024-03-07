@@ -11,7 +11,7 @@ public class ToyExample {
         XYSeries[] traces = prepareToyExampleTraces();
         AbstractPlotter plotter = new XYLinesPlotter();
         JFreeChart plot = plotter.createPlot(null, "x label", "y label", traces);
-        plotter.storePlot("c:\\Data\\tmp.png", plot);
+        plotter.storePlotPNG("c:\\Data\\tmp.png", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {

@@ -7,6 +7,7 @@ package vm.plot;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -28,6 +29,8 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.graphics2d.svg.SVGGraphics2D;
+import org.jfree.graphics2d.svg.SVGUtils;
 import vm.datatools.Tools;
 
 /**
@@ -206,11 +209,30 @@ public abstract class AbstractPlotter {
         return ret;
     }
 
-    public void storePlot(String path, JFreeChart plot) {
-        storePlot(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
+    public void storePlotSVG(String path, JFreeChart plot) {
+        storePlotSVG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
     }
 
-    public void storePlot(String path, JFreeChart plot, int width, int height) {
+    public void storePlotSVG(String path, JFreeChart plot, int width, int height) {
+        if (!path.endsWith(".svg")) {
+            path += ".svg";
+        }
+        SVGGraphics2D g2 = new SVGGraphics2D(width, height);
+        Rectangle r = new Rectangle(0, 0, width, height);
+        plot.draw(g2, r);
+        File f = new File(path);
+        try {
+            SVGUtils.writeToSVG(f, g2.getSVGElement());
+        } catch (IOException ex) {
+            Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void storePlotPNG(String path, JFreeChart plot) {
+        storePlotPNG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
+    }
+
+    public void storePlotPNG(String path, JFreeChart plot, int width, int height) {
         if (!path.endsWith(".png")) {
             path += ".png";
         }
