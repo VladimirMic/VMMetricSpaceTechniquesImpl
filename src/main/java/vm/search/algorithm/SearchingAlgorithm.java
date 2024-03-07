@@ -120,7 +120,7 @@ public abstract class SearchingAlgorithm<T> {
      * @param queryObjects
      * @param k
      * @param objects
-     * @param additionalParams
+     * @param additionalParams -- voluntarily the first one can be the parallelisation.
      * @return evaluates all query objects in parallel. Parallelisation is done
      * over the query objects
      */
@@ -132,7 +132,12 @@ public abstract class SearchingAlgorithm<T> {
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
-        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
+        ExecutorService threadPool;
+        if (additionalParams != null && additionalParams.length > 0 && additionalParams[0] instanceof Integer) {
+            threadPool = vm.javatools.Tools.initExecutor((Integer) additionalParams[0]);
+        } else {
+            threadPool = vm.javatools.Tools.initExecutor();
+        }
         int batchCounter = 0;
         while (objects.hasNext()) {
             try {

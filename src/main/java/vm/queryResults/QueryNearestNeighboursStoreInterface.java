@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import vm.evaluatorsToBeUsed.GroundTruthEvaluator;
 import vm.metricSpace.AbstractMetricSpace;
 
 /**
@@ -32,7 +33,7 @@ public abstract class QueryNearestNeighboursStoreInterface {
     }
 
     public Map<String, TreeSet<Map.Entry<Object, Float>>> getGroundTruthForDataset(String datasetName, String querySetName) {
-        return getQueryResultsForDataset("ground_truth", datasetName, querySetName, null);
+        return getQueryResultsForDataset("ground_truth", datasetName, querySetName, GroundTruthEvaluator.K_IMPLICIT_FOR_GROUND_TRUTH);
     }
 
 }

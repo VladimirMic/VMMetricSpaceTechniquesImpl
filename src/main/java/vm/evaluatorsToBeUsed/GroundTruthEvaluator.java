@@ -18,6 +18,7 @@ import vm.search.algorithm.SearchingAlgorithm;
 
 /**
  * SHould be merged with the Algorithm ...
+ *
  * @author Vlada
  */
 public class GroundTruthEvaluator {
@@ -25,6 +26,7 @@ public class GroundTruthEvaluator {
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
     public static final Integer BATCH_SIZE = SearchingAlgorithm.BATCH_SIZE; // note that small batches might be more efficient due to CPU caching.
 
+    public static final Integer K_IMPLICIT_FOR_GROUND_TRUTH = 1000;
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
     private final QueryNearestNeighboursStoreInterface storage;
