@@ -1,5 +1,6 @@
 package vm.plot;
 
+import vm.plot.impl.XYLinesPlotter;
 import java.util.Random;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
@@ -9,7 +10,7 @@ public class ToyExample {
     public static void main(String args[]) {
         XYSeries[] traces = prepareToyExampleTraces();
         AbstractPlotter plotter = new XYLinesPlotter();
-        JFreeChart plot = plotter.createPlot(null, "x label", "y label", null, null, traces);
+        JFreeChart plot = plotter.createPlot(null, "x label", "y label", traces);
         plotter.storePlot("c:\\Data\\tmp.png", plot);
     }
 
