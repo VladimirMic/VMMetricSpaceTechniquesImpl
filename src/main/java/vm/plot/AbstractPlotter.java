@@ -227,7 +227,8 @@ public abstract class AbstractPlotter {
             Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
+    @Deprecated // store as svg
     public void storePlotPNG(String path, JFreeChart plot) {
         storePlotPNG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
     }
