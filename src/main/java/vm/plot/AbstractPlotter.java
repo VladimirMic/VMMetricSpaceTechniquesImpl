@@ -11,11 +11,7 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.AbstractMap;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -31,7 +27,6 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
-import vm.datatools.Tools;
 
 /**
  *
@@ -71,54 +66,7 @@ public abstract class AbstractPlotter {
         new Color(23, 190, 207)
     };
 
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, XYSeries... traces);
-
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
-        XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);
-        return createPlot(mainTitle, xAxisLabel, yAxisLabel, traces);
-    }
-
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, float[] traceXValues, float[] traceYValues) {
-        XYSeries[] traces = transformCoordinatesIntoTraces(traceName, traceXValues, traceYValues);
-        return createPlot(mainTitle, xAxisLabel, yAxisLabel, traces);
-    }
-
-    protected XYSeries[] transformCoordinatesIntoTraces(String traceName, float[] traceXValues, float[] traceYValues) {
-        String[] names = new String[]{traceName};
-        return transformCoordinatesIntoTraces(names, new float[][]{traceXValues}, new float[][]{traceYValues});
-    }
-
-    protected XYSeries[] transformCoordinatesIntoTraces(String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
-        if (tracesNames.length != tracesXValues.length || tracesNames.length != tracesYValues.length) {
-            throw new IllegalArgumentException("Inconsistent number of traces in data. Names count: " + tracesNames.length + ", x count: " + tracesXValues.length + ", y count: " + tracesYValues.length);
-        }
-        XYSeries[] ret = new XYSeries[tracesNames.length];
-        for (int i = 0; i < tracesNames.length; i++) {
-            ret[i] = new XYSeries(tracesNames[i]);
-            if (tracesXValues[i].length != tracesYValues[i].length) {
-                throw new IllegalArgumentException("Inconsistent number of point in x and y coordinates. Trace: " + i + ", X coords: " + tracesXValues[i].length + ", y coords: " + tracesYValues[i].length);
-            }
-            int[] idxs = permutationOfIndexesToMakeXIncreasing(tracesXValues[i]);
-            for (int idx : idxs) {
-                ret[i].add(tracesXValues[i][idx], tracesYValues[i][idx]);
-            }
-        }
-        return ret;
-    }
-
-    private int[] permutationOfIndexesToMakeXIncreasing(float[] traceXValues) {
-        TreeSet<AbstractMap.Entry<Integer, Float>> set = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
-        for (int i = 0; i < traceXValues.length; i++) {
-            AbstractMap.Entry<Integer, Float> entry = new AbstractMap.SimpleEntry<>(i, traceXValues[i]);
-            set.add(entry);
-        }
-        int[] ret = new int[traceXValues.length];
-        Iterator<Map.Entry<Integer, Float>> it = set.iterator();
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = it.next().getKey();
-        }
-        return ret;
-    }
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
 
     protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber) {
         if (step == null) {

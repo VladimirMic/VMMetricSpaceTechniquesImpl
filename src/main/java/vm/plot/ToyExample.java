@@ -10,8 +10,8 @@ public class ToyExample {
     public static void main(String args[]) {
         XYSeries[] traces = prepareToyExampleTraces();
         AbstractPlotter plotter = new XYLinesPlotter();
-        JFreeChart plot = plotter.createPlot(null, "x label", "y label", traces);
-        plotter.storePlotPNG("c:\\Data\\tmp.png", plot);
+//        JFreeChart plot = plotter.createPlot(null, "x label", "y label", traces);
+//        plotter.storePlotSVG("c:\\Data\\tmp_plot.png", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {
