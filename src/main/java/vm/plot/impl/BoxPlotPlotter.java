@@ -5,6 +5,7 @@
 package vm.plot.impl;
 
 import java.awt.BasicStroke;
+import java.awt.geom.Ellipse2D;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
