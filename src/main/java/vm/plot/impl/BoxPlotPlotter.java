@@ -78,9 +78,13 @@ public class BoxPlotPlotter extends AbstractPlotter {
         BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
         for (int i = 0; i < tracesNames.length; i++) {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
-            renderer.setSeriesPaint(i, COLOURS[i % COLOURS.length]);
+            renderer.setSeriesPaint(i, LIGHT_COLOURS[i % LIGHT_COLOURS.length]);
+            renderer.setSeriesOutlinePaint(i, COLOURS[i % COLOURS.length]);
+            renderer.setSeriesOutlineStroke(i, new BasicStroke(3));
+            renderer.setSeriesStroke(i, new BasicStroke(3));
         }
 //            renderer.setMeanVisible(false);
+        renderer.setUseOutlinePaintForWhiskers(true);
         renderer.setMaxOutlierVisible(false);
         renderer.setMinOutlierVisible(false);
         renderer.setItemMargin(0.3);

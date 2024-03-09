@@ -71,6 +71,19 @@ public abstract class AbstractPlotter {
         new Color(23, 190, 207)
     };
 
+    public static final Color[] LIGHT_COLOURS = new Color[]{
+        new Color(143, 187, 217),
+        new Color(234, 147, 147),
+        new Color(149, 207, 149),
+        new Color(255, 191, 134),
+        new Color(201, 179, 222),
+        new Color(197, 170, 165),
+        new Color(241, 187, 224),
+        new Color(191, 191, 191),
+        new Color(221, 222, 144),
+        new Color(139, 222, 231)
+    };
+
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
 
     public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values);

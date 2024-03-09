@@ -5,19 +5,20 @@ import java.util.List;
 import java.util.Random;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
+import static vm.plot.AbstractPlotter.COLOURS;
 import vm.plot.impl.BoxPlotPlotter;
 
 public class ToyExample {
 
     public static void main(String args[]) {
         AbstractPlotter plotter = new BoxPlotPlotter();
-        List<Float>[] values = getRandomValues(10, 2000);
+        List<Float>[] values = getRandomValues(COLOURS.length, 2000);
         String[] tracesNames = new String[values.length];
         for (int i = 0; i < tracesNames.length; i++) {
-            tracesNames[i] = "Trace " + i;
+            tracesNames[i] = "Trace " + (i + 1);
         }
         JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, values);
-        plotter.storePlotPNG("c:\\Data\\tmp_boxplot.png", plot);
+        plotter.storePlotSVG("c:\\Data\\tmp_boxplot.svg", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {
