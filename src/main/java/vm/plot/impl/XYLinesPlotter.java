@@ -5,10 +5,10 @@
 package vm.plot.impl;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.util.AbstractMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import org.jfree.chart.ChartFactory;
@@ -35,18 +35,7 @@ public class XYLinesPlotter extends AbstractPlotter {
             dataset.addSeries(trace);
         }
         JFreeChart chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
-        if (traces.length == 1) {
-            String traceName = traces[0].getKey().toString().toLowerCase();
-            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()) || traceName.equals(xAxisLabel.toLowerCase()))) {
-                chart.removeLegend();
-            }
-        }
-        return setAppearence(chart, traces);
-    }
-
-    protected XYSeries[] transformCoordinatesIntoTraces(String traceName, float[] traceXValues, float[] traceYValues) {
-        String[] names = new String[]{traceName};
-        return transformCoordinatesIntoTraces(names, new float[][]{traceXValues}, new float[][]{traceYValues});
+        return setAppearence(chart, traces, xAxisLabel, yAxisLabel);
     }
 
     protected XYSeries[] transformCoordinatesIntoTraces(String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
@@ -81,7 +70,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         return ret;
     }
 
-    private JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces) {
+    private JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces, String xAxisLabel, String yAxisLabel) {
         XYPlot plot = (XYPlot) chart.getPlot();
         // chart colours
         setChartColor(chart, plot);
@@ -99,6 +88,12 @@ public class XYLinesPlotter extends AbstractPlotter {
 
         //legend        
         setLegendFont(chart.getLegend());
+        if (traces.length == 1) {
+            String traceName = traces[0].getKey().toString().toLowerCase();
+            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()) || traceName.equals(xAxisLabel.toLowerCase()))) {
+                chart.removeLegend();
+            }
+        }
 
         // set traces strokes
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
@@ -109,10 +104,16 @@ public class XYLinesPlotter extends AbstractPlotter {
             renderer.setSeriesShapesVisible(i, true);
             renderer.setSeriesPaint(i, COLOURS[i % COLOURS.length]);
         }
-        plot.setRangeGridlinePaint(Color.BLACK);
         plot.setBackgroundAlpha(0);
 
         return chart;
     }
+
+    @Override
+    @Deprecated
+    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 
 }

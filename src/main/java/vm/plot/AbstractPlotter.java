@@ -8,23 +8,25 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.Axis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.TickUnits;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.xy.XYSeries;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 
@@ -53,6 +55,9 @@ public abstract class AbstractPlotter {
     public static final Font FONT_AXIS_TITLE = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_LABEL);
     public static final Font FONT_AXIS_MARKERS = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_TICKS);
 
+    public static final Stroke DASHED_STROKE = new BasicStroke(GRID_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 3}, 0);
+    public static final Stroke FULL_STROKE = new BasicStroke(GRID_STROKE);
+
     public static final Color[] COLOURS = new Color[]{
         new Color(31, 119, 180),
         new Color(214, 39, 40),
@@ -67,6 +72,22 @@ public abstract class AbstractPlotter {
     };
 
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
+
+    public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values);
+
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, float[] traceXValues, float[] traceYValues) {
+        String[] names = new String[]{traceName};
+        float[][] x = new float[][]{traceXValues};
+        float[][] y = new float[][]{traceYValues};
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, names, x, y);
+    }
+
+    JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, List<Float>[] values) {
+        List<Float>[][] v = new List[1][values.length];
+        v[0] = values;
+        String[] groups = {"Group 1"};
+        return createPlot(mainTitle, yAxisLabel, tracesNames, groups, v);
+    }
 
     protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber) {
         if (step == null) {
@@ -175,7 +196,7 @@ public abstract class AbstractPlotter {
             Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @Deprecated // store as svg
     public void storePlotPNG(String path, JFreeChart plot) {
         storePlotPNG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
@@ -243,7 +264,7 @@ public abstract class AbstractPlotter {
         }
     }
 
-    protected void setLabelsOfAxis(ValueAxis axis) {
+    protected void setLabelsOfAxis(Axis axis) {
         axis.setTickLabelFont(FONT_AXIS_MARKERS);
         axis.setLabelFont(FONT_AXIS_TITLE);
     }
@@ -259,9 +280,15 @@ public abstract class AbstractPlotter {
         plot.setBackgroundAlpha(0);
         if (plot instanceof XYPlot) {
             XYPlot xyPlot = (XYPlot) plot;
-            xyPlot.setDomainGridlinePaint(Color.BLACK);
-            xyPlot.setDomainGridlineStroke(new BasicStroke(GRID_STROKE));
-            xyPlot.setRangeGridlineStroke(new BasicStroke(GRID_STROKE));
+            xyPlot.setDomainGridlinePaint(Color.GRAY);
+            xyPlot.setRangeGridlinePaint(Color.GRAY);
+            xyPlot.setDomainGridlineStroke(DASHED_STROKE);
+            xyPlot.setRangeGridlineStroke(DASHED_STROKE);
+        } else if (plot instanceof CategoryPlot) {
+            CategoryPlot catPlot = (CategoryPlot) plot;
+            catPlot.setRangeGridlinesVisible(true);
+            catPlot.setRangeGridlineStroke(DASHED_STROKE);
+            catPlot.setRangeGridlinePaint(Color.GRAY);
         } else {
             System.out.println("!!!");
             System.out.println("!!!");

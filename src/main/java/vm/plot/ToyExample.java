@@ -1,17 +1,23 @@
 package vm.plot;
 
-import vm.plot.impl.XYLinesPlotter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
+import vm.plot.impl.BoxPlotPlotter;
 
 public class ToyExample {
 
     public static void main(String args[]) {
-        XYSeries[] traces = prepareToyExampleTraces();
-        AbstractPlotter plotter = new XYLinesPlotter();
-//        JFreeChart plot = plotter.createPlot(null, "x label", "y label", traces);
-//        plotter.storePlotSVG("c:\\Data\\tmp_plot.png", plot);
+        AbstractPlotter plotter = new BoxPlotPlotter();
+        List<Float>[] values = getRandomValues(10, 2000);
+        String[] tracesNames = new String[values.length];
+        for (int i = 0; i < tracesNames.length; i++) {
+            tracesNames[i] = "Trace " + i;
+        }
+        JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, values);
+        plotter.storePlotPNG("c:\\Data\\tmp_boxplot.png", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {
@@ -23,6 +29,18 @@ public class ToyExample {
             System.out.println(x + ", " + y);
             ret[0].add(x, y);
             ret[1].add(x / 2f, y / 2f);
+        }
+        return ret;
+    }
+
+    private static List<Float>[] getRandomValues(int boxplotsCount, int valuesCount) {
+        Random r = new Random();
+        List<Float>[] ret = new List[boxplotsCount];
+        for (int i = 0; i < boxplotsCount; i++) {
+            ret[i] = new ArrayList<>();
+            for (int j = 0; j < valuesCount; j++) {
+                ret[i].add((float) Math.pow(r.nextFloat(), i + 1));
+            }
         }
         return ret;
     }
