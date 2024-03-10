@@ -5,19 +5,25 @@ import java.util.List;
 import java.util.Random;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
-import static vm.plot.AbstractPlotter.COLOURS;
-import vm.plot.impl.BoxPlotPlotter;
+import vm.plot.impl.BoxPlotCategoricalPlotter;
 
 public class ToyExample {
 
     public static void main(String args[]) {
-        AbstractPlotter plotter = new BoxPlotPlotter();
-        List<Float>[] values = getRandomValues(COLOURS.length, 2000);
-        String[] tracesNames = new String[values.length];
+        AbstractPlotter plotter = new BoxPlotCategoricalPlotter();
+        int groupsCount = 3;
+        int tracesCount = 6;
+        List<Float>[][] values = getRandomValues(groupsCount, tracesCount, 2000);
+        String[] tracesNames = new String[tracesCount];
+        String[] groupsNames = new String[groupsCount];
+        for (int i = 0; i < groupsCount; i++) {
+            groupsNames[i] = "Group " + (i + 1);
+        }
         for (int i = 0; i < tracesNames.length; i++) {
             tracesNames[i] = "Trace " + (i + 1);
         }
-        JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, values);
+        JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, groupsNames, values);
+        plotter.storePlotPNG("c:\\Data\\tmp_boxplot.svg", plot);
         plotter.storePlotSVG("c:\\Data\\tmp_boxplot.svg", plot);
     }
 
@@ -34,13 +40,15 @@ public class ToyExample {
         return ret;
     }
 
-    private static List<Float>[] getRandomValues(int boxplotsCount, int valuesCount) {
+    private static List<Float>[][] getRandomValues(int groupsCount, int boxplotsCount, int valuesCount) {
         Random r = new Random();
-        List<Float>[] ret = new List[boxplotsCount];
+        List<Float>[][] ret = new List[groupsCount][boxplotsCount];
         for (int i = 0; i < boxplotsCount; i++) {
-            ret[i] = new ArrayList<>();
-            for (int j = 0; j < valuesCount; j++) {
-                ret[i].add((float) Math.pow(r.nextFloat(), i + 1));
+            for (int j = 0; j < groupsCount; j++) {
+                ret[j][i] = new ArrayList<>();
+                for (int k = 0; k < valuesCount; k++) {
+                    ret[j][i].add((float) Math.pow(r.nextFloat(), i + 1));
+                }
             }
         }
         return ret;

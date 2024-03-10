@@ -21,7 +21,7 @@ import vm.plot.AbstractPlotter;
  *
  * @author au734419
  */
-public class BoxPlotPlotter extends AbstractPlotter {
+public class BoxPlotCategoricalPlotter extends AbstractPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
@@ -33,12 +33,11 @@ public class BoxPlotPlotter extends AbstractPlotter {
                 BoxAndWhiskerItem item = BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(valuesForGroupAndTrace);
                 item = new MyBoxAndWhiskerItem(item);
                 String groupName = groupsNames == null ? "" : groupsNames[groupId];
-//                dataset.add(item, groupName, tracesNames[traceID]);
                 dataset.add(item, tracesNames[traceID], groupName);
             }
         }
         JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, "", yAxisLabel, dataset, true);
-        return setAppearence(chart, tracesNames, yAxisLabel, groupsNames);
+        return setAppearence(chart, tracesNames, groupsNames);
     }
 
     @Override
@@ -47,17 +46,40 @@ public class BoxPlotPlotter extends AbstractPlotter {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
-    private JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, String yAxisLabel, String[] groupsNames) {
+    public int precomputeSuitableWidth(int height, int tracesCount, int groupsCount) {
+        int tracesTotalCount = tracesCount * groupsCount;
+        float retFor600 = 160 + tracesTotalCount * 80 + groupsCount * 40;
+        float ratio = height / 600f;
+        return (int) (ratio * retFor600);
+    }
+
+    @Override
+    public void storePlotSVG(String path, JFreeChart plot) {
+        int width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
+        storePlotSVG(path, plot, width, IMPLICIT_HEIGHT);
+    }
+
+    @Override
+    public void storePlotPNG(String path, JFreeChart plot) {
+        int width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
+        storePlotSVG(path, plot, width, IMPLICIT_HEIGHT);
+    }
+
+    private int lastTracesCount;
+    private int lastGroupCount;
+
+    private JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, String[] groupsNames) {
+        lastTracesCount = tracesNames.length;
+        lastGroupCount = groupsNames.length;
+
         CategoryPlot plot = (CategoryPlot) chart.getPlot();
         // chart colours
         setChartColor(chart, plot);
 
-        // x axis settings
-        CategoryAxis xAxis = plot.getDomainAxis();
-        setLabelsOfAxis(xAxis);
-        if (groupsNames == null || groupsNames.length <= 1) {
-            xAxis.setTickLabelsVisible(false);
-            xAxis.setAxisLineVisible(false);
+        //legend        
+        setLegendFont(chart.getLegend());
+        if (tracesNames.length == 1) {
+            chart.removeLegend();
         }
 
         // y axis settings
@@ -65,21 +87,28 @@ public class BoxPlotPlotter extends AbstractPlotter {
         setLabelsOfAxis(yAxis);
         setTicksOfYNumericAxis(yAxis);
 
-        //legend        
-        setLegendFont(chart.getLegend());
-        if (tracesNames.length == 1) {
-            String traceName = tracesNames[0];
-            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()))) {
-                chart.removeLegend();
-            }
+        BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
+
+        // x axis settings
+        CategoryAxis xAxis = plot.getDomainAxis();
+        setLabelsOfAxis(xAxis);
+        setRotationOfXAxisCategoriesFont(xAxis, groupsNames, tracesNames.length);
+        if (groupsNames == null || groupsNames.length <= 1) {
+            xAxis.setTickLabelsVisible(false);
+            xAxis.setAxisLineVisible(false);
         }
+        setSpacingOfCategoriesAndTraces(renderer, xAxis, tracesNames.length, groupsNames.length);
 
         // set traces strokes
-        BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
         for (int i = 0; i < tracesNames.length; i++) {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
-            renderer.setSeriesPaint(i, LIGHT_COLOURS[i % LIGHT_COLOURS.length]);
-            renderer.setSeriesOutlinePaint(i, COLOURS[i % COLOURS.length]);
+            if (tracesNames.length > 1) {
+                renderer.setSeriesPaint(i, LIGHT_COLOURS[i % LIGHT_COLOURS.length]);
+                renderer.setSeriesOutlinePaint(i, COLOURS[i % COLOURS.length]);
+            } else {
+                renderer.setSeriesPaint(i, LIGHT_BOX_BLACK);
+                renderer.setSeriesOutlinePaint(i, BOX_BLACK);
+            }
             renderer.setSeriesOutlineStroke(i, new BasicStroke(3));
             renderer.setSeriesStroke(i, new BasicStroke(3));
         }
@@ -87,7 +116,6 @@ public class BoxPlotPlotter extends AbstractPlotter {
         renderer.setUseOutlinePaintForWhiskers(true);
         renderer.setMaxOutlierVisible(false);
         renderer.setMinOutlierVisible(false);
-        renderer.setItemMargin(0.3);
         plot.setBackgroundAlpha(0);
         return chart;
     }

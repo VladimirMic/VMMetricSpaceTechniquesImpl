@@ -20,12 +20,16 @@ import javax.swing.JOptionPane;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.Axis;
+import org.jfree.chart.axis.CategoryAnchor;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.TickUnits;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
@@ -57,6 +61,9 @@ public abstract class AbstractPlotter {
 
     public static final Stroke DASHED_STROKE = new BasicStroke(GRID_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 3}, 0);
     public static final Stroke FULL_STROKE = new BasicStroke(GRID_STROKE);
+
+    public static final Color BOX_BLACK = Color.BLACK;
+    public static final Color LIGHT_BOX_BLACK = new Color(128, 128, 128);
 
     public static final Color[] COLOURS = new Color[]{
         new Color(31, 119, 180),
@@ -260,6 +267,32 @@ public abstract class AbstractPlotter {
         xAxis.setNumberFormatOverride(nf);
     }
 
+    protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, String[] groupsNames, int tracesPerGroup) {
+        int maxLength = 0;
+        for (String groupName : groupsNames) {
+            maxLength = Math.max(maxLength, groupName.length());
+        }
+        if (maxLength >= 3 * tracesPerGroup) {
+            xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        }
+    }
+
+    protected void setSpacingOfCategoriesAndTraces(BoxAndWhiskerRenderer renderer, CategoryAxis xAxis, int tracesPerGroupCount, int groupCount) {
+        if (groupCount == 1) {
+            renderer.setItemMargin(0.4);
+        }
+        if (groupCount <= 6) {
+            float catMargin = 0.1f + 0.05f * groupCount;
+            xAxis.setCategoryMargin(catMargin); // 0.3 pro ctyrku. 0.2 pro dvojku
+        } else {
+            xAxis.setCategoryMargin(0.4); // 0.3 pro ctyrku. 0.2 pro dvojku
+        }
+        int tracesTotalCount = tracesPerGroupCount * groupCount;
+        double edgeMarging = 1f / (4 * tracesTotalCount);
+        xAxis.setLowerMargin(edgeMarging);
+        xAxis.setUpperMargin(edgeMarging);
+    }
+
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         double ub = yAxis.getUpperBound();
@@ -293,10 +326,10 @@ public abstract class AbstractPlotter {
         plot.setBackgroundAlpha(0);
         if (plot instanceof XYPlot) {
             XYPlot xyPlot = (XYPlot) plot;
-            xyPlot.setDomainGridlinePaint(Color.GRAY);
-            xyPlot.setRangeGridlinePaint(Color.GRAY);
             xyPlot.setDomainGridlineStroke(DASHED_STROKE);
+            xyPlot.setDomainGridlinePaint(Color.GRAY);
             xyPlot.setRangeGridlineStroke(DASHED_STROKE);
+            xyPlot.setRangeGridlinePaint(Color.GRAY);
         } else if (plot instanceof CategoryPlot) {
             CategoryPlot catPlot = (CategoryPlot) plot;
             catPlot.setRangeGridlinesVisible(true);
