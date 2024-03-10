@@ -272,7 +272,7 @@ public abstract class AbstractPlotter {
         for (String groupName : groupsNames) {
             maxLength = Math.max(maxLength, groupName.length());
         }
-        if (maxLength >= 3 * tracesPerGroup) {
+        if (maxLength >= 4 * tracesPerGroup) {
             xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
         }
     }
@@ -283,9 +283,10 @@ public abstract class AbstractPlotter {
         }
         if (groupCount <= 6) {
             float catMargin = 0.1f + 0.05f * groupCount;
-            xAxis.setCategoryMargin(catMargin); // 0.3 pro ctyrku. 0.2 pro dvojku
+            xAxis.setCategoryMargin(catMargin);
         } else {
-            xAxis.setCategoryMargin(0.4); // 0.3 pro ctyrku. 0.2 pro dvojku
+            float catMargin = 0.4f + 0.02f * (groupCount - 6);
+            xAxis.setCategoryMargin(catMargin);
         }
         int tracesTotalCount = tracesPerGroupCount * groupCount;
         double edgeMarging = 1f / (4 * tracesTotalCount);

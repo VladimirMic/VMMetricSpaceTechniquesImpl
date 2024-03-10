@@ -48,7 +48,7 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
 
     public int precomputeSuitableWidth(int height, int tracesCount, int groupsCount) {
         int tracesTotalCount = tracesCount * groupsCount;
-        float retFor600 = 160 + tracesTotalCount * 80 + groupsCount * 40;
+        float retFor600 = 160 + tracesTotalCount * 75 + groupsCount * 40;
         float ratio = height / 600f;
         return (int) (ratio * retFor600);
     }
