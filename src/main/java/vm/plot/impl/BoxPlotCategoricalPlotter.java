@@ -62,7 +62,7 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
     @Override
     public void storePlotPNG(String path, JFreeChart plot) {
         int width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
-        storePlotSVG(path, plot, width, IMPLICIT_HEIGHT);
+        storePlotPNG(path, plot, width, IMPLICIT_HEIGHT);
     }
 
     private int lastTracesCount;
