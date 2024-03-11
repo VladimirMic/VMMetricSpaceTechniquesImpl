@@ -23,7 +23,7 @@ public class ToyExample {
             tracesNames[i] = "Trace " + (i + 1);
         }
         JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, groupsNames, values);
-        plotter.storePlotPNG("c:\\Data\\tmp_boxplot.svg", plot);
+        plotter.storePlotSVG("c:\\Data\\tmp_boxplot.svg", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {
