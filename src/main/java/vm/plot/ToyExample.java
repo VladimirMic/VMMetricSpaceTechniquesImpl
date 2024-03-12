@@ -13,7 +13,7 @@ public class ToyExample {
         AbstractPlotter plotter = new BoxPlotCategoricalPlotter();
         int groupsCount = 4;
         int tracesPerGroupCount = 3;
-        List<Float>[][] values = getRandomValues(groupsCount, tracesPerGroupCount, 2000);
+        List<Float>[][] values = getRandomValues(tracesPerGroupCount, groupsCount, 2000);
         String[] tracesNames = new String[tracesPerGroupCount];
         String[] groupsNames = new String[groupsCount];
         for (int i = 0; i < groupsCount; i++) {
@@ -23,7 +23,7 @@ public class ToyExample {
             tracesNames[i] = "Trace " + (i + 1);
         }
         JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, groupsNames, values);
-        plotter.storePlotSVG("c:\\Data\\tmp_boxplot.svg", plot);
+        plotter.storePlotSVG("c:\\Data\\Similarity_search\\Plots\\2024_Toys\\tmp_boxplot", plot);
     }
 
     private static XYSeries[] prepareToyExampleTraces() {

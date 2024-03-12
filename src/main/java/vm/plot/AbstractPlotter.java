@@ -95,6 +95,8 @@ public abstract class AbstractPlotter {
 
     public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values);
 
+    public abstract String getSimpleName();
+
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, float[] traceXValues, float[] traceYValues) {
         String[] names = new String[]{traceName};
         float[][] x = new float[][]{traceXValues};
@@ -211,6 +213,7 @@ public abstract class AbstractPlotter {
         plot.draw(g2, r);
         File f = new File(path);
         try {
+            LOG.log(Level.INFO, "Storing plot {0}", f);
             SVGUtils.writeToSVG(f, g2.getSVGElement());
         } catch (IOException ex) {
             Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
@@ -280,13 +283,7 @@ public abstract class AbstractPlotter {
     protected void setSpacingOfCategoriesAndTraces(BoxAndWhiskerRenderer renderer, CategoryAxis xAxis, int tracesPerGroupCount, int groupCount) {
         if (groupCount == 1) {
             renderer.setItemMargin(0.4);
-        }
-        if (groupCount <= 6) {
-            float catMargin = 0.1f + 0.05f * groupCount;
-            xAxis.setCategoryMargin(catMargin);
-        } else {
-            float catMargin = 0.4f + 0.02f * (groupCount - 6);
-            xAxis.setCategoryMargin(catMargin);
+            xAxis.setCategoryMargin(0.3);
         }
         int tracesTotalCount = tracesPerGroupCount * groupCount;
         double edgeMarging = 1f / (4 * tracesTotalCount);

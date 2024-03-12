@@ -12,8 +12,6 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
-import org.jfree.data.statistics.BoxAndWhiskerCalculator;
-import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.plot.AbstractPlotter;
 
@@ -26,14 +24,18 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
     @Override
     public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
-        for (int groupId = 0; groupId < values.length; groupId++) {
-            List<Float>[] valuesForGroups = values[groupId];
-            for (int traceID = 0; traceID < valuesForGroups.length; traceID++) {
-                List<Float> valuesForGroupAndTrace = valuesForGroups[traceID];
-                BoxAndWhiskerItem item = BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(valuesForGroupAndTrace);
-                item = new MyBoxAndWhiskerItem(item);
+        if (tracesNames.length != values.length) {
+            throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
+        }
+        for (int traceID = 0; traceID < values.length; traceID++) {
+            List<Float>[] valuesForGroups = values[traceID];
+            if (groupsNames.length != valuesForGroups.length) {
+                throw new IllegalArgumentException("Number of groups descriptions does not match the values" + tracesNames.length + ", " + valuesForGroups.length);
+            }
+            for (int groupId = 0; groupId < valuesForGroups.length; groupId++) {
+                List<Float> valuesForGroupAndTrace = valuesForGroups[groupId];
                 String groupName = groupsNames == null ? "" : groupsNames[groupId];
-                dataset.add(item, tracesNames[traceID], groupName);
+                dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
             }
         }
         JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, "", yAxisLabel, dataset, true);
@@ -43,14 +45,14 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
     @Override
     @Deprecated
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] groupsNames, float[][] tracesXValues, float[][] tracesYValues) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public int precomputeSuitableWidth(int height, int tracesCount, int groupsCount) {
         int tracesTotalCount = tracesCount * groupsCount;
-        float retFor600 = 160 + tracesTotalCount * 75 + groupsCount * 40;
-        float ratio = height / 600f;
-        return (int) (ratio * retFor600);
+        double usedWidth = 28 * tracesTotalCount + 30 * (tracesTotalCount - 1) + 45 * groupsCount + 160;
+        float ratio = height / 500f;
+        return (int) (ratio * usedWidth);
     }
 
     @Override
@@ -87,7 +89,7 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
         setLabelsOfAxis(yAxis);
         setTicksOfYNumericAxis(yAxis);
 
-        BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
+        BoxAndWhiskerRenderer renderer = new CustomBoxAndWhiskerRenderer();
 
         // x axis settings
         CategoryAxis xAxis = plot.getDomainAxis();
@@ -112,49 +114,17 @@ public class BoxPlotCategoricalPlotter extends AbstractPlotter {
             renderer.setSeriesOutlineStroke(i, new BasicStroke(3));
             renderer.setSeriesStroke(i, new BasicStroke(3));
         }
-//            renderer.setMeanVisible(false);
         renderer.setUseOutlinePaintForWhiskers(true);
         renderer.setMaxOutlierVisible(false);
         renderer.setMinOutlierVisible(false);
         plot.setBackgroundAlpha(0);
+        plot.setRenderer(renderer);
         return chart;
     }
 
-    private static class MyBoxAndWhiskerItem extends BoxAndWhiskerItem {
-
-        public MyBoxAndWhiskerItem(BoxAndWhiskerItem item) {
-            super(item.getMean(),
-                    item.getMedian(),
-                    item.getQ1(),
-                    item.getQ3(),
-                    item.getMinRegularValue(),
-                    item.getMaxRegularValue(),
-                    item.getMinOutlier(),
-                    item.getMaxOutlier(),
-                    item.getOutliers());
-        }
-
-        @Override
-        public Number getMaxOutlier() {
-            Number ret = super.getMinOutlier();
-            List<Number> outliers = getOutliers();
-            if (outliers == null || outliers.isEmpty()) {
-                return ret;
-            }
-//            return Math.max(ret.doubleValue(), outliers.get(outliers.size() - 1).doubleValue());
-            return Math.min(ret.doubleValue(), outliers.get(outliers.size() - 1).doubleValue());
-        }
-
-        @Override
-        public Number getMinOutlier() {
-            Number ret = super.getMinOutlier();
-            List<Number> outliers = getOutliers();
-            if (outliers == null || outliers.isEmpty()) {
-                return ret;
-            }
-//            return Math.min(ret.doubleValue(), outliers.get(0).doubleValue());
-            return Math.max(ret.doubleValue(), outliers.get(0).doubleValue());
-        }
-
+    @Override
+    public String getSimpleName() {
+        return "BoxPlotCat";
     }
+
 }
