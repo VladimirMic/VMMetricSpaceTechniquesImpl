@@ -84,10 +84,11 @@ public abstract class AbstractMetricSpacesStorage {
 
     protected abstract void updateDatasetSize(String datasetName, int count);
 
-    public void updateDatasetSize(String datasetName) {
+    public int updateDatasetSize(String datasetName) {
         int count = reevaluatetNumberOfObjectsInDataset(datasetName);
         LOG.log(Level.INFO, "Found {0} objects in the dataset {1}", new Object[]{count, datasetName});
         updateDatasetSize(datasetName, count);
+        return count;
     }
 
     /**

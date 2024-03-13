@@ -85,6 +85,18 @@ public abstract class Dataset<T> {
         return metricSpacesStorage.getPrecomputedDatasetSize(datasetName);
     }
 
+    public int updateDatasetSize() {
+        return metricSpacesStorage.updateDatasetSize(datasetName);
+    }
+
+    public void storePivots(List<Object> pivots, String pivotSetNane, Object... additionalParamsToStoreWithNewPivotSet) {
+        metricSpacesStorage.storePivots(pivots, pivotSetNane, additionalParamsToStoreWithNewPivotSet);
+    }
+
+    public void storeQueryObjects(List<Object> queryObjs, String querySetName, Object... additionalParamsToStoreWithNewQuerySet) {
+        metricSpacesStorage.storeQueryObjects(queryObjs, querySetName, additionalParamsToStoreWithNewQuerySet);
+    }
+
     /**
      * Return (usually disk stored) map of IDs of objects and their data. Feel
      * free to skip this method if not needed
