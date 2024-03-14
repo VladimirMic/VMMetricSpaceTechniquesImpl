@@ -103,13 +103,6 @@ public abstract class AbstractPlotter {
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, names, x, y);
     }
 
-    JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, List<Float>[] values) {
-        List<Float>[][] v = new List[1][values.length];
-        v[0] = values;
-        String[] groups = {"Group 1"};
-        return createPlot(mainTitle, yAxisLabel, tracesNames, groups, v);
-    }
-
     protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber) {
         if (step == null) {
             double diff = Math.abs(axis.getUpperBound() - axis.getLowerBound());
@@ -121,6 +114,7 @@ public abstract class AbstractPlotter {
         NumberTickUnit xTickUnitNumber = new NumberTickUnit(step);
         tickUnits.add(xTickUnitNumber);
         axis.setStandardTickUnits(tickUnits);
+        axis.setTickUnit(xTickUnitNumber);
         return step;
     }
 
@@ -148,54 +142,15 @@ public abstract class AbstractPlotter {
         return ret;
     }
 
-    protected double getThresholdForXStepForUB(double ub) {
-        int m = 0;
-        int d = 0;
-        double ubCopy = Math.abs(ub);
-        while (ubCopy > 1) {
-            ubCopy /= 1000;
-            d += 3;
-        }
-        while (ubCopy < 1) {
-            ubCopy *= 1000;
-            m += 3;
-        }
-        double ret = 0.1 * Math.pow(10, d - m);
-        LOG.log(Level.INFO, "UB: {0}, minStep: {1}", new Object[]{ub, ret});
-        return ret;
-    }
-
-    protected int getMaxTickLabelLength(double bound, double xStep) {
+    private int getMaxTickLabelLength(double lb, double ubShown, Double xStep, NumberFormat nf) {
+        double ubShownCopy = ubShown;
         int ret = 0;
-        if (bound < 0) {
-            ret++; // minus
+        while (ubShownCopy > lb) {
+            int length = nf.format(ubShownCopy).length();
+            ret = Math.max(ret, length);
+            ubShownCopy -= xStep;
         }
-        int intxStep = (int) xStep;
-        double fxStep = xStep;
-        if (fxStep != intxStep) {
-            ret++; // dot
-        }
-        while (fxStep != intxStep) {
-            ret++; //floating point numbers
-            fxStep *= 10;
-            intxStep = (int) fxStep;
-        }
-        if (bound < 1 && bound > -1) {
-            ret++; // zero before dot
-        }
-        bound = Math.abs(bound);
-        while (bound > 1) {
-            ret++;
-            bound /= 10;
-        }
-        return ret;
-    }
-
-    protected int getMaxTickLabelLength(double lb, double ub, double xStep) {
-        int retLB = getMaxTickLabelLength(lb, xStep);
-        int retUB = getMaxTickLabelLength(ub, xStep);
-        int ret = Math.max(retLB, retUB);
-        LOG.log(Level.INFO, "UB: {0}, LB: {1}, xStep: {2}, max tickLength: {3}", new Object[]{ub, lb, xStep, ret});
+        LOG.log(Level.INFO, "Max tickLength: {0} for ubShown {1} and step {2}", new Object[]{ret, ubShown, xStep});
         return ret;
     }
 
@@ -249,24 +204,20 @@ public abstract class AbstractPlotter {
         xAxis.setAutoRangeIncludesZero(includeZeroForXAxis);
 
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
-        NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
-        nfBig.setMinimumFractionDigits(1);
 
         Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC);
-        double ub = xAxis.getUpperBound();
-        double lb = xAxis.getLowerBound();
-        int maxTickLength = getMaxTickLabelLength(lb, ub, xStep);
-        if (maxTickLength >= 4) {
-            xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
-            double thr = getThresholdForXStepForUB(ub);
-            if (maxTickLength >= 3 && ub >= 1000 && xStep >= thr) {
-                nf = nfBig;
-            }
-        }
         if (xStep >= 1000) {
-            nf = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+            NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+            setDecimalsForShortExpressionOfYTicks(nf, xStep, xAxis);
+            nf = nfBig;
         }
         xAxis.setNumberFormatOverride(nf);
+        double ubShown = calculateHighestVisibleTickValue(xAxis);
+        double lb = xAxis.getLowerBound();
+        int maxTickLength = getMaxTickLabelLength(lb, ubShown, xStep, nf);
+        if (maxTickLength >= 4) {
+            xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
+        }
     }
 
     protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, String[] groupsNames, int tracesPerGroup) {
@@ -292,14 +243,9 @@ public abstract class AbstractPlotter {
 
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
-        double ub = yAxis.getUpperBound();
-        if (ub >= 1000) {
+        if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
-            double lb = yAxis.getLowerBound();
-            if (ub - lb <= 900000) {
-                int decimals = getDecimalsForShortExpressionOfYTicks(ub, yStep);
-                nfBig.setMinimumFractionDigits(decimals);
-            }
+            setDecimalsForShortExpressionOfYTicks(nfBig, yStep, yAxis);
             yAxis.setNumberFormatOverride(nfBig);
         } else {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
@@ -340,21 +286,35 @@ public abstract class AbstractPlotter {
         }
     }
 
-    private int getDecimalsForShortExpressionOfYTicks(double ub, Double yStep) {
-        int ret = 0;
-        int div = 0;
-        while (ub > 1000) {
-            div += 3;
-            ub /= 1000;
-        }
-        yStep = yStep / Math.pow(10, div);
-        double mod = yStep % 1;
-        while (mod != 0) {
-            ret++;
-            mod = (10 * mod) % 1;
-        }
-        LOG.log(Level.INFO, "yStep: {0}, decimals: {1}", new Object[]{yStep, ret});
-        return ret;
+    private double calculateHighestVisibleTickValue(NumberAxis axis) {
+        double unit = axis.getTickUnit().getSize();
+        double index = Math.floor(axis.getRange().getUpperBound() / unit);
+        return index * unit;
+    }
+
+    private void setDecimalsForShortExpressionOfYTicks(NumberFormat nfBig, Double step, NumberAxis axis) {
+        double max = calculateHighestVisibleTickValue(axis);
+        double lb = axis.getLowerBound();
+        int decimals = 0;
+        boolean ok;
+        do {
+            ok = true;
+            double currDouble = max;
+            String prev = "";
+            String currString;
+            while (currDouble > lb) {
+                currString = nfBig.format(currDouble);
+                if (currString.equals(prev)) {
+                    ok = false;
+                    decimals++;
+                    nfBig.setMinimumFractionDigits(decimals);
+                    break;
+                }
+                currDouble -= step;
+                prev = currString;
+            }
+        } while (!ok);
+        LOG.log(Level.INFO, "yStep: {0}, decimals: {1}", new Object[]{step, decimals});
     }
 
 }

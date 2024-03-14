@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Random;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
-import vm.plot.impl.BoxPlotCategoricalPlotter;
+import vm.plot.impl.BoxPlotPlotter;
 
 public class ToyExample {
 
     public static void main(String args[]) {
-        AbstractPlotter plotter = new BoxPlotCategoricalPlotter();
+        AbstractPlotter plotter = new BoxPlotPlotter();
         int groupsCount = 4;
         int tracesPerGroupCount = 3;
         List<Float>[][] values = getRandomValues(tracesPerGroupCount, groupsCount, 2000);

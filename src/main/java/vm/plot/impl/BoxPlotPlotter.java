@@ -19,7 +19,7 @@ import vm.plot.AbstractPlotter;
  *
  * @author au734419
  */
-public class BoxPlotCategoricalPlotter extends AbstractPlotter {
+public class BoxPlotPlotter extends AbstractPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
