@@ -13,7 +13,7 @@ import vm.datatools.Tools;
 public abstract class AbstractMetricSpacesStorage {
 
     private static final Logger LOG = Logger.getLogger(AbstractMetricSpacesStorage.class.getName());
-    
+
     public static enum OBJECT_TYPE {
         DATASET_OBJECT,
         PIVOT_OBJECT,
@@ -77,8 +77,11 @@ public abstract class AbstractMetricSpacesStorage {
         int ret = 0;
         for (ret = 0; metricObjects.hasNext(); ret++) {
             metricObjects.next();
+            if (ret % 100000 == 0) {
+                LOG.log(Level.INFO, "Read {0} objects", ret);
+            }
         }
-        System.out.println("Number of objects in a dataset: " + datasetName + " is: " + ret);
+        LOG.log(Level.INFO, "The number of objects in the dataset {1} is {0}", new Object[]{ret, datasetName});
         return ret;
     }
 
@@ -86,7 +89,6 @@ public abstract class AbstractMetricSpacesStorage {
 
     public int updateDatasetSize(String datasetName) {
         int count = reevaluatetNumberOfObjectsInDataset(datasetName);
-        LOG.log(Level.INFO, "Found {0} objects in the dataset {1}", new Object[]{count, datasetName});
         updateDatasetSize(datasetName, count);
         return count;
     }
@@ -118,7 +120,7 @@ public abstract class AbstractMetricSpacesStorage {
      * set id, or pivot set id) - this info is stored with each object
      * @param additionalParamsToStoreWithNewDataset see the same param in the
      * method storeObjectToDataset
-     * @return 
+     * @return
      */
     public synchronized int storeObjectsToDataset(Iterator<Object> it, int count, String datasetName, Object... additionalParamsToStoreWithNewDataset) {
         int maxCount = count > 0 ? count : Integer.MAX_VALUE;
