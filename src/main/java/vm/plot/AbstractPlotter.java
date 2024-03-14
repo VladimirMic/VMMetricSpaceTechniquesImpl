@@ -30,6 +30,7 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 
@@ -261,6 +262,7 @@ public abstract class AbstractPlotter {
     protected void setLegendFont(LegendTitle legend) {
         if (legend != null) {
             legend.setItemFont(FONT_AXIS_MARKERS);
+            legend.setItemLabelPadding(new RectangleInsets(2, 2, 2, 15));
         }
     }
 
