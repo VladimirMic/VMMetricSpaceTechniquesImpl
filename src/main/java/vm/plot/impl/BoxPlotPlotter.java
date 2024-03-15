@@ -22,7 +22,7 @@ import vm.plot.AbstractPlotter;
 public class BoxPlotPlotter extends AbstractPlotter {
 
     @Override
-    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
+    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         if (tracesNames.length != values.length) {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
@@ -34,7 +34,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
             }
             for (int groupId = 0; groupId < valuesForGroups.length; groupId++) {
                 List<Float> valuesForGroupAndTrace = valuesForGroups[groupId];
-                String groupName = groupsNames == null ? "" : groupsNames[groupId];
+                String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
                 dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
             }
         }
@@ -44,7 +44,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
 
     @Override
     @Deprecated
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] groupsNames, float[][] tracesXValues, float[][] tracesYValues) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] groupsNames, float[][] tracesXValues, float[][] tracesYValues) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -70,7 +70,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
     private int lastTracesCount;
     private int lastGroupCount;
 
-    private JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, String[] groupsNames) {
+    protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, Object[] groupsNames) {
         lastTracesCount = tracesNames.length;
         lastGroupCount = groupsNames.length;
 

@@ -33,6 +33,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
+import vm.datatools.Tools;
 
 /**
  *
@@ -91,9 +92,9 @@ public abstract class AbstractPlotter {
         new Color(139, 222, 231)
     };
 
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
 
-    public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values);
+    public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values);
 
     public abstract String getSimpleName();
 
@@ -217,14 +218,14 @@ public abstract class AbstractPlotter {
         double lb = xAxis.getLowerBound();
         int maxTickLength = getMaxTickLabelLength(lb, ubShown, xStep, nf);
         if (maxTickLength >= 4) {
-            xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
+            setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
         }
     }
 
-    protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, String[] groupsNames, int tracesPerGroup) {
+    protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, Object[] groupsNames, int tracesPerGroup) {
         int maxLength = 0;
-        for (String groupName : groupsNames) {
-            maxLength = Math.max(maxLength, groupName.length());
+        for (Object groupName : groupsNames) {
+            maxLength = Math.max(maxLength, groupName.toString().length());
         }
         if (maxLength >= 4 * tracesPerGroup) {
             xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
@@ -243,6 +244,7 @@ public abstract class AbstractPlotter {
     }
 
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
+        yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);

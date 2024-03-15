@@ -28,7 +28,7 @@ import vm.plot.AbstractPlotter;
 public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
         XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);
         XYSeriesCollection dataset = new XYSeriesCollection();
         for (XYSeries trace : traces) {
@@ -38,13 +38,13 @@ public class XYLinesPlotter extends AbstractPlotter {
         return setAppearence(chart, traces, xAxisLabel, yAxisLabel);
     }
 
-    protected XYSeries[] transformCoordinatesIntoTraces(String[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
+    protected XYSeries[] transformCoordinatesIntoTraces(Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
         if (tracesNames.length != tracesXValues.length || tracesNames.length != tracesYValues.length) {
             throw new IllegalArgumentException("Inconsistent number of traces in data. Names count: " + tracesNames.length + ", x count: " + tracesXValues.length + ", y count: " + tracesYValues.length);
         }
         XYSeries[] ret = new XYSeries[tracesNames.length];
         for (int i = 0; i < tracesNames.length; i++) {
-            ret[i] = new XYSeries(tracesNames[i]);
+            ret[i] = new XYSeries(tracesNames[i].toString());
             if (tracesXValues[i].length != tracesYValues[i].length) {
                 throw new IllegalArgumentException("Inconsistent number of point in x and y coordinates. Trace: " + i + ", X coords: " + tracesXValues[i].length + ", y coords: " + tracesYValues[i].length);
             }
@@ -111,7 +111,7 @@ public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
     @Deprecated
-    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, String[] groupsNames, List<Float>[][] values) {
+    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
