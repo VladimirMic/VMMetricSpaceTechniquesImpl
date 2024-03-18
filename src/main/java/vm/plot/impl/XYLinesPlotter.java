@@ -5,6 +5,7 @@
 package vm.plot.impl;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.util.AbstractMap;
 import java.util.Iterator;
@@ -28,14 +29,14 @@ import vm.plot.AbstractPlotter;
 public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
         XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);
         XYSeriesCollection dataset = new XYSeriesCollection();
         for (XYSeries trace : traces) {
             dataset.addSeries(trace);
         }
         JFreeChart chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
-        return setAppearence(chart, traces, xAxisLabel, yAxisLabel);
+        return setAppearence(chart, traces, tracesColours, xAxisLabel, yAxisLabel);
     }
 
     protected XYSeries[] transformCoordinatesIntoTraces(Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
@@ -70,7 +71,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         return ret;
     }
 
-    private JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces, String xAxisLabel, String yAxisLabel) {
+    private JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces, COLOUR_NAMES[] tracesColours, String xAxisLabel, String yAxisLabel) {
         XYPlot plot = (XYPlot) chart.getPlot();
         // chart colours
         setChartColor(chart, plot);
@@ -102,7 +103,8 @@ public class XYLinesPlotter extends AbstractPlotter {
         for (int i = 0; i < traces.length; i++) {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
             renderer.setSeriesShapesVisible(i, true);
-            renderer.setSeriesPaint(i, COLOURS[i % COLOURS.length]);
+            Color color = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
+            renderer.setSeriesPaint(i, color);
         }
         plot.setBackgroundAlpha(0);
 
@@ -111,7 +113,7 @@ public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
     @Deprecated
-    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

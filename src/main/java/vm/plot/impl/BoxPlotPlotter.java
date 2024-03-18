@@ -5,6 +5,7 @@
 package vm.plot.impl;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -14,6 +15,8 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.plot.AbstractPlotter;
+import static vm.plot.AbstractPlotter.COLOURS;
+import static vm.plot.AbstractPlotter.getColor;
 
 /**
  *
@@ -22,7 +25,7 @@ import vm.plot.AbstractPlotter;
 public class BoxPlotPlotter extends AbstractPlotter {
 
     @Override
-    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         if (tracesNames.length != values.length) {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
@@ -38,13 +41,13 @@ public class BoxPlotPlotter extends AbstractPlotter {
                 dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
             }
         }
-        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, "", yAxisLabel, dataset, true);
-        return setAppearence(chart, tracesNames, groupsNames);
+        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
+        return setAppearence(chart, tracesNames, tracesColours, groupsNames);
     }
 
     @Override
     @Deprecated
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] groupsNames, float[][] tracesXValues, float[][] tracesYValues) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] groupsNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -70,7 +73,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
     private int lastTracesCount;
     private int lastGroupCount;
 
-    protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, Object[] groupsNames) {
+    protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames) {
         lastTracesCount = tracesNames.length;
         lastGroupCount = groupsNames.length;
 
@@ -98,15 +101,21 @@ public class BoxPlotPlotter extends AbstractPlotter {
         if (groupsNames == null || groupsNames.length <= 1) {
             xAxis.setTickLabelsVisible(false);
             xAxis.setAxisLineVisible(false);
+            xAxis.setTickMarksVisible(false);
+            xAxis.setTickMarkInsideLength(0);
+            xAxis.setTickMarkOutsideLength(0);
+            xAxis.setTickMarksVisible(false);
         }
         setSpacingOfCategoriesAndTraces(renderer, xAxis, tracesNames.length, groupsNames.length);
 
         // set traces strokes
         for (int i = 0; i < tracesNames.length; i++) {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
+            Color darkColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
+            Color lightColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], true);
             if (tracesNames.length > 1) {
-                renderer.setSeriesPaint(i, LIGHT_COLOURS[i % LIGHT_COLOURS.length]);
-                renderer.setSeriesOutlinePaint(i, COLOURS[i % COLOURS.length]);
+                renderer.setSeriesPaint(i, lightColor);
+                renderer.setSeriesOutlinePaint(i, darkColor);
             } else {
                 renderer.setSeriesPaint(i, LIGHT_BOX_BLACK);
                 renderer.setSeriesOutlinePaint(i, BOX_BLACK);

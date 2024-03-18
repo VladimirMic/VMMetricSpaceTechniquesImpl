@@ -11,7 +11,11 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.io.File;
 import java.io.IOException;
+import java.text.CompactNumberFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -33,7 +37,6 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
-import vm.datatools.Tools;
 
 /**
  *
@@ -43,7 +46,7 @@ public abstract class AbstractPlotter {
 
     public static final Logger LOG = Logger.getLogger(AbstractPlotter.class.getName());
 
-    public static final Integer FONT_SIZE_AXIS_LABEL = 30;
+    public static final Integer FONT_SIZE_AXIS_LABEL = 28;
     public static final Integer FONT_SIZE_AXIS_TICKS = 28;
 
     public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC = 12;
@@ -92,9 +95,31 @@ public abstract class AbstractPlotter {
         new Color(139, 222, 231)
     };
 
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues);
+    public static enum COLOUR_NAMES {
+        C1_BLUE,
+        C2_RED,
+        C3_GREEN,
+        C4_ORANGE,
+        C5_VIOLET,
+        C6_BROWN,
+        C7_PURPLE,
+        C8_GREY,
+        C9_LIME,
+        C10_CYAN,
+        BLACK
+    }
 
-    public abstract JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values);
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues);
+
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values);
+
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, null, tracesXValues, tracesYValues);
+    }
+
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, null, groupsNames, values);
+    }
 
     public abstract String getSimpleName();
 
@@ -209,8 +234,15 @@ public abstract class AbstractPlotter {
 
         Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC);
         if (xStep >= 1000) {
-            NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
-            setDecimalsForShortExpressionOfYTicks(nf, xStep, xAxis);
+            NumberFormat nfBig = new CompactNumberFormat(
+                    "#,##0.##",
+                    DecimalFormatSymbols.getInstance(Locale.US),
+                    new String[]{"", "", "", "0K", "00K", "000K", "0M", "00M", "000M", "0B", "00B", "000B", "0T", "00T", "000T"});
+            try {
+                setDecimalsForShortExpressionOfYTicks(nf, xStep, xAxis);
+            } catch (ParseException ex) {
+                Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
+            }
             nf = nfBig;
         }
         xAxis.setNumberFormatOverride(nf);
@@ -244,11 +276,31 @@ public abstract class AbstractPlotter {
     }
 
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
+        String label = yAxis.getLabel();
+        label = label.toLowerCase().trim();
         yAxis.setAutoRangeIncludesZero(true);
+        if (label != null && (label.equals("recall") || label.equals("precision") || label.equals("accuracy"))) {
+            NumberFormat nf = NumberFormat.getInstance(Locale.US);
+            yAxis.setNumberFormatOverride(nf);
+            yAxis.setUpperBound(1);
+            TickUnits tickUnits = new TickUnits();
+            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
+            tickUnits.add(xTickUnitNumber);
+            yAxis.setStandardTickUnits(tickUnits);
+            yAxis.setTickUnit(xTickUnitNumber);
+            return;
+        }
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         if (yAxis.getUpperBound() >= 1000) {
-            NumberFormat nfBig = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
-            setDecimalsForShortExpressionOfYTicks(nfBig, yStep, yAxis);
+            NumberFormat nfBig = new CompactNumberFormat(
+                    "#,##0.##",
+                    DecimalFormatSymbols.getInstance(Locale.US),
+                    new String[]{"", "", "", "0K", "00K", "000K", "0M", "00M", "000M", "0B", "00B", "000B", "0T", "00T", "000T"});
+            try {
+                setDecimalsForShortExpressionOfYTicks(nfBig, yStep, yAxis);
+            } catch (ParseException ex) {
+                Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
+            }
             yAxis.setNumberFormatOverride(nfBig);
         } else {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
@@ -259,6 +311,7 @@ public abstract class AbstractPlotter {
     protected void setLabelsOfAxis(Axis axis) {
         axis.setTickLabelFont(FONT_AXIS_MARKERS);
         axis.setLabelFont(FONT_AXIS_TITLE);
+        axis.setAxisLineVisible(false);
     }
 
     protected void setLegendFont(LegendTitle legend) {
@@ -296,10 +349,10 @@ public abstract class AbstractPlotter {
         return index * unit;
     }
 
-    private void setDecimalsForShortExpressionOfYTicks(NumberFormat nfBig, Double step, NumberAxis axis) {
+    private void setDecimalsForShortExpressionOfYTicks(NumberFormat nfBig, Double step, NumberAxis axis) throws ParseException {
         double max = calculateHighestVisibleTickValue(axis);
         double lb = axis.getLowerBound();
-        int decimals = 0;
+        int decimalsOfNext = 0;
         boolean ok;
         do {
             ok = true;
@@ -308,17 +361,33 @@ public abstract class AbstractPlotter {
             String currString;
             while (currDouble > lb) {
                 currString = nfBig.format(currDouble);
-                if (currString.equals(prev)) {
+                double check = nfBig.parse(currString).doubleValue();
+                if (currString.equals(prev) || check != currDouble) {
                     ok = false;
-                    decimals++;
-                    nfBig.setMinimumFractionDigits(decimals);
+                    decimalsOfNext++;
+                    nfBig.setMaximumFractionDigits(decimalsOfNext);
                     break;
                 }
                 currDouble -= step;
                 prev = currString;
             }
         } while (!ok);
-        LOG.log(Level.INFO, "yStep: {0}, decimals: {1}", new Object[]{step, decimals});
+        LOG.log(Level.INFO, "yStep: {0}, decimals: {1}", new Object[]{step, decimalsOfNext});
+    }
+
+    public static final Color getColor(COLOUR_NAMES name, boolean light) {
+        int idx = Arrays.binarySearch(COLOUR_NAMES.values(), name);
+        if (name == COLOUR_NAMES.BLACK) {
+            if (!light) {
+                return BOX_BLACK;
+            } else {
+                return LIGHT_BOX_BLACK;
+            }
+        }
+        if (!light) {
+            return COLOURS[idx];
+        }
+        return LIGHT_COLOURS[idx];
     }
 
 }

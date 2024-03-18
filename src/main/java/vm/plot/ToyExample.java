@@ -22,7 +22,7 @@ public class ToyExample {
         for (int i = 0; i < tracesNames.length; i++) {
             tracesNames[i] = "Trace " + (i + 1);
         }
-        JFreeChart plot = plotter.createPlot(null, "y label", tracesNames, groupsNames, values);
+        JFreeChart plot = plotter.createPlot(null, "x label", "y label", tracesNames, groupsNames, values);
         plotter.storePlotSVG("c:\\Data\\Similarity_search\\Plots\\2024_Toys\\tmp_boxplot", plot);
     }
 

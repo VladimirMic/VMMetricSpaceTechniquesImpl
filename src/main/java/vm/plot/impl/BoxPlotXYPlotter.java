@@ -20,7 +20,7 @@ import vm.datatools.Tools;
 public class BoxPlotXYPlotter extends BoxPlotPlotter {
 
     @Override
-    public JFreeChart createPlot(String mainTitle, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         if (tracesNames.length != values.length) {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
@@ -50,8 +50,8 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                 previousKey = groupName;
             }
         }
-        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, "", yAxisLabel, dataset, true);
-        return setAppearence(chart, tracesNames, groupsNames);
+        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
+        return setAppearence(chart, tracesNames, tracesColours, groupsNames);
     }
 
     @Override
