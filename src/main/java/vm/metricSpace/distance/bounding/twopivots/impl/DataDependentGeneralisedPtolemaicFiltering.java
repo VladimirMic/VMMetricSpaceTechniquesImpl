@@ -10,7 +10,6 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
 
     private final float[][][] coefsPivotPivot;
     public static final Integer CONSTANT_FOR_PRECISION = 1024 * 8;
-    
 
     public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot) {
         super(namePrefix);

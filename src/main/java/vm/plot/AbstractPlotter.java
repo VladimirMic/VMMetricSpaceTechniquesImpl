@@ -37,6 +37,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
+import vm.javatools.SVGtoPDF;
 
 /**
  *
@@ -106,7 +107,7 @@ public abstract class AbstractPlotter {
         C8_GREY,
         C9_LIME,
         C10_CYAN,
-        BLACK
+        CX_BLACK
     }
 
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues);
@@ -181,11 +182,11 @@ public abstract class AbstractPlotter {
         return ret;
     }
 
-    public void storePlotSVG(String path, JFreeChart plot) {
-        storePlotSVG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
+    public void storePlotPDF(String path, JFreeChart plot) {
+        storePlotPDF(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
     }
 
-    public void storePlotSVG(String path, JFreeChart plot, int width, int height) {
+    public void storePlotPDF(String path, JFreeChart plot, int width, int height) {
         if (!path.endsWith(".svg")) {
             path += ".svg";
         }
@@ -196,6 +197,8 @@ public abstract class AbstractPlotter {
         try {
             LOG.log(Level.INFO, "Storing plot {0}", f);
             SVGUtils.writeToSVG(f, g2.getSVGElement());
+            SVGtoPDF.transformToPdf(f);
+            f.delete();
         } catch (IOException ex) {
             Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -377,7 +380,7 @@ public abstract class AbstractPlotter {
 
     public static final Color getColor(COLOUR_NAMES name, boolean light) {
         int idx = Arrays.binarySearch(COLOUR_NAMES.values(), name);
-        if (name == COLOUR_NAMES.BLACK) {
+        if (name == COLOUR_NAMES.CX_BLACK) {
             if (!light) {
                 return BOX_BLACK;
             } else {

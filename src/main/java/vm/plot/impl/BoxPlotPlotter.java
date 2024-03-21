@@ -59,9 +59,9 @@ public class BoxPlotPlotter extends AbstractPlotter {
     }
 
     @Override
-    public void storePlotSVG(String path, JFreeChart plot) {
+    public void storePlotPDF(String path, JFreeChart plot) {
         int width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
-        storePlotSVG(path, plot, width, IMPLICIT_HEIGHT);
+        storePlotPDF(path, plot, width, IMPLICIT_HEIGHT);
     }
 
     @Override

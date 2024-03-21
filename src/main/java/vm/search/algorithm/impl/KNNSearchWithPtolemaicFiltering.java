@@ -53,7 +53,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         float[][] qpDistMultipliedByCoefForPivots = getOrComputeqpDistMultipliedByCoefForPivots(qpMultipliedByCoefCached, qId, qData);
         int[] pivotArrays = qPivotArraysCached.get(qId);
         if (pivotArrays == null) {
-            pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, pivotsData.size());
+            pivotArrays = identifyFirstPivotPairs(qpDistMultipliedByCoefForPivots, pivotsData.size());
             qPivotArraysCached.put(qId, pivotArrays);
         }
         int distComps = 0;
@@ -144,6 +144,16 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 }
             }
             cache.put(qId, ret);
+        }
+        return ret;
+    }
+
+    private int[] identifyFirstPivotPairs(float[][] coefs, int size) {
+        int[] ret = new int[size * 2];
+        int pivotCount = coefs.length;
+        for (int i = 0; i < size; i++) {
+            ret[2 * i] = i;
+            ret[2 * i + 1] = (i + 1) % pivotCount;
         }
         return ret;
     }

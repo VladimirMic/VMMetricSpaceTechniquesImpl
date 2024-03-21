@@ -39,7 +39,7 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
 
     @Override
     public String getTechName() {
-        return "ptolemaios";
+        return "ptolemaios_randomPivots";
     }
 
     @Override
