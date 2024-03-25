@@ -281,18 +281,18 @@ public abstract class AbstractPlotter {
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         String label = yAxis.getLabel();
         label = label.toLowerCase().trim();
-        yAxis.setAutoRangeIncludesZero(true);
         if (label != null && (label.equals("recall") || label.equals("precision") || label.equals("accuracy"))) {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
             yAxis.setNumberFormatOverride(nf);
             yAxis.setUpperBound(1);
-            TickUnits tickUnits = new TickUnits();
-            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
-            tickUnits.add(xTickUnitNumber);
-            yAxis.setStandardTickUnits(tickUnits);
-            yAxis.setTickUnit(xTickUnitNumber);
+//            TickUnits tickUnits = new TickUnits();
+//            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
+//            tickUnits.add(xTickUnitNumber);
+//            yAxis.setStandardTickUnits(tickUnits);
+//            yAxis.setTickUnit(xTickUnitNumber);
             return;
         }
+        yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = new CompactNumberFormat(
