@@ -102,6 +102,9 @@ public class ToolsMetricDomain {
                 absoluteCounts.put(distance, count + 1);
             }
             counter++;
+            if (counter % 1000000 == 0) {
+                LOG.log(Level.INFO, "Computed {0} distances", counter);
+            }
         }
         SortedMap<Float, Float> histogram = new TreeMap<>();
         for (Float key : absoluteCounts.keySet()) {
