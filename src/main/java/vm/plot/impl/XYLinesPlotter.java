@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -36,6 +37,9 @@ public class XYLinesPlotter extends AbstractPlotter {
             dataset.addSeries(trace);
         }
         JFreeChart chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
+        if (logY) {
+            setMinAndMaxYValues(tracesYValues);
+        }
         return setAppearence(chart, traces, tracesColours, xAxisLabel, yAxisLabel);
     }
 
@@ -83,10 +87,17 @@ public class XYLinesPlotter extends AbstractPlotter {
         setTicksOfXNumericAxis(xAxis);
 
         // y axis settings
-        NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
-        setLabelsOfAxis(yAxis);
-        setTicksOfYNumericAxis(yAxis);
-
+        if (logY) {
+            LogAxis yAxis = new LogAxis();
+            setLabelsOfAxis(yAxis);
+            yAxis.setAutoRange(true);
+            yAxis.setSmallestValue(minMaxY[0]);
+            plot.setRangeAxis(yAxis);
+        } else {
+            NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
+            setLabelsOfAxis(yAxis);
+            setTicksOfYNumericAxis(yAxis);
+        }
         //legend        
         setLegendFont(chart.getLegend());
         if (traces.length == 1) {

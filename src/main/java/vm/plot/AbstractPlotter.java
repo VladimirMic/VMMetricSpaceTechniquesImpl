@@ -110,6 +110,14 @@ public abstract class AbstractPlotter {
         CX_BLACK
     }
 
+    public void setLogY(boolean logY) {
+        this.logY = logY;
+    }
+
+    protected boolean logY = false;
+
+    private Boolean includeZeroForXAxis = null;
+
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues);
 
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values);
@@ -221,8 +229,6 @@ public abstract class AbstractPlotter {
         }
     }
 
-    private Boolean includeZeroForXAxis = null;
-
     protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
         if (includeZeroForXAxis == null) {
             LOG.log(Level.WARNING, "Asking for involving zero to x axis");
@@ -281,6 +287,11 @@ public abstract class AbstractPlotter {
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         String label = yAxis.getLabel();
         label = label.toLowerCase().trim();
+        if ("".equals(label)) {
+            yAxis.setTickLabelsVisible(false);
+            yAxis.setTickMarksVisible(false);
+            return;
+        }
         if (label != null && (label.equals("recall") || label.equals("precision") || label.equals("accuracy"))) {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
             yAxis.setNumberFormatOverride(nf);
@@ -391,6 +402,30 @@ public abstract class AbstractPlotter {
             return COLOURS[idx];
         }
         return LIGHT_COLOURS[idx];
+    }
+
+    protected float[] minMaxY;
+
+    protected void setMinAndMaxYValues(float[][] tracesYValues) {
+        minMaxY = new float[]{Float.MAX_VALUE, -Float.MAX_VALUE};
+        for (float[] r : tracesYValues) {
+            for (float f : r) {
+                if (f > 0) {
+                    minMaxY[0] = Math.min(minMaxY[0], f);
+                }
+                minMaxY[1] = Math.max(minMaxY[1], f);
+            }
+        }
+        if (minMaxY[0] > 0) {
+            minMaxY[0] *= 0.9;
+        } else {
+            minMaxY[0] *= 1.1;
+        }
+        if (minMaxY[1] > 0) {
+            minMaxY[1] *= 0.9;
+        } else {
+            minMaxY[1] *= 1.1;
+        }
     }
 
 }
