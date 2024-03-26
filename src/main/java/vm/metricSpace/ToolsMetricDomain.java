@@ -57,11 +57,16 @@ public class ToolsMetricDomain {
      * @param metricObjectsSample
      * @param distanceFunction
      * @param distCount
-     * @param basicInterval
      * @return
      */
-    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, float basicInterval) {
-        return createDistanceDensityPlot(metricSpace, metricObjectsSample, distanceFunction, distCount, basicInterval, null);
+    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount) {
+        return createDistanceDensityPlot(metricSpace, metricObjectsSample, distanceFunction, distCount, null);
+    }
+
+    private static float basicInterval;
+
+    public static float getBasicInterval() {
+        return basicInterval;
     }
 
     /**
@@ -72,14 +77,14 @@ public class ToolsMetricDomain {
      * @param metricObjectsSample
      * @param distanceFunction
      * @param distCount
-     * @param basicInterval
      * @param pairsOfExaminedIDs if not null, adds all examined pairs of objects
      * @return
      */
-    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, float basicInterval, List<Object[]> pairsOfExaminedIDs) {
-        SortedMap<Float, Float> absoluteCounts = new TreeMap<>();
+    public static TreeMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, List<Object[]> pairsOfExaminedIDs) {
+        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
         Random r = new Random();
         int counter = 0;
+        float[] distances = new float[distCount];
         while (counter < distCount) {
             Object o1 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
             Object o2 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
@@ -93,7 +98,15 @@ public class ToolsMetricDomain {
             }
             o1 = metricSpace.getDataOfMetricObject(o1);
             o2 = metricSpace.getDataOfMetricObject(o2);
-            float distance = distanceFunction.getDistance(o1, o2);
+            distances[counter] = distanceFunction.getDistance(o1, o2);
+            counter++;
+            if (counter % 1000000 == 0) {
+                LOG.log(Level.INFO, "Computed {0} distances out of {1}", new Object[]{counter, distCount});
+            }
+        }
+        basicInterval = computeBasicDistInterval(distances);
+        LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
+        for (float distance : distances) {
             distance = Tools.round(distance, basicInterval, false);
             if (!absoluteCounts.containsKey(distance)) {
                 absoluteCounts.put(distance, 1f);
@@ -101,12 +114,8 @@ public class ToolsMetricDomain {
                 Float count = absoluteCounts.get(distance);
                 absoluteCounts.put(distance, count + 1);
             }
-            counter++;
-            if (counter % 1000000 == 0) {
-                LOG.log(Level.INFO, "Computed {0} distances", counter);
-            }
         }
-        SortedMap<Float, Float> histogram = new TreeMap<>();
+        TreeMap<Float, Float> histogram = new TreeMap<>();
         for (Float key : absoluteCounts.keySet()) {
             histogram.put(key, absoluteCounts.get(key) / distCount);
         }
@@ -387,6 +396,41 @@ public class ToolsMetricDomain {
         for (Map.Entry<Object, T> entry : pivotsMap.entrySet()) {
             float dist = df.getDistance(qData, entry.getValue());
             ret.put(entry.getKey(), dist);
+        }
+        return ret;
+    }
+
+    private static float computeBasicDistInterval(float[] distances) {
+        float max = (float) Tools.getMax(distances);
+        return computeBasicDistInterval(max);
+    }
+
+    public static float computeBasicDistInterval(float max) {
+        int untilZero = (int) max;
+        float prev;
+        int counter = 0;
+        if (untilZero < 0) {
+            while (untilZero != max) {
+                untilZero = (int) (max * 10);
+                max *= 10;
+                counter--;
+            }
+        }
+        prev = (int) max;
+        untilZero = (int) (max / 10);
+        while (untilZero != 0) {
+            prev = untilZero;
+            untilZero = (int) (max / 10);
+            max /= 10;
+            counter++;
+        }
+        counter -= 3;
+        float ret = (float) (prev * Math.pow(10, counter));
+        while (80 * ret > max) {
+            ret /= 1.2;
+        }
+        while (200 * ret < max) {
+            ret *= 1.2;
         }
         return ret;
     }
