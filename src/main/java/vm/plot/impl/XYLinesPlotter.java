@@ -102,7 +102,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         setLegendFont(chart.getLegend());
         if (traces.length == 1) {
             String traceName = traces[0].getKey().toString().toLowerCase();
-            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()) || traceName.equals(xAxisLabel.toLowerCase()))) {
+            if (chart.getLegend() != null && (traceName.equals(yAxisLabel.toLowerCase()) || traceName.equals("") || traceName.equals(xAxisLabel.toLowerCase()))) {
                 chart.removeLegend();
             }
         }
@@ -111,11 +111,18 @@ public class XYLinesPlotter extends AbstractPlotter {
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
         AffineTransform resize = new AffineTransform();
         resize.scale(1000, 1000);
-        for (int i = 0; i < traces.length; i++) {
-            renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
-            renderer.setSeriesShapesVisible(i, true);
-            Color color = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
-            renderer.setSeriesPaint(i, color);
+        if (traces.length == 1) {
+            renderer.setSeriesStroke(0, new BasicStroke(SERIES_STROKE));
+            renderer.setSeriesShapesVisible(0, true);
+            Color color = tracesColours == null ? BOX_BLACK : getColor(tracesColours[0], false);
+            renderer.setSeriesPaint(0, color);
+        } else {
+            for (int i = 0; i < traces.length; i++) {
+                renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
+                renderer.setSeriesShapesVisible(i, true);
+                Color color = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
+                renderer.setSeriesPaint(i, color);
+            }
         }
         plot.setBackgroundAlpha(0);
 
