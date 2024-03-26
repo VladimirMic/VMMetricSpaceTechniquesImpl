@@ -406,22 +406,23 @@ public class ToolsMetricDomain {
     }
 
     public static float computeBasicDistInterval(float max) {
-        int untilZero = (int) max;
+        float maxCopy = max;
+        int untilZero = (int) maxCopy;
         float prev;
         int counter = 0;
         if (untilZero < 0) {
-            while (untilZero != max) {
-                untilZero = (int) (max * 10);
-                max *= 10;
+            while (untilZero != maxCopy) {
+                untilZero = (int) (maxCopy * 10);
+                maxCopy *= 10;
                 counter--;
             }
         }
-        prev = (int) max;
-        untilZero = (int) (max / 10);
+        prev = (int) maxCopy;
+        untilZero = (int) (maxCopy / 10);
         while (untilZero != 0) {
             prev = untilZero;
-            untilZero = (int) (max / 10);
-            max /= 10;
+            untilZero = (int) (maxCopy / 10);
+            maxCopy /= 10;
             counter++;
         }
         counter -= 3;
