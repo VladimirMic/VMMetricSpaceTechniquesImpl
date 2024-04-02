@@ -120,7 +120,8 @@ public abstract class SearchingAlgorithm<T> {
      * @param queryObjects
      * @param k
      * @param objects
-     * @param additionalParams -- voluntarily the first one can be the parallelisation.
+     * @param additionalParams -- voluntarily the first one can be the
+     * parallelisation.
      * @return evaluates all query objects in parallel. Parallelisation is done
      * over the query objects
      */
@@ -165,7 +166,6 @@ public abstract class SearchingAlgorithm<T> {
                         TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
-                        adjustAndReturnSearchRadiusAfterAddingMore(answerToQuery, k);
                     });
                 }
                 latch.await();
@@ -175,6 +175,14 @@ public abstract class SearchingAlgorithm<T> {
             }
         }
         threadPool.shutdown();
+        return ret;
+    }
+
+    public static TreeSet<Map.Entry<Object, Float>>[] initKNNResultSets(int numberOfQueries) {
+        TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[numberOfQueries];
+        for (int i = 0; i < numberOfQueries; i++) {
+            ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
+        }
         return ret;
     }
 

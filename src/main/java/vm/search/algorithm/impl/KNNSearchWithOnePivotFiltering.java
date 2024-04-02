@@ -81,19 +81,9 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                     float distPO = poDists[oIdx][pIdx];
                     float lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     lbChecked++;
-//                    System.out.print("XXX range;" + range + ";realDist;" + df.getDistance(qData, oData) + ";lower bound;" + lowerBound);
-//                    maxLB = Math.max(maxLB, lowerBound);
                     if (lowerBound > range) {
                         continue objectsLoop;
                     }
-//                    if (CHECK_ALSO_UB) {
-//                        float upperBound = filter.upperBound(distQP, distPO, pIdx);
-//                        if (upperBound < range) {
-//                            float distance = df.getDistance(qData, oData);
-//                            ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-//                            continue objectsLoop;
-//                        }
-//                    }
                 }
             }
             distComps++;
@@ -107,7 +97,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incLBChecked(qId, lbChecked);
-//        LOG.log(Level.INFO, "Evaluated query {2} using {0} dist comps. Time: {1}", new Object[]{getDistCompsForQuery(qId), getTimeOfQuery(qId), qId.toString()});
         return ret;
     }
 
