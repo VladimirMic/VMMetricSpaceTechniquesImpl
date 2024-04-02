@@ -301,6 +301,9 @@ public abstract class AbstractPlotter {
 //            tickUnits.add(xTickUnitNumber);
 //            yAxis.setStandardTickUnits(tickUnits);
 //            yAxis.setTickUnit(xTickUnitNumber);
+            if (yAxis.getRange().getLowerBound() >= 0.999) {
+                yAxis.setLowerBound(0.95);
+            }
             return;
         }
         yAxis.setAutoRangeIncludesZero(true);
