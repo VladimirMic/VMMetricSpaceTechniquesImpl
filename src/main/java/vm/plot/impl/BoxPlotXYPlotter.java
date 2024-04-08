@@ -46,7 +46,9 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                 }
                 iValue = Tools.parseInteger(groupName);
                 keyString = iValue == null ? groupName.toString() : iValue.toString();
-                dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
+                if (valuesForGroupAndTrace != null) {
+                    dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
+                }
                 previousKey = groupName;
             }
         }

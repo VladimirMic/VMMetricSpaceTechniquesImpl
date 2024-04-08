@@ -37,8 +37,10 @@ public class BoxPlotPlotter extends AbstractPlotter {
             }
             for (int groupId = 0; groupId < valuesForGroups.length; groupId++) {
                 List<Float> valuesForGroupAndTrace = valuesForGroups[groupId];
-                String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
-                dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
+                if (valuesForGroupAndTrace != null) {
+                    String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
+                    dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
+                }
             }
         }
         JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);

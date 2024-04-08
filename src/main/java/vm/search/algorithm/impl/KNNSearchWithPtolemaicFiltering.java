@@ -24,6 +24,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
+    public static final Integer LB_COUNT = 64;
     private final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
@@ -53,7 +54,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         float[][] qpDistMultipliedByCoefForPivots = getOrComputeqpDistMultipliedByCoefForPivots(qpMultipliedByCoefCached, qId, qData);
         int[] pivotArrays = qPivotArraysCached.get(qId);
         if (pivotArrays == null) {
-            pivotArrays = identifyFirstPivotPairs(qpDistMultipliedByCoefForPivots, pivotsData.size());
+            pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, LB_COUNT);
             qPivotArraysCached.put(qId, pivotArrays);
         }
         int distComps = 0;
@@ -106,7 +107,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     @Override
     public String getResultName() {
-        return filter.getTechFullName();
+        return filter.getTechFullName() + "_" + LB_COUNT + "lb";
     }
 
     private void incLBChecked(Object qId, long lbChecked) {
