@@ -107,7 +107,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     @Override
     public String getResultName() {
-        return filter.getTechFullName() + "_" + LB_COUNT + "lb";
+        return filter.getTechFullName() + "_" + LB_COUNT + "LB";
     }
 
     private void incLBChecked(Object qId, long lbChecked) {
