@@ -205,8 +205,10 @@ public abstract class AbstractPlotter {
         try {
             LOG.log(Level.INFO, "Storing plot {0}", f);
             SVGUtils.writeToSVG(f, g2.getSVGElement());
-            SVGtoPDF.transformToPdf(f);
-            f.delete();
+            boolean transformToPdf = SVGtoPDF.transformToPdf(f);
+            if (transformToPdf) {
+                f.delete();
+            }
         } catch (IOException ex) {
             Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
         }

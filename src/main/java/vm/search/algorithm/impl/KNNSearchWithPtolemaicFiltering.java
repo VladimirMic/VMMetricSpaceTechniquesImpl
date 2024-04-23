@@ -24,7 +24,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer LB_COUNT = 64;
+    public static final Integer LB_COUNT = 64; // 48, 64
     private final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
