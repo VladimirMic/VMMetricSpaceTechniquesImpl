@@ -24,7 +24,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer LB_COUNT = 64; // 48, 64
+    public static final Integer LB_COUNT = 256; // 48, 64
     private final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
@@ -44,6 +44,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.qPivotArraysCached = new ConcurrentHashMap<>();
     }
 
+//    AtomicInteger tmp0 = new AtomicInteger();
+//    AtomicInteger tmp1 = new AtomicInteger();
+//
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
@@ -82,6 +85,12 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                     lowerBound = filter.lowerBound(distP2O, distQP1, distP1O, distP2Q);
                     lbChecked++;
                     if (lowerBound > range) {
+//                        boolean b = distP1O >= distP2O;
+//                        if (b) {
+//                            tmp0.incrementAndGet();
+//                        } else {
+//                            tmp1.incrementAndGet();
+//                        }
                         continue objectsLoop;
                     }
                 }
@@ -97,6 +106,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incLBChecked(qId, lbChecked);
+//        System.out.println("XXX: " + tmp0.intValue() + ", " + tmp1.intValue());
         return ret;
     }
 
