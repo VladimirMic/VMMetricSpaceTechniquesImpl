@@ -309,6 +309,8 @@ public abstract class AbstractPlotter {
 //            yAxis.setTickUnit(xTickUnitNumber);
             if (yAxis.getRange().getLowerBound() >= 0.999) {
                 yAxis.setLowerBound(0.95);
+            } else {
+                setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
             }
             return;
         }
