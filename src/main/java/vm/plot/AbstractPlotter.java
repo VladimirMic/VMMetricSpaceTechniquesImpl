@@ -38,6 +38,7 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 import vm.javatools.SVGtoPDF;
+import vm.math.Tools;
 
 /**
  *
@@ -290,6 +291,13 @@ public abstract class AbstractPlotter {
         xAxis.setUpperMargin(edgeMarging);
     }
 
+    private float minRecall = 0.9f;
+
+    public void updateMinRecall(float minRecall) {
+        minRecall = Tools.round(minRecall, 0.1f, true);
+        this.minRecall = Math.min(minRecall, this.minRecall);
+    }
+
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         String label = yAxis.getLabel();
         label = label.toLowerCase().trim();
@@ -306,13 +314,8 @@ public abstract class AbstractPlotter {
 //            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
 //            tickUnits.add(xTickUnitNumber);
 //            yAxis.setStandardTickUnits(tickUnits);
-//            yAxis.setTickUnit(xTickUnitNumber);
-            if (yAxis.getRange().getLowerBound() >= 0.999) {
-                yAxis.setLowerBound(0.95);
-            } else {
-                yAxis.setLowerBound(0);
-                setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
-            }
+            yAxis.setLowerBound(minRecall);
+            setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
             return;
         }
         yAxis.setAutoRangeIncludesZero(true);
