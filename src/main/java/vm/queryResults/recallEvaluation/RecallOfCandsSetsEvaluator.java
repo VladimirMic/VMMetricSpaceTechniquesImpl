@@ -35,6 +35,7 @@ public class RecallOfCandsSetsEvaluator {
         for (String queryID : queryIDs) {
             if (!candidateSets.containsKey(queryID)) {
                 Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "Query object {0} not evaluated in the candidates", queryID);
+                continue;
             }
             Set<String> groundTruthForQuery = getFirstIDs(queryID, groundTruthForDataset.get(queryID), groundTruthNNCount);
             Set<String> candidatesForQuery = getFirstIDs(queryID, candidateSets.get(queryID), candidateNNCount);
