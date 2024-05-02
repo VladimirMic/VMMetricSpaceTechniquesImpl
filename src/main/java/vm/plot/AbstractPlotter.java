@@ -306,7 +306,7 @@ public abstract class AbstractPlotter {
             yAxis.setTickMarksVisible(false);
             return;
         }
-        if (label != null && (label.equals("recall") || label.equals("precision") || label.equals("accuracy"))) {
+        if (label.equals("recall") || label.equals("precision") || label.equals("accuracy")) {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
             yAxis.setNumberFormatOverride(nf);
             yAxis.setUpperBound(1);
@@ -318,6 +318,10 @@ public abstract class AbstractPlotter {
             setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
             return;
         }
+        if (label.equals("frr") || label.equals("false reject rate")) {
+            yAxis.setUpperBound(1 - minRecall);
+        }
+
         yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         if (yAxis.getUpperBound() >= 1000) {
