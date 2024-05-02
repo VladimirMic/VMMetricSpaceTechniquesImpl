@@ -310,6 +310,7 @@ public abstract class AbstractPlotter {
             if (yAxis.getRange().getLowerBound() >= 0.999) {
                 yAxis.setLowerBound(0.95);
             } else {
+                yAxis.setLowerBound(0);
                 setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
             }
             return;
