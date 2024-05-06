@@ -111,6 +111,10 @@ public abstract class AbstractPlotter {
         CX_BLACK
     }
 
+    public void setIncludeZeroForXAxis(Boolean includeZeroForXAxis) {
+        this.includeZeroForXAxis = includeZeroForXAxis;
+    }
+
     public void setLogY(boolean logY) {
         this.logY = logY;
     }
