@@ -111,6 +111,11 @@ public abstract class AbstractPlotter {
         CX_BLACK
     }
 
+    protected boolean logY = false;
+    protected boolean enforceInvolvingZeroToYAxis = false;
+
+    private Boolean includeZeroForXAxis = null;
+
     public void setIncludeZeroForXAxis(Boolean includeZeroForXAxis) {
         this.includeZeroForXAxis = includeZeroForXAxis;
     }
@@ -119,9 +124,9 @@ public abstract class AbstractPlotter {
         this.logY = logY;
     }
 
-    protected boolean logY = false;
-
-    private Boolean includeZeroForXAxis = null;
+    public void setEnforceInvolvingZeroToYAxis(boolean enforceInvolvingZeroToYAxis) {
+        this.enforceInvolvingZeroToYAxis = enforceInvolvingZeroToYAxis;
+    }
 
     public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues);
 
@@ -305,6 +310,9 @@ public abstract class AbstractPlotter {
     protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
         String label = yAxis.getLabel();
         label = label.toLowerCase().trim();
+        if (enforceInvolvingZeroToYAxis) {
+            yAxis.setLowerBound(0);
+        }
         if ("".equals(label)) {
             yAxis.setTickLabelsVisible(false);
             yAxis.setTickMarksVisible(false);
@@ -318,7 +326,9 @@ public abstract class AbstractPlotter {
 //            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
 //            tickUnits.add(xTickUnitNumber);
 //            yAxis.setStandardTickUnits(tickUnits);
-            yAxis.setLowerBound(minRecall);
+            if (!enforceInvolvingZeroToYAxis) {
+                yAxis.setLowerBound(minRecall);
+            }
             setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
             return;
         }

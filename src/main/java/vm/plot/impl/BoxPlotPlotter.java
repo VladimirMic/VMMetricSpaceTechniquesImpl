@@ -86,7 +86,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
         //legend        
         setLegendFont(chart.getLegend());
         if (tracesNames.length == 1) {
-            chart.removeLegend();
+//            chart.removeLegend();
         }
 
         // y axis settings
