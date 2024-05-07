@@ -40,7 +40,7 @@ public class AlgorithmEvaluator {
         this.eodStorage = eodStorage;
     }
 
-    public void evaluate(Dataset dataset, List queries, int k, int kCandSetMaxSize, String resultName, Object... additionalParams) {
+    public void evaluate(Dataset dataset, List queries, int k, Integer kCandSetMaxSize, String resultName, Object... additionalParams) {
         long overallTime = -System.currentTimeMillis();
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         String datasetName = dataset.getDatasetName();

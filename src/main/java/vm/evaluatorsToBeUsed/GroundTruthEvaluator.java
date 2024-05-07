@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 import static vm.search.algorithm.SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne;
@@ -25,34 +26,33 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
 
     public static final Integer K_IMPLICIT_FOR_GROUND_TRUTH = 1000;
+    public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
     private final List<Object> queryObjects;
     private final int k;
     private float range;
 
-    public GroundTruthEvaluator(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> distanceFunction, List<Object> queryObjects, int k) {
-        this(metricSpace, distanceFunction, queryObjects, k, Float.MAX_VALUE);
+    public GroundTruthEvaluator(Dataset<T> dataset, int k) {
+        this(dataset, k, Float.MAX_VALUE);
     }
 
-    public GroundTruthEvaluator(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> distanceFunction, List<Object> queryObjects, float range) {
-        this(metricSpace, distanceFunction, queryObjects, Integer.MAX_VALUE, range);
+    public GroundTruthEvaluator(Dataset<T> dataset, float range) {
+        this(dataset, Integer.MAX_VALUE, range);
     }
 
     /**
      *
-     * @param metricSpace implementation of your matric space
-     * @param distanceFunction
-     * @param queryObjects
+     * @param dataset
      * @param k
      * @param range transformation
      */
-    public GroundTruthEvaluator(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> distanceFunction, List<Object> queryObjects, int k, float range) {
-        this.metricSpace = metricSpace;
-        this.queryObjects = queryObjects;
+    public GroundTruthEvaluator(Dataset<T> dataset, int k, float range) {
+        this.metricSpace = dataset.getMetricSpace();
+        this.queryObjects = dataset.getMetricQueryObjects();
         this.k = k;
         this.range = range;
-        this.distanceFunction = distanceFunction;
+        this.distanceFunction = dataset.getDistanceFunction();
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
@@ -72,6 +72,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
         int distComps = 0;
+        float qRange = range;
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
@@ -79,9 +80,9 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
             T oData = metricSpace.getDataOfMetricObject(o);
             distComps++;
             float distance = distanceFunction.getDistance(qData, oData);
-            if (distance < range) {
+            if (distance < qRange) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+                qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
             }
         }
         t += System.currentTimeMillis();

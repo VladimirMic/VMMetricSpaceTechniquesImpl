@@ -51,7 +51,7 @@ public abstract class SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         List<Object> candSet = candSetKnnSearch(metricSpace, queryObject, k, objects, additionalParams);
         Dataset dataset = (Dataset) additionalParams[0];
-        return rerankCandidateSet(metricSpace, queryObject, k, dataset.getDatasetName(), dataset.getKeyValueStorage(), candSet);
+        return rerankCandidateSet(metricSpace, queryObject, k, dataset.getDistanceFunction(), dataset.getKeyValueStorage(), candSet);
     }
 
     public Map.Entry<Object, Float> adjustAndReturnLastEntry(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
@@ -87,8 +87,7 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last().getValue();
     }
 
-    public TreeSet<Map.Entry<Object, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, String datasetName, Map<Object, Object> mapOfAllFullObjects, List<Object> candsIDs) {
-        DistanceFunctionInterface df = metricSpace.getDistanceFunctionForDataset(datasetName);
+    public TreeSet<Map.Entry<Object, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, DistanceFunctionInterface df, Map<Object, Object> mapOfAllFullObjects, List<Object> candsIDs) {
         T queryObjData = metricSpace.getDataOfMetricObject(queryObj);
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         if (mapOfAllFullObjects == null) {
@@ -215,6 +214,25 @@ public abstract class SearchingAlgorithm<T> {
             LOG.log(Level.SEVERE, null, ex);
         }
         threadPool.shutdown();
+        return ret;
+    }
+
+    public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, int k) {
+        List queryObjects = dataset.getMetricQueryObjects();
+        AbstractMetricSpace metricSpace = dataset.getMetricSpace();
+        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        for (int i = 0; i < queryObjects.size(); i++) {
+            vm.javatools.Tools.clearDiskCache();
+            long t = -System.currentTimeMillis();
+            Object q = queryObjects.get(i);
+            Object qID = metricSpace.getIDOfMetricObject(q);
+            List<Object> cands = Tools.getObjectsFromIterator(dataset.getMetricObjectsFromDataset(qID));
+            t += System.currentTimeMillis();
+            Iterator<Object> iterator = cands.iterator();
+            incTime(qID, t);
+            System.err.println("Reading:" + t);
+            ret[i] = completeKnnSearch(metricSpace, q, k, iterator);
+        }
         return ret;
     }
 

@@ -43,8 +43,8 @@ public abstract class Dataset<T> {
      *
      * @return uses method getQuerySetName and returns associated query objects
      */
-    public List<Object> getMetricQueryObjects() {
-        return metricSpacesStorage.getQueryObjects(getQuerySetName());
+    public List<Object> getMetricQueryObjects(Object... params) {
+        return metricSpacesStorage.getQueryObjects(getQuerySetName(), params);
     }
 
     public List<Object> getPivots(int objCount) {

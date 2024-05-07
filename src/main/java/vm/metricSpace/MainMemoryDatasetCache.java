@@ -94,7 +94,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     @Override
-    public List<Object> getMetricQueryObjects() {
+    public List<Object> getMetricQueryObjects(Object... params) {
         LOG.log(Level.INFO, "Provided {0} queries from the cache main memory", this.queries.size());
         return Collections.unmodifiableList(queries);
     }
