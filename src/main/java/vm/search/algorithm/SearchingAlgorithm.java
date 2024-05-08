@@ -65,21 +65,21 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last();
     }
 
-    public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+    public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
-            return Float.MAX_VALUE;
+            return searchRadius;
         }
-        if (currAnswer.size() > k) {
+        if (size > k) {
             currAnswer.remove(currAnswer.last());
         }
         return currAnswer.last().getValue();
     }
 
-    public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+    public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
-            return Float.MAX_VALUE;
+            return searchRadius;
         }
         while (currAnswer.size() > k) {
             currAnswer.remove(currAnswer.last());
@@ -158,6 +158,7 @@ public abstract class SearchingAlgorithm<T> {
                 System.gc();
                 CountDownLatch latch = new CountDownLatch(queryObjects.size());
                 final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;
+                t = -System.currentTimeMillis();
                 for (int i = 0; i < queryObjects.size(); i++) {
                     final Object queryObject = queryObjects.get(i);
                     final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
@@ -168,7 +169,8 @@ public abstract class SearchingAlgorithm<T> {
                     });
                 }
                 latch.await();
-                LOG.log(Level.INFO, "Batch {0} processed", batchCounter);
+                t += System.currentTimeMillis();
+                LOG.log(Level.INFO, "Batch {0} processed in {1} ms", new Object[]{batchCounter, t});
             } catch (InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
@@ -221,8 +223,13 @@ public abstract class SearchingAlgorithm<T> {
         List queryObjects = dataset.getMetricQueryObjects();
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        for (int i = 0; i < 20; i++) {
+            Object q = queryObjects.get(queryObjects.size() - 1 - i);
+            Object qID = metricSpace.getIDOfMetricObject(q);
+            Tools.getObjectsFromIterator(dataset.getMetricObjectsFromDataset(qID));
+        }
         for (int i = 0; i < queryObjects.size(); i++) {
-            vm.javatools.Tools.clearDiskCache();
+//            vm.javatools.Tools.clearJavaCache();
             long t = -System.currentTimeMillis();
             Object q = queryObjects.get(i);
             Object qID = metricSpace.getIDOfMetricObject(q);

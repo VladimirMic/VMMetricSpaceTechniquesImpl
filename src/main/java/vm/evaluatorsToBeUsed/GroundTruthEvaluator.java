@@ -34,11 +34,11 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     private float range;
 
     public GroundTruthEvaluator(Dataset<T> dataset, int k) {
-        this(dataset, k, Float.MAX_VALUE);
+        this(dataset, k, Float.MAX_VALUE, -1);
     }
 
     public GroundTruthEvaluator(Dataset<T> dataset, float range) {
-        this(dataset, Integer.MAX_VALUE, range);
+        this(dataset, Integer.MAX_VALUE, range, -1);
     }
 
     /**
@@ -47,9 +47,9 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
      * @param k
      * @param range transformation
      */
-    public GroundTruthEvaluator(Dataset<T> dataset, int k, float range) {
+    public GroundTruthEvaluator(Dataset<T> dataset, int k, float range, int maxQueryCount) {
         this.metricSpace = dataset.getMetricSpace();
-        this.queryObjects = dataset.getMetricQueryObjects();
+        this.queryObjects = dataset.getMetricQueryObjects(maxQueryCount);
         this.k = k;
         this.range = range;
         this.distanceFunction = dataset.getDistanceFunction();
@@ -82,7 +82,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
             float distance = distanceFunction.getDistance(qData, oData);
             if (distance < qRange) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+                qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, range);
             }
         }
         t += System.currentTimeMillis();
