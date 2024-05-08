@@ -155,7 +155,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
             if (queryAnswer.size() < K) {
                 float distance = df.getDistance((T) qData, oData);
                 queryAnswer.add(new AbstractMap.SimpleEntry<>(o.getKey(), distance));
-                range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K);
+                range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K, Float.MAX_VALUE);
                 counter--;
                 continue;
             }
@@ -194,7 +194,7 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
             if (discarded == 0) {
                 float distance = df.getDistance(qData, oData);
                 queryAnswer.add(new AbstractMap.SimpleEntry<>(o.getKey(), distance));
-                range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K);
+                range = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(queryAnswer, K, Float.MAX_VALUE);
             }
             if (!BREAK_AFTER_FIRST_LB) {
                 counter--;

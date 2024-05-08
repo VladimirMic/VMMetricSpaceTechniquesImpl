@@ -59,7 +59,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         if (justIDsProvided) {
             fullObjectsStorage = (Map) params[0];
         }
-        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
         while (objects.hasNext()) {
             Object fullO = objects.next();
             Object oId;
@@ -84,7 +84,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
             float distance = fullDF.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
             }
         }
         t += System.currentTimeMillis();

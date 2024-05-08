@@ -358,6 +358,7 @@ public class ToolsMetricDomain {
                 float f = vector[i];
                 length += f * f;
             }
+            length = (float) Math.sqrt(length);
             ret.put(id, length);
         }
         return ret;

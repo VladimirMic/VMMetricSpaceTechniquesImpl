@@ -170,7 +170,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
                 distComps++;
                 addToRet(ret, candID, fullQData);
                 if (ret.size() == k) {
-                    range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+                    range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
                 }
                 continue;
             } else {
@@ -191,12 +191,12 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             }
             if (objIdUnknownRelation.size() > 10) {
                 distComps += addToFullAnswerWithDists(ret, fullQData, objIdUnknownRelation.iterator(), checkedIDs);
-                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k, Float.MAX_VALUE);
                 objIdUnknownRelation.clear();
             }
             if (counter > 200 && (counter < 1000 && counter % 100 == 0)) {
                 distComps += addToFullAnswerWithDists(ret, fullQData, simRelAns.iterator(), checkedIDs);
-                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k, Float.MAX_VALUE);
             }
 //            if (ANSWER != null && ANSWER.isEmpty()) {
 //                break;
@@ -214,7 +214,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             }
             int added = addToFullAnswerWithDists(ret, fullQData, candID, checkedIDs);
             if (added == 1) {
-                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingMore(ret, k, Float.MAX_VALUE);
                 distComps++;
             }
         }

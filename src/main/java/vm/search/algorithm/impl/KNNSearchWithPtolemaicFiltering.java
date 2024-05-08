@@ -24,7 +24,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    public static final Integer LB_COUNT = 256; // 48, 64
+    public static final Integer LB_COUNT = 48; // 48, 64
     private final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
@@ -61,7 +61,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             qPivotArraysCached.put(qId, pivotArrays);
         }
         int distComps = 0;
-        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+        float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
         int oIdx, p1Idx, p2Idx, p;
         float distP1O, distP2O, distP2Q, distQP1, lowerBound, distance;
         float[] poDistsArray;
@@ -99,7 +99,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
-                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k);
+                range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
             }
         }
         t += System.currentTimeMillis();
