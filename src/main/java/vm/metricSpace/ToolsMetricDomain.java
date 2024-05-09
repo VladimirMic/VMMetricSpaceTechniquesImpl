@@ -2,6 +2,7 @@ package vm.metricSpace;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -434,6 +435,19 @@ public class ToolsMetricDomain {
         while (200 * ret < max) {
             ret *= 1.2;
         }
+        return ret;
+    }
+
+    public static List filterObjectsByIDs(AbstractMetricSpace metricSpace, List objects, Object... ids) {
+        List ret = new ArrayList<>();
+        Set idsSet = new HashSet();
+        idsSet.addAll(Arrays.asList(ids));
+        objects.forEach((Object obj) -> {
+            Object idOfMetricObject = metricSpace.getIDOfMetricObject(obj);
+            if (idsSet.contains(idOfMetricObject)) {
+                ret.add(obj);
+            }
+        });
         return ret;
     }
 

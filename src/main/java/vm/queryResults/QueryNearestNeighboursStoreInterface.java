@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import vm.evaluatorsToBeUsed.GroundTruthEvaluator;
+import vm.search.algorithm.impl.GroundTruthEvaluator;
 import vm.metricSpace.AbstractMetricSpace;
 
 /**

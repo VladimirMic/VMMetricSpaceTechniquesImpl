@@ -1,4 +1,4 @@
-package vm.evaluatorsToBeUsed;
+package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
 import java.util.Iterator;

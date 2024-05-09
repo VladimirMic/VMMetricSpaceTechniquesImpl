@@ -80,28 +80,28 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
             }
         }
         int distComps = 0;
+        int oIdx, p1Idx, p;
+        float distP1O, distP2O, distP2Q, distQP1, distP1P2, lowerBound, distance;
         float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
             Object oId = metricSpace.getIDOfMetricObject(o);
             T oData = metricSpace.getDataOfMetricObject(o);
-            int oIdx = rowHeaders.get(oId);
+            oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotsEndSmallDists; p++) {
-                    int p1Idx = SORT_PIVOTS ? pivotPermutation[p] : p;
+                for (p = 0; p < pivotsEndSmallDists; p++) {
+                    p1Idx = SORT_PIVOTS ? pivotPermutation[p] : p;
                     if (!SORT_PIVOTS) {
                         p2Idxs = new int[]{p + 1};
                     }
                     for (int p2Idx : p2Idxs) {
-                        float distP1P2 = pivotPivotDists[p1Idx][p2Idx];
-                        float distP2O = poDists[oIdx][p2Idx];
-                        float distQP1 = qpDists[p1Idx];
-                        float distP1O = poDists[oIdx][p1Idx];
-                        float distP2Q = qpDists[p2Idx];
-//                tLB -= System.currentTimeMillis();
-                        float lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range);
-//                tLB += System.currentTimeMillis();
+                        distP1P2 = pivotPivotDists[p1Idx][p2Idx];
+                        distP2O = poDists[oIdx][p2Idx];
+                        distQP1 = qpDists[p1Idx];
+                        distP1O = poDists[oIdx][p1Idx];
+                        distP2Q = qpDists[p2Idx];
+                        lowerBound = filter.lowerBound(distP1P2, distP2O, distQP1, distP1O, distP2Q, p1Idx, p2Idx, range);
                         lbChecked++;
                         if (lowerBound > range) {
                             continue objectsLoop;
@@ -110,7 +110,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
                 }
             }
             distComps++;
-            float distance = df.getDistance(qData, oData);
+            distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
                 range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);

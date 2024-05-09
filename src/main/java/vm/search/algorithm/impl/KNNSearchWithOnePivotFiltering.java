@@ -68,26 +68,29 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         }
         int distComps = 0;
         float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
+        int oIdx, pIdx, p;
+        float distPO, distQP, lowerBound, distance;
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
             Object oId = metricSpace.getIDOfMetricObject(o);
-            T oData = metricSpace.getDataOfMetricObject(o);
-            int oIdx = rowHeaders.get(oId.toString());
             if (range < Float.MAX_VALUE) {
-                for (int p = 0; p < pivotsData.size(); p++) {
-                    int pIdx = SORT_PIVOTS ? pivotPermutation[p] : p;
-                    float distQP = qpDists[pIdx];
-                    float distPO = poDists[oIdx][pIdx];
-                    float lowerBound = filter.lowerBound(distQP, distPO, pIdx);
-                    lbChecked++;
+                oIdx = rowHeaders.get(oId.toString());
+                for (p = 0; p < pivotsData.size(); p++) {
+                    pIdx = SORT_PIVOTS ? pivotPermutation[p] : p;
+                    distQP = qpDists[pIdx];
+                    distPO = poDists[oIdx][pIdx];
+                    lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     if (lowerBound > range) {
+                        lbChecked += p + 1;
                         continue objectsLoop;
                     }
                 }
+                lbChecked += p;
             }
             distComps++;
-            float distance = df.getDistance(qData, oData);
+            T oData = metricSpace.getDataOfMetricObject(o);
+            distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
                 range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
