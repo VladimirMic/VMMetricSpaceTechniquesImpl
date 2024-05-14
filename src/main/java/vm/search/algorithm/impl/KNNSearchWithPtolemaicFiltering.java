@@ -5,9 +5,11 @@
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -24,15 +26,21 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
+    private int thresholdOnLBsPerObjForSeqScan = 0;
+    public int objBeforeSeqScan = -1;
+    private final GroundTruthEvaluator bruteForceAlg;
+
     public static final Integer LB_COUNT = 128; //  128, 256
-    private final AbstractPtolemaicBasedFiltering filter;
+    protected final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
-    private final float[][] poDists;
-    private final Map<Object, Integer> rowHeaders;
-    private final DistanceFunctionInterface<T> df;
+    protected final float[][] poDists;
+    protected final Map<Object, Integer> rowHeaders;
+    protected final DistanceFunctionInterface<T> df;
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
-    private final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Object, int[]> qPivotArraysCached;
+    protected final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Object, int[]> qPivotArraysCached;
+
+    private final Set<String> qSkip = new HashSet<>();
 
     public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = ptolemaicFilter;
@@ -42,15 +50,25 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.rowHeaders = rowHeaders;
         this.lbCheckedForQ = new ConcurrentHashMap();
         this.qPivotArraysCached = new ConcurrentHashMap<>();
+        this.bruteForceAlg = new GroundTruthEvaluator(df);
     }
 
     @Override
     public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
-        long lbChecked = 0;
         TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
-        T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
+        if (qSkip.contains(q)) {
+            bruteForceAlg.resetDistComps(qId);
+            ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
+            t += System.currentTimeMillis();
+            incTime(qId, t);
+            incDistsComps(qId, bruteForceAlg.getDistCompsForQuery(qId));
+            return ret;
+        }
+        long lbChecked = 0;
+        T qData = metricSpace.getDataOfMetricObject(q);
+
         float[][] qpDistMultipliedByCoefForPivots = qpMultipliedByCoefCached.get(qId);
         if (qpDistMultipliedByCoefForPivots == null) {
             qpDistMultipliedByCoefForPivots = computeqpDistMultipliedByCoefForPivots(qData);
@@ -68,8 +86,22 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         float[] poDistsArray;
         Object o, oId;
         T oData;
+        int oCounter = 0;
         objectsLoop:
         while (objects.hasNext()) {
+            oCounter++;
+            if (oCounter == objBeforeSeqScan && thresholdOnLBsPerObjForSeqScan > 0) {
+                long avg = lbChecked / oCounter;
+                if (avg >= thresholdOnLBsPerObjForSeqScan) {
+                    ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
+                    t += System.currentTimeMillis();
+                    incTime(qId, t);
+                    incDistsComps(qId, bruteForceAlg.getDistCompsForQuery(qId) + distComps);
+                    incLBChecked(qId, lbChecked);
+                    qSkip.add(qId.toString());
+                    return ret;
+                }
+            }
             o = objects.next();
             oId = metricSpace.getIDOfMetricObject(o);
             if (range < Float.MAX_VALUE) {
@@ -113,10 +145,14 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     @Override
     public String getResultName() {
-        return filter.getTechFullName() + "_" + LB_COUNT + "LB";
+        String ret = filter.getTechFullName() + "_" + LB_COUNT + "LB";
+        if (thresholdOnLBsPerObjForSeqScan > 0) {
+            ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objIntMem";
+        }
+        return ret;
     }
 
-    private void incLBChecked(Object qId, long lbChecked) {
+    protected void incLBChecked(Object qId, long lbChecked) {
         AtomicLong ai = lbCheckedForQ.get(qId);
         if (ai != null) {
             ai.addAndGet(lbChecked);
@@ -130,7 +166,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return new Map[]{lbCheckedForQ};
     }
 
-    private float[][] computeqpDistMultipliedByCoefForPivots(T qData) {
+    protected float[][] computeqpDistMultipliedByCoefForPivots(T qData) {
         float[][] ret = new float[pivotsData.size()][pivotsData.size()];
         for (int i = 0; i < pivotsData.size(); i++) {
             T pData = pivotsData.get(i);
@@ -153,7 +189,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    private int[] identifyExtremePivotPairs(float[][] coefs, int size) {
+    protected int[] identifyExtremePivotPairs(float[][] coefs, int size) {
         TreeSet<Map.Entry<Integer, Float>> sorted = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
         float a, b, value;
         float radius = Float.MAX_VALUE;
@@ -192,6 +228,14 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             ret[idx + 1] = j;
         }
         return ret;
+    }
+
+    public void setThresholdOnLBsPerObjForSeqScan(int thresholdOnLBsPerObjForSeqScan) {
+        this.thresholdOnLBsPerObjForSeqScan = thresholdOnLBsPerObjForSeqScan;
+    }
+
+    public void setObjBeforeSeqScan(int objBeforeSeqScan) {
+        this.objBeforeSeqScan = objBeforeSeqScan;
     }
 
 }

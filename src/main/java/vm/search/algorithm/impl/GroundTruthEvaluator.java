@@ -31,7 +31,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     private final DistanceFunctionInterface distanceFunction;
     private final List<Object> queryObjects;
     private final int k;
-    private float range;
+    private final float range;
 
     public GroundTruthEvaluator(Dataset<T> dataset, int k) {
         this(dataset, k, Float.MAX_VALUE, -1);
@@ -53,6 +53,14 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         this.k = k;
         this.range = range;
         this.distanceFunction = dataset.getDistanceFunction();
+    }
+
+    public GroundTruthEvaluator(DistanceFunctionInterface<T> distanceFunction) {
+        this.distanceFunction = distanceFunction;
+        metricSpace = null;
+        queryObjects = null;
+        k = -1;
+        range = Float.MAX_VALUE;
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {

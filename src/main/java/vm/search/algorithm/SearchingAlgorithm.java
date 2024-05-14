@@ -26,7 +26,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @param <T>
  */
 public abstract class SearchingAlgorithm<T> {
-
+    
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 5000000; // simulates independent queries as data are not effectively cached in the CPU cache
 
@@ -34,7 +34,7 @@ public abstract class SearchingAlgorithm<T> {
     protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Object, float[]> qpDistsCached = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<Object, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
-
+    
     public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
     /**
@@ -53,7 +53,7 @@ public abstract class SearchingAlgorithm<T> {
         Dataset dataset = (Dataset) additionalParams[0];
         return rerankCandidateSet(metricSpace, queryObject, k, dataset.getDistanceFunction(), dataset.getKeyValueStorage(), candSet);
     }
-
+    
     public Map.Entry<Object, Float> adjustAndReturnLastEntry(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
         int size = currAnswer.size();
         if (size < k) {
@@ -64,7 +64,7 @@ public abstract class SearchingAlgorithm<T> {
         }
         return currAnswer.last();
     }
-
+    
     public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
@@ -75,7 +75,7 @@ public abstract class SearchingAlgorithm<T> {
         }
         return currAnswer.last().getValue();
     }
-
+    
     public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
@@ -86,7 +86,7 @@ public abstract class SearchingAlgorithm<T> {
         }
         return currAnswer.last().getValue();
     }
-
+    
     public TreeSet<Map.Entry<Object, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, DistanceFunctionInterface df, Map<Object, Object> mapOfAllFullObjects, List<Object> candsIDs) {
         T queryObjData = metricSpace.getDataOfMetricObject(queryObj);
         TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
@@ -178,7 +178,7 @@ public abstract class SearchingAlgorithm<T> {
         threadPool.shutdown();
         return ret;
     }
-
+    
     public static TreeSet<Map.Entry<Object, Float>>[] initKNNResultSets(int numberOfQueries) {
         TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[numberOfQueries];
         for (int i = 0; i < numberOfQueries; i++) {
@@ -218,7 +218,7 @@ public abstract class SearchingAlgorithm<T> {
         threadPool.shutdown();
         return ret;
     }
-
+    
     public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, int k) {
         List queryObjects = dataset.getMetricQueryObjects();
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
@@ -242,7 +242,7 @@ public abstract class SearchingAlgorithm<T> {
         }
         return ret;
     }
-
+    
     public void incTime(Object qId, long time) {
         AtomicLong ai = timesPerQueries.get(qId);
         if (ai != null) {
@@ -251,7 +251,8 @@ public abstract class SearchingAlgorithm<T> {
             timesPerQueries.put(qId, new AtomicLong(time));
         }
     }
-
+    
+    @Deprecated
     protected void incDistsComps(Object qId) {
         AtomicInteger ai = distCompsPerQueries.get(qId);
         if (ai != null) {
@@ -260,7 +261,7 @@ public abstract class SearchingAlgorithm<T> {
             distCompsPerQueries.put(qId, new AtomicInteger(1));
         }
     }
-
+    
     protected void incDistsComps(Object qId, int byValue) {
         AtomicInteger ai = distCompsPerQueries.get(qId);
         if (ai != null) {
@@ -270,27 +271,31 @@ public abstract class SearchingAlgorithm<T> {
             distCompsPerQueries.put(qId, ai);
         }
     }
-
+    
+    public void resetDistComps(Object qId) {
+        distCompsPerQueries.put(qId, new AtomicInteger());
+    }
+    
     public Map<Object, AtomicInteger> getDistCompsPerQueries() {
         return Collections.unmodifiableMap(distCompsPerQueries);
     }
-
+    
     public Map<Object, AtomicLong> getTimesPerQueries() {
         return Collections.unmodifiableMap(timesPerQueries);
     }
-
+    
     public int getDistCompsForQuery(Object qId) {
         return distCompsPerQueries.get(qId).get();
     }
-
+    
     public long getTimeOfQuery(Object qId) {
         return timesPerQueries.get(qId).get();
     }
-
+    
     public Map<Object, AtomicLong>[] getAddditionalStats() {
         return new HashMap[0];
     }
-
+    
     public abstract String getResultName();
-
+    
 }

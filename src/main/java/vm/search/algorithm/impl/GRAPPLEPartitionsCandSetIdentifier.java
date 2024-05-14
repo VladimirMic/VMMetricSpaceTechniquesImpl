@@ -119,10 +119,15 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
             }
             total++;
         }
+        
+        
+        
+        
         t.addAndGet(System.currentTimeMillis());
         timesPerQueries.put(qID, t);
         distCompsPerQueries.put(qID, distComps);
         System.out.println(ok + ";" + total + ";" + ((float) ok * 100) / total + "; %");
+
         return ret;
 
     }

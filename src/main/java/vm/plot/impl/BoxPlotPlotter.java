@@ -6,7 +6,9 @@ package vm.plot.impl;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -37,9 +39,13 @@ public class BoxPlotPlotter extends AbstractPlotter {
             }
             for (int groupId = 0; groupId < valuesForGroups.length; groupId++) {
                 List<Float> valuesForGroupAndTrace = valuesForGroups[groupId];
-                if (valuesForGroupAndTrace != null) {
-                    String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
+                String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
+                if (valuesForGroupAndTrace != null && !valuesForGroupAndTrace.isEmpty()) {
                     dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
+                } else {
+                    List<Float> atrapa = new ArrayList<>();
+                    atrapa.add(0f);
+                    dataset.add(atrapa, tracesNames[traceID], groupName);
                 }
             }
         }
