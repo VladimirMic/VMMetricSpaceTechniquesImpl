@@ -33,6 +33,10 @@ public abstract class QueryExecutionStatsStoreInterface {
         }
     }
 
+    public abstract Map<Object, Integer> getDistComps();
+
+    public abstract Map<Object, Long> getQueryTimes();
+
     public abstract void save();
 
 }

@@ -17,6 +17,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
@@ -51,6 +52,10 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.lbCheckedForQ = new ConcurrentHashMap();
         this.qPivotArraysCached = new ConcurrentHashMap<>();
         this.bruteForceAlg = new GroundTruthEvaluator(df);
+        if (filter instanceof DataDependentGeneralisedPtolemaicFiltering) {
+            thresholdOnLBsPerObjForSeqScan = 32;
+            objBeforeSeqScan = 50000;
+        }
     }
 
     @Override
