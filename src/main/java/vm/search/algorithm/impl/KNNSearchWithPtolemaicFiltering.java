@@ -28,7 +28,7 @@ import vm.search.algorithm.SearchingAlgorithm;
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private int thresholdOnLBsPerObjForSeqScan = 0;
-    public int objBeforeSeqScan = -1;
+    protected int objBeforeSeqScan = -1;
     private final GroundTruthEvaluator bruteForceAlg;
 
     public static final Integer LB_COUNT = 128; //  128, 256
@@ -54,7 +54,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.bruteForceAlg = new GroundTruthEvaluator(df);
         if (filter instanceof DataDependentGeneralisedPtolemaicFiltering) {
             thresholdOnLBsPerObjForSeqScan = 32;
-            objBeforeSeqScan = 50000;
+            objBeforeSeqScan = 100000;
         }
     }
 
@@ -63,7 +63,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
         Object qId = metricSpace.getIDOfMetricObject(q);
-        if (qSkip.contains(q)) {
+        if (qSkip.contains(qId)) {
             bruteForceAlg.resetDistComps(qId);
             ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
             t += System.currentTimeMillis();
@@ -152,7 +152,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     public String getResultName() {
         String ret = filter.getTechFullName() + "_" + LB_COUNT + "LB";
         if (thresholdOnLBsPerObjForSeqScan > 0) {
-            ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objIntMem";
+            ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }
         return ret;
     }

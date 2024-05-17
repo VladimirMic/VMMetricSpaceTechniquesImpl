@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.util.AbstractMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import org.jfree.chart.ChartFactory;
@@ -30,6 +29,14 @@ import vm.plot.AbstractPlotter;
 public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data) {
+        Object[] tracesNames = (Object[]) data[0];
+        COLOUR_NAMES[] tracesColours = (COLOUR_NAMES[]) data[1];
+        float[][] tracesXValues = (float[][]) data[2];
+        float[][] tracesYValues = (float[][]) data[3];
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, tracesXValues, tracesYValues);
+    }
+
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
         XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);
         XYSeriesCollection dataset = new XYSeriesCollection();
@@ -127,12 +134,6 @@ public class XYLinesPlotter extends AbstractPlotter {
         plot.setBackgroundAlpha(0);
 
         return chart;
-    }
-
-    @Override
-    @Deprecated
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override

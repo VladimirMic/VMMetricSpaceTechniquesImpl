@@ -63,7 +63,7 @@ public class TransformDataToGHPSketches {
 
             MetricObjectsParallelTransformerImpl parallelTransformer = new MetricObjectsParallelTransformerImpl(sketchingTechnique, storageForSketches, producedDatasetName, producedQuerySetName, producedPivotsName);
             Iterator pivotsIt = dataset.getPivots(-1).iterator();
-            Iterator queriesIt = dataset.getMetricQueryObjects().iterator();
+            Iterator queriesIt = dataset.getQueryObjects().iterator();
             Iterator dataIt = dataset.getMetricObjectsFromDataset();
             parallelTransformer.processIteratorSequentially(pivotsIt, AbstractMetricSpacesStorage.OBJECT_TYPE.PIVOT_OBJECT, params);
             parallelTransformer.processIteratorSequentially(queriesIt, AbstractMetricSpacesStorage.OBJECT_TYPE.QUERY_OBJECT, params);

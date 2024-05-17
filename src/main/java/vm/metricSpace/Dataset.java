@@ -43,7 +43,7 @@ public abstract class Dataset<T> {
      *
      * @return uses method getQuerySetName and returns associated query objects
      */
-    public List<Object> getMetricQueryObjects(Object... params) {
+    public List<Object> getQueryObjects(Object... params) {
         return metricSpacesStorage.getQueryObjects(getQuerySetName(), params);
     }
 

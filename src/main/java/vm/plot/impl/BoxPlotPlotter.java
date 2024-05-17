@@ -8,7 +8,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -27,6 +26,14 @@ import static vm.plot.AbstractPlotter.getColor;
 public class BoxPlotPlotter extends AbstractPlotter {
 
     @Override
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data) {
+        String[] tracesNames = (String[]) data[0];
+        COLOUR_NAMES[] tracesColours = (COLOUR_NAMES[]) data[1];
+        Object[] groupsNames = (Object[]) data[2];
+        List<Float>[][] values = (List<Float>[][]) data[3];
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, groupsNames, values);
+    }
+
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         if (tracesNames.length != values.length) {
@@ -51,12 +58,6 @@ public class BoxPlotPlotter extends AbstractPlotter {
         }
         JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
         return setAppearence(chart, tracesNames, tracesColours, groupsNames);
-    }
-
-    @Override
-    @Deprecated
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] groupsNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public int precomputeSuitableWidth(int height, int tracesCount, int groupsCount) {

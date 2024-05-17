@@ -220,7 +220,7 @@ public abstract class SearchingAlgorithm<T> {
     }
     
     public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, int k) {
-        List queryObjects = dataset.getMetricQueryObjects();
+        List queryObjects = dataset.getQueryObjects();
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
         for (int i = 0; i < 20; i++) {

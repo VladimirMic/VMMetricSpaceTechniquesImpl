@@ -46,10 +46,11 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
      * @param dataset
      * @param k
      * @param range transformation
+     * @param maxQueryCount
      */
     public GroundTruthEvaluator(Dataset<T> dataset, int k, float range, int maxQueryCount) {
         this.metricSpace = dataset.getMetricSpace();
-        this.queryObjects = dataset.getMetricQueryObjects(maxQueryCount);
+        this.queryObjects = dataset.getQueryObjects(maxQueryCount);
         this.k = k;
         this.range = range;
         this.distanceFunction = dataset.getDistanceFunction();

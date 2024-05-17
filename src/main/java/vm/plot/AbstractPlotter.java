@@ -16,7 +16,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -128,26 +127,9 @@ public abstract class AbstractPlotter {
         this.enforceInvolvingZeroToYAxis = enforceInvolvingZeroToYAxis;
     }
 
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues);
-
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values);
-
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, float[][] tracesXValues, float[][] tracesYValues) {
-        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, null, tracesXValues, tracesYValues);
-    }
-
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, Object[] groupsNames, List<Float>[][] values) {
-        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, null, groupsNames, values);
-    }
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object ... data);
 
     public abstract String getSimpleName();
-
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, float[] traceXValues, float[] traceYValues) {
-        String[] names = new String[]{traceName};
-        float[][] x = new float[][]{traceXValues};
-        float[][] y = new float[][]{traceYValues};
-        return createPlot(mainTitle, xAxisLabel, yAxisLabel, names, x, y);
-    }
 
     protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber) {
         if (step == null) {
@@ -224,7 +206,6 @@ public abstract class AbstractPlotter {
         }
     }
 
-    @Deprecated // store as svg
     public void storePlotPNG(String path, JFreeChart plot) {
         storePlotPNG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
     }
@@ -390,7 +371,7 @@ public abstract class AbstractPlotter {
         }
     }
 
-    private double calculateHighestVisibleTickValue(NumberAxis axis) {
+    protected double calculateHighestVisibleTickValue(NumberAxis axis) {
         double unit = axis.getTickUnit().getSize();
         double index = Math.floor(axis.getRange().getUpperBound() / unit);
         return index * unit;

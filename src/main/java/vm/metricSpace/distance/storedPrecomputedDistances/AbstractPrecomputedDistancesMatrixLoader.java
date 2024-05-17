@@ -30,8 +30,7 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
 
     /**
      *
-     * @param datasetName
-     * @param pivotSetName
+     * @param dataset
      * @param pivotCount if -1 then all pivots are used (pivots correspond to
      * columns)
      * @return map of distances (for instance, rows correspond to the objects
