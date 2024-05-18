@@ -17,7 +17,6 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
-import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
@@ -27,8 +26,8 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    private int thresholdOnLBsPerObjForSeqScan = 0;
-    protected int objBeforeSeqScan = -1;
+    private int thresholdOnLBsPerObjForSeqScan;
+    protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
 
     public static final Integer LB_COUNT = 128; //  128, 256
@@ -52,10 +51,8 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.lbCheckedForQ = new ConcurrentHashMap();
         this.qPivotArraysCached = new ConcurrentHashMap<>();
         this.bruteForceAlg = new GroundTruthEvaluator(df);
-        if (filter instanceof DataDependentGeneralisedPtolemaicFiltering) {
-            thresholdOnLBsPerObjForSeqScan = 32;
-            objBeforeSeqScan = 100000;
-        }
+        this.objBeforeSeqScan = -1;
+        this.thresholdOnLBsPerObjForSeqScan = 0;
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -49,6 +50,8 @@ public class BoxPlotPlotter extends AbstractPlotter {
                 String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
                 if (valuesForGroupAndTrace != null && !valuesForGroupAndTrace.isEmpty()) {
                     dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
+                    float mean = dataset.getItem(traceID, groupId).getMean().floatValue();
+                    LOG.log(Level.INFO, "Mean {3} for {0} in group {1}: {2}", new Object[]{tracesNames[traceID], groupName, mean, yAxisLabel});
                 } else {
                     List<Float> atrapa = new ArrayList<>();
                     atrapa.add(0f);

@@ -3,6 +3,7 @@ package vm.metricSpace;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -104,4 +105,35 @@ public abstract class Dataset<T> {
      * @return
      */
     public abstract Map<Object, Object> getKeyValueStorage();
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(getDatasetName());
+        hash = 37 * hash + Objects.hashCode(getQuerySetName());
+        hash = 37 * hash + Objects.hashCode(getPivotSetName());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Dataset<?> other = (Dataset<?>) obj;
+        if (!Objects.equals(getDatasetName(), other.getDatasetName())) {
+            return false;
+        }
+        if (!Objects.equals(getQuerySetName(), other.getQuerySetName())) {
+            return false;
+        }
+        return Objects.equals(getPivotSetName(), getPivotSetName());
+    }
+
 }

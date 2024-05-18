@@ -127,7 +127,7 @@ public abstract class AbstractPlotter {
         this.enforceInvolvingZeroToYAxis = enforceInvolvingZeroToYAxis;
     }
 
-    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object ... data);
+    public abstract JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data);
 
     public abstract String getSimpleName();
 
@@ -316,7 +316,6 @@ public abstract class AbstractPlotter {
         if (label.equals("frr") || label.equals("false reject rate")) {
             yAxis.setUpperBound(1 - minRecall);
         }
-
         yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
         if (yAxis.getUpperBound() >= 1000) {
