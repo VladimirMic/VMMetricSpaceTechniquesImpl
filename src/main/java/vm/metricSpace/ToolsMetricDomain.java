@@ -16,6 +16,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.math.Tools;
@@ -29,6 +32,7 @@ import vm.metricSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
 public class ToolsMetricDomain {
 
     private static final Logger LOG = Logger.getLogger(ToolsMetricDomain.class.getName());
+    private static final Integer BATCH_FOR_MATRIX_OF_DISTANCES = 2000000;
 
     public static float[][] transformMetricObjectsToVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] first = metricSpace.getDataOfMetricObject(metricObjects.get(0));
@@ -318,33 +322,72 @@ public class ToolsMetricDomain {
     }
 
     public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator metricObjectsFromDataset, List pivots, AbstractMetricSpace metricSpace, DistanceFunctionInterface df) {
-        List<float[]> dists = new ArrayList<>();
-        Map<Object, Integer> columnHeaders = new HashMap<>();
-        Map<Object, Integer> rowHeaders = new HashMap<>();
+        return evaluateMatrixOfDistances(metricObjectsFromDataset, pivots, metricSpace, df, -1);
+    }
+
+    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator metricObjectsFromDataset, List pivots, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, int objCount) {
+        final Map<Object, Integer> columnHeaders = new ConcurrentHashMap<>();
+        final Map<Object, Integer> rowHeaders = new ConcurrentHashMap<>();
         for (int i = 0; i < pivots.size(); i++) {
             Object p = pivots.get(i);
             Object pID = metricSpace.getIDOfMetricObject(p);
             columnHeaders.put(pID.toString(), i);
         }
-        int rowCounter;
-        for (rowCounter = 0; metricObjectsFromDataset.hasNext(); rowCounter++) {
-            Object o = metricObjectsFromDataset.next();
-            Object oID = metricSpace.getIDOfMetricObject(o);
-            Object oData = metricSpace.getDataOfMetricObject(o);
-            rowHeaders.put(oID.toString(), rowCounter);
-            float[] row = new float[pivots.size()];
-            for (int i = 0; i < pivots.size(); i++) {
-                Object p = pivots.get(i);
-                Object pData = metricSpace.getDataOfMetricObject(p);
-                row[i] = df.getDistance(oData, pData);
-            }
-            dists.add(row);
-            if (rowCounter % 50000 == 0) {
-                LOG.log(Level.INFO, "Evaluated dists between {0} o and {1} pivots", new Object[]{rowCounter, pivots.size()});
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
+        float[][] ret = null;
+        if (objCount > 0) {
+            ret = new float[objCount][pivots.size()];
+        }
+        int curAnsIdx = 0;
+        for (int batchCount = 0; metricObjectsFromDataset.hasNext(); batchCount++) {
+            System.gc();
+            try {
+                List<Object> batch = vm.datatools.Tools.getObjectsFromIterator(metricObjectsFromDataset, BATCH_FOR_MATRIX_OF_DISTANCES);
+                CountDownLatch latch = new CountDownLatch(batch.size());
+                float[][] distsForBatch = new float[batch.size()][pivots.size()];
+                Iterator<Object> it = batch.iterator();
+                int rowCounter;
+                for (rowCounter = 0; rowCounter < batch.size(); rowCounter++) {
+                    final int rowCounterFinal = rowCounter + batchCount * BATCH_FOR_MATRIX_OF_DISTANCES;
+                    final int batchRowCounter = rowCounter;
+                    threadPool.execute(() -> {
+                        Object o = it.next();
+                        Object oID = metricSpace.getIDOfMetricObject(o);
+                        Object oData = metricSpace.getDataOfMetricObject(o);
+                        rowHeaders.put(oID.toString(), rowCounterFinal);
+                        float[] row = new float[pivots.size()];
+                        for (int i = 0; i < pivots.size(); i++) {
+                            Object p = pivots.get(i);
+                            Object pData = metricSpace.getDataOfMetricObject(p);
+                            row[i] = df.getDistance(oData, pData);
+                        }
+                        distsForBatch[batchRowCounter] = row;
+                        if ((rowCounterFinal + 1) % (BATCH_FOR_MATRIX_OF_DISTANCES / 10) == 0) {
+                            LOG.log(Level.INFO, "Evaluated dists between {0} o and {1} pivots", new Object[]{(rowCounterFinal + 1), pivots.size()});
+                        }
+                        latch.countDown();
+                    });
+                }
+                latch.await();
+                if (ret == null) {
+                    ret = distsForBatch;
+                } else {
+                    if (objCount > 0) {
+                        System.arraycopy(distsForBatch, 0, ret, curAnsIdx, distsForBatch.length);
+                        curAnsIdx += distsForBatch.length;
+                    } else {
+                        float[][] newRet = new float[ret.length + distsForBatch.length][pivots.size()];
+                        System.arraycopy(ret, 0, newRet, 0, ret.length);
+                        System.arraycopy(distsForBatch, 0, newRet, ret.length, distsForBatch.length);
+                        ret = newRet;
+                        System.gc();
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ToolsMetricDomain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        float[][] ret = new float[dists.size()][pivots.size()];
-        ret = dists.toArray(ret);
+        threadPool.shutdown();
         MainMemoryStoredPrecomputedDistances pd = new MainMemoryStoredPrecomputedDistances(ret, columnHeaders, rowHeaders);
         return pd;
     }
