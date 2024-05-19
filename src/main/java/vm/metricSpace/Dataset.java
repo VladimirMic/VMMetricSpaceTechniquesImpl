@@ -1,9 +1,16 @@
 package vm.metricSpace;
 
+import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import vm.datatools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -12,6 +19,8 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @param <T>
  */
 public abstract class Dataset<T> {
+
+    public static final Logger LOG = Logger.getLogger(Dataset.class.getName());
 
     protected String datasetName;
 
@@ -134,6 +143,64 @@ public abstract class Dataset<T> {
             return false;
         }
         return Objects.equals(getPivotSetName(), getPivotSetName());
+    }
+
+    public TreeSet<Map.Entry<String, Float>> evaluateSampleOfSmallestDistances(int objectCount, int queriesCount, int retSize, List<Object[]> listWhereAddExaminedPairs) {
+        List<Object> metricObjects = getSampleOfDataset(objectCount + queriesCount);
+        List<Object> sampleObjects = metricObjects.subList(0, objectCount);
+        List<Object> queriesSamples = metricObjects.subList(objectCount, objectCount + queriesCount);
+        DistanceFunctionInterface df = getDistanceFunction();
+        Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
+        TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
+        for (int i = 0; i < sampleObjects.size(); i++) {
+            Object o = sampleObjects.get(i);
+            Object oData = metricSpace.getDataOfMetricObject(o);
+            Object oID = metricSpace.getIDOfMetricObject(o);
+            for (Object q : queriesSamples) {
+                Object qData = metricSpace.getDataOfMetricObject(q);
+                Object qID = metricSpace.getIDOfMetricObject(q);
+                float dist = df.getDistance(oData, qData);
+                String key = oID + ";" + qID;
+                AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, dist);
+                result.add(e);
+                while (result.size() > retSize) {
+                    result.remove(result.last());
+                }
+            }
+            if ((i + 1) % 500 == 0) {
+                LOG.log(Level.INFO, "Processed object {0} out of {1}", new Object[]{i + 1, sampleObjects.size()});
+            }
+        }
+        return result;
+    }
+
+    public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
+        List<Object> metricObjectsSample = getSampleOfDataset(objectCount);
+        Random r = new Random();
+        int counter = 0;
+        float[] distances = new float[distCount];
+        int size = metricObjectsSample.size();
+        DistanceFunctionInterface distanceFunction = getDistanceFunction();
+        while (counter < distCount) {
+            Object o1 = metricObjectsSample.get(r.nextInt(size));
+            Object o2 = metricObjectsSample.get(r.nextInt(size));
+            Object id1 = metricSpace.getIDOfMetricObject(o1);
+            Object id2 = metricSpace.getIDOfMetricObject(o2);
+            if (id1.equals(id2)) {
+                continue;
+            }
+            if (listWhereAddExaminedPairs != null) {
+                listWhereAddExaminedPairs.add(new Object[]{id1, id2});
+            }
+            o1 = metricSpace.getDataOfMetricObject(o1);
+            o2 = metricSpace.getDataOfMetricObject(o2);
+            distances[counter] = distanceFunction.getDistance(o1, o2);
+            counter++;
+            if (counter % 1000000 == 0) {
+                LOG.log(Level.INFO, "Computed {0} distances out of {1}", new Object[]{counter, distCount});
+            }
+        }
+        return distances;
     }
 
 }

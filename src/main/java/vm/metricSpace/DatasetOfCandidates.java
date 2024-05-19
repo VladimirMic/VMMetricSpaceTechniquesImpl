@@ -66,7 +66,17 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 
     @Override
     public List<Object> getSampleOfDataset(int objCount) {
-        throw new UnsupportedOperationException();
+        if (objCount < 0) {
+            objCount = Integer.MAX_VALUE;
+        }
+        List<Object> ret = new ArrayList<>();
+        Iterator<Map.Entry<Object, List<Object>>> it = mapOfQueriesToCandidates.entrySet().iterator();
+        while (ret.size() < objCount && it.hasNext()) {
+            List<Object> objs = it.next().getValue();
+            ret.addAll(objs);
+        }
+        ret = ret.subList(0, objCount);
+        return ret;
     }
 
     @Override
@@ -106,7 +116,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 
     @Override
     public int updateDatasetSize() {
-        throw new UnsupportedOperationException();
+        return origDataset.updateDatasetSize();
     }
 
     @Override

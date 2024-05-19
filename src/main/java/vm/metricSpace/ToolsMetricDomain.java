@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -58,14 +57,15 @@ public class ToolsMetricDomain {
 
     /**
      *
-     * @param metricSpace
-     * @param metricObjectsSample
-     * @param distanceFunction
+     * @param dataset
+     * @param objCount
      * @param distCount
+     * @param idsOfRandomPairs
      * @return
      */
-    public static SortedMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount) {
-        return createDistanceDensityPlot(metricSpace, metricObjectsSample, distanceFunction, distCount, null);
+    public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
+        float[] distances = dataset.evaluateSampleOfRandomDistances(objCount, distCount, idsOfRandomPairs);
+        return createDistanceDensityPlot(distances);
     }
 
     private static float basicInterval;
@@ -78,37 +78,13 @@ public class ToolsMetricDomain {
      * Evaluates distCount distances of random pairs of objects from the list
      * metricObjectsSample
      *
-     * @param metricSpace
-     * @param metricObjectsSample
-     * @param distanceFunction
-     * @param distCount
+     * @param distances
      * @param pairsOfExaminedIDs if not null, adds all examined pairs of objects
      * @return
      */
-    public static TreeMap<Float, Float> createDistanceDensityPlot(AbstractMetricSpace metricSpace, List<Object> metricObjectsSample, DistanceFunctionInterface distanceFunction, int distCount, List<Object[]> pairsOfExaminedIDs) {
+    public static TreeMap<Float, Float> createDistanceDensityPlot(float[] distances) {
+        int distCount = distances.length;
         TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
-        Random r = new Random();
-        int counter = 0;
-        float[] distances = new float[distCount];
-        while (counter < distCount) {
-            Object o1 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
-            Object o2 = metricObjectsSample.get(r.nextInt(metricObjectsSample.size()));
-            Object id1 = metricSpace.getIDOfMetricObject(o1);
-            Object id2 = metricSpace.getIDOfMetricObject(o2);
-            if (id1.equals(id2)) {
-                continue;
-            }
-            if (pairsOfExaminedIDs != null) {
-                pairsOfExaminedIDs.add(new Object[]{id1, id2});
-            }
-            o1 = metricSpace.getDataOfMetricObject(o1);
-            o2 = metricSpace.getDataOfMetricObject(o2);
-            distances[counter] = distanceFunction.getDistance(o1, o2);
-            counter++;
-            if (counter % 1000000 == 0) {
-                LOG.log(Level.INFO, "Computed {0} distances out of {1}", new Object[]{counter, distCount});
-            }
-        }
         basicInterval = computeBasicDistInterval(distances);
         LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
         for (float distance : distances) {
@@ -127,27 +103,9 @@ public class ToolsMetricDomain {
         return histogram;
     }
 
-    public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances, float basicInterval) {
-        SortedMap<Float, Float> histogram = new TreeMap<>();
-        for (float distance : distances) {
-            distance = Tools.round(distance, basicInterval, true);
-            if (!histogram.containsKey(distance)) {
-                histogram.put(distance, 1f);
-            } else {
-                Float count = histogram.get(distance);
-                histogram.put(distance, count + 1f);
-            }
-        }
-        Float lastKey = histogram.lastKey();
-        while (lastKey >= 0) {
-            if (!histogram.containsKey(lastKey)) {
-                histogram.put(lastKey, 0f);
-            } else {
-                histogram.put(lastKey, histogram.get(lastKey) / distances.size());
-            }
-            lastKey -= basicInterval;
-        }
-        return histogram;
+    public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances) {
+        float[] array = vm.datatools.DataTypeConvertor.objectsToPrimitiveFloats(distances.toArray());
+        return createDistanceDensityPlot(array);
     }
 
     /**
