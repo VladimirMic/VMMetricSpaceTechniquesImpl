@@ -47,8 +47,8 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
         TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
-        T qData = metricSpace.getDataOfMetricObject(q);
         Object qId = metricSpace.getIDOfMetricObject(q);
+        T qData = metricSpace.getDataOfMetricObject(q);
         float[] qpDists = qpDistsCached.get(qId);
         if (qpDists == null) {
             qpDists = new float[pivotsData.size()];

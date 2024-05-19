@@ -97,6 +97,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         t += System.currentTimeMillis();
         incTime(qId, t);
         incDistsComps(qId, distComps);
+        LOG.log(Level.INFO, "Query executed in {0} ms", t);
         return ret;
     }
 

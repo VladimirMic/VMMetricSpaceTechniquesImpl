@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
 
@@ -30,7 +32,8 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName) {
         this.origDataset = origDataset;
         datasetName = newDatasetName;
-        this.keyValueStorage = origDataset.getKeyValueStorage();        metricSpace = origDataset.getMetricSpace();
+        this.keyValueStorage = origDataset.getKeyValueStorage();
+        metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
         metricSpacesStorage = origDataset.getMetricSpacesStorage();
         Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
         mapOfQueriesToCandidates = transformToList(queryResultsForDataset);
@@ -40,7 +43,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         this.origDataset = origDataset;
         datasetName = origDataset.getDatasetName();
         this.keyValueStorage = origDataset.getKeyValueStorage();
-        metricSpace = origDataset.getMetricSpace();
+        metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
         metricSpacesStorage = origDataset.getMetricSpacesStorage();
         Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, getDatasetName(), getQuerySetName(), null);
         mapOfQueriesToCandidates = transformToList(queryResultsForDataset);
@@ -58,7 +61,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public Iterator<Object> getMetricObjectsFromDataset(Object... params) {
         Object queryObjID = params[0];
         List<Object> candidatesIDs = mapOfQueriesToCandidates.get(queryObjID);
-        return new IteratorOverCandidates(candidatesIDs.iterator());
+        return candidatesIDs.iterator();
     }
 
     @Override
@@ -68,7 +71,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 
     @Override
     public List<Object> getQueryObjects(Object... params) {
-        return origDataset.getQueryObjects(1000);
+        return origDataset.getQueryObjects(params);
     }
 
     @Override
@@ -97,7 +100,8 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 
     @Override
     public int getPrecomputedDatasetSize() {
-        throw new UnsupportedOperationException();
+        Logger.getLogger(DatasetOfCandidates.class.getName()).log(Level.INFO, "Returning the size of original dataset");
+        return origDataset.getPrecomputedDatasetSize();
     }
 
     @Override
@@ -127,31 +131,6 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             ret.put(queryID, candsIDs);
         }
         return ret;
-    }
-
-    private class IteratorOverCandidates implements Iterator<Object> {
-
-        private final Iterator<Object> candsIDs;
-
-        public IteratorOverCandidates(Iterator<Object> candsIDs) {
-            this.candsIDs = candsIDs;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return candsIDs.hasNext();
-        }
-
-        @Override
-        public Object next() {
-            if (!candsIDs.hasNext()) {
-                throw new NoSuchElementException("No more objects in the map");
-            }
-            Object id = candsIDs.next();
-            T value = (T) keyValueStorage.get(id);
-            return metricSpace.createMetricObject(id, value);
-        }
-
     }
 
 }

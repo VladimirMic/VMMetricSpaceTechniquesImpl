@@ -219,26 +219,27 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, int k) {
-        List queryObjects = dataset.getQueryObjects();
+    public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        LOG.log(Level.INFO, "Warming up disk storage");
         for (int i = 0; i < 20; i++) { // for the sake of disk caching
             Object q = queryObjects.get(queryObjects.size() - 1 - i);
             Object qID = metricSpace.getIDOfMetricObject(q);
-            Tools.getObjectsFromIterator(dataset.getMetricObjectsFromDataset(qID));
+            Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
+            while (candsIt.hasNext()) {
+                Object cand = candsIt.next();
+                Object tmp = metricSpace.getDataOfMetricObject(cand);
+            }
         }
         for (int i = 0; i < queryObjects.size(); i++) {
-//            vm.javatools.Tools.clearJavaCache();
             long t = -System.currentTimeMillis();
             Object q = queryObjects.get(i);
             Object qID = metricSpace.getIDOfMetricObject(q);
-            List<Object> cands = Tools.getObjectsFromIterator(dataset.getMetricObjectsFromDataset(qID));
+            Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
             t += System.currentTimeMillis();
-            Iterator<Object> iterator = cands.iterator();
             incTime(qID, t);
-            System.err.println("Reading:" + t);
-            ret[i] = completeKnnSearch(metricSpace, q, k, iterator);
+            ret[i] = completeKnnSearch(metricSpace, q, k, candsIt);
         }
         return ret;
     }

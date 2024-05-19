@@ -345,13 +345,12 @@ public class ToolsMetricDomain {
                 List<Object> batch = vm.datatools.Tools.getObjectsFromIterator(metricObjectsFromDataset, BATCH_FOR_MATRIX_OF_DISTANCES);
                 CountDownLatch latch = new CountDownLatch(batch.size());
                 float[][] distsForBatch = new float[batch.size()][pivots.size()];
-                Iterator<Object> it = batch.iterator();
                 int rowCounter;
                 for (rowCounter = 0; rowCounter < batch.size(); rowCounter++) {
                     final int rowCounterFinal = rowCounter + batchCount * BATCH_FOR_MATRIX_OF_DISTANCES;
                     final int batchRowCounter = rowCounter;
                     threadPool.execute(() -> {
-                        Object o = it.next();
+                        Object o = batch.get(batchRowCounter);
                         Object oID = metricSpace.getIDOfMetricObject(o);
                         Object oData = metricSpace.getDataOfMetricObject(o);
                         rowHeaders.put(oID.toString(), rowCounterFinal);
