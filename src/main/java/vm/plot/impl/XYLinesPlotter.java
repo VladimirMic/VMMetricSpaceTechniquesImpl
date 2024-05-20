@@ -19,6 +19,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.plot.AbstractPlotter;
 
@@ -30,10 +31,34 @@ public class XYLinesPlotter extends AbstractPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data) {
-        Object[] tracesNames = (Object[]) data[0];
-        COLOUR_NAMES[] tracesColours = (COLOUR_NAMES[]) data[1];
-        float[][] tracesXValues = (float[][]) data[2];
-        float[][] tracesYValues = (float[][]) data[3];
+        Object[] tracesNames = new Object[]{""};
+        if (data[0] != null) {
+            if (data[0] instanceof Object[]) {
+                tracesNames = (Object[]) data[0];
+            } else {
+                tracesNames = (Object[]) DataTypeConvertor.objectToSingularArray(data[0]);
+            }
+        }
+        COLOUR_NAMES[] tracesColours = null;
+        if (data[1] != null) {
+            if (data[1] instanceof COLOUR_NAMES[]) {
+                tracesColours = (COLOUR_NAMES[]) data[1];
+            } else {
+                tracesColours = (COLOUR_NAMES[]) DataTypeConvertor.objectToSingularArray(data[1]);
+            }
+        }
+        float[][] tracesXValues;
+        if (data[2] instanceof float[][]) {
+            tracesXValues = (float[][]) data[2];
+        } else {
+            tracesXValues = (float[][]) DataTypeConvertor.objectToSingularArray(data[2]);
+        }
+        float[][] tracesYValues;
+        if (data[3] instanceof float[][]) {
+            tracesYValues = (float[][]) data[3];
+        } else {
+            tracesYValues = (float[][]) DataTypeConvertor.objectToSingularArray(data[3]);
+        }
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, tracesXValues, tracesYValues);
     }
 

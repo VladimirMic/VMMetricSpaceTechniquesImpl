@@ -408,6 +408,11 @@ public class ToolsMetricDomain {
     }
 
     public static float computeBasicDistInterval(float max) {
+        int exp = 0;
+        while (max < 1) {
+            max *= 10;
+            exp++;
+        }
         float maxCopy = max;
         int untilZero = (int) maxCopy;
         float prev;
@@ -435,6 +440,8 @@ public class ToolsMetricDomain {
         while (200 * ret < max) {
             ret *= 1.2;
         }
+        ret = (float) (ret / Math.pow(10, exp));
+        ret = Tools.ifSmallerThanOneRoundToFirstNonzeroFloatingNumber(ret);
         return ret;
     }
 

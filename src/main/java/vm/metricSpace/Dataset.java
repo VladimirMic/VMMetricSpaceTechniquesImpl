@@ -145,7 +145,7 @@ public abstract class Dataset<T> {
         return Objects.equals(getPivotSetName(), getPivotSetName());
     }
 
-    public TreeSet<Map.Entry<String, Float>> evaluateSampleOfSmallestDistances(int objectCount, int queriesCount, int retSize, List<Object[]> listWhereAddExaminedPairs) {
+    public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         List<Object> metricObjects = getSampleOfDataset(objectCount + queriesCount);
         List<Object> sampleObjects = metricObjects.subList(0, objectCount);
         List<Object> queriesSamples = metricObjects.subList(objectCount, objectCount + queriesCount);
