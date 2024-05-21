@@ -127,7 +127,11 @@ public class ToolsMetricDomain {
         for (int i = 1; metricObjects.hasNext(); i++) {
             Object metricObject = metricObjects.next();
             Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
-            Object value = valuesAsMetricObjectData ? metricSpace.getDataOfMetricObject(metricObject) : metricObject;
+            Object dataOfMetricObject = metricSpace.getDataOfMetricObject(metricObject);
+            Object value = valuesAsMetricObjectData ? dataOfMetricObject : metricSpace.createMetricObject(idOfMetricObject, dataOfMetricObject);
+            if (dataOfMetricObject == null) {
+                continue;
+            }
             ret.put(idOfMetricObject, value);
             if (i % 100000 == 0 && t + System.currentTimeMillis() > 5000) {
                 LOG.log(Level.INFO, "Loaded {0} objects into map", i);

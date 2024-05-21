@@ -97,6 +97,7 @@ public abstract class SearchingAlgorithm<T> {
             }
             return ret;
         }
+        float qRange = Float.MAX_VALUE;
         for (Object candID : candsIDs) {
             T metricObjectData;
             try {
@@ -106,9 +107,9 @@ public abstract class SearchingAlgorithm<T> {
                 continue;
             }
             float distance = df.getDistance(queryObjData, metricObjectData);
-            ret.add(new AbstractMap.SimpleEntry<>(candID, distance));
-            if (ret.size() > k) {
-                ret.remove(ret.last());
+            if (distance < qRange) {
+                ret.add(new AbstractMap.SimpleEntry<>(candID, distance));
+                qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, qRange);
             }
         }
         return ret;

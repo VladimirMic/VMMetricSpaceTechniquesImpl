@@ -159,6 +159,9 @@ public abstract class Dataset<T> {
             for (Object q : queriesSamples) {
                 Object qData = metricSpace.getDataOfMetricObject(q);
                 Object qID = metricSpace.getIDOfMetricObject(q);
+                if (qID.equals(oID)) {
+                    continue;
+                }
                 float dist = df.getDistance(oData, qData);
                 String key = oID + ";" + qID;
                 AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, dist);

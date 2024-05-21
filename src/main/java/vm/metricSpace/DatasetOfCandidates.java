@@ -18,9 +18,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ietf.jgss.Oid;
 import vm.datatools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
+import vm.search.algorithm.SearchingAlgorithm;
 
 /**
  *
@@ -193,7 +195,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         LOG.log(Level.INFO, "Returning {0} distances", new Object[]{ret.length});
         return ret;
     }
-
+// random dists between queries and objects. Produces really small distances
 //    @Override
 //    public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
 //        DistanceFunctionInterface df = getDistanceFunction();
@@ -246,55 +248,110 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 //        LOG.log(Level.INFO, "Evaluated {0} distances out of all {1} asked - diff is possible.", new Object[]{counter, objectCount * queriesCount});
 //        return ret;
 //    }
+
+// random distances between objects from clusters. Rather big distances, but hardly any meaning.
+//    @Override
+//    public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
+//        List<Object> metricObjects = getSampleOfDataset(objectCount + queriesCount);
+//        List<Object> queriesSamples = metricObjects.subList(0, queriesCount);
+//        List<Object> sampleObjects = metricObjects.subList(queriesCount, objectCount + queriesCount);
+////        List<Object> sampleObjects = metricObjects.subList(0, objectCount);
+////        List<Object> queriesSamples = metricObjects.subList(objectCount, objectCount + queriesCount);
+//        DistanceFunctionInterface df = getDistanceFunction();
+//        Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
+//        TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
+//        Map<Object, T> cache = new HashMap<>();
+//        for (int i = 0; i < sampleObjects.size(); i++) {
+//            Object o = sampleObjects.get(i);
+//            T oData;
+//            if (cache.containsKey(o)) {
+//                oData = cache.get(o);
+//            } else {
+//                oData = metricSpace.getDataOfMetricObject(o);
+//                cache.put(o, oData);
+//            }
+//            Object oID = metricSpace.getIDOfMetricObject(o);
+//            for (Object q : queriesSamples) {
+//                Object qID = metricSpace.getIDOfMetricObject(q);
+//                T qData;
+//                if (cache.containsKey(qID)) {
+//                    qData = cache.get(qID);
+//                } else {
+//                    qData = metricSpace.getDataOfMetricObject(q);
+//                    cache.put(qID, qData);
+//                }
+//                if (qID.equals(oID)) {
+//                    continue;
+//                }
+//                float dist = df.getDistance(oData, qData);
+//                String key = oID + ";" + qID;
+//                AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, dist);
+//                result.add(e);
+//                while (result.size() > retSize) {
+//                    result.remove(result.last());
+//                }
+//            }
+//            if ((i + 1) % 500 == 0) {
+//                LOG.log(Level.INFO, "Processed object {0} out of {1}", new Object[]{i + 1, sampleObjects.size()});
+//            }
+//        }
+//        return result;
+//    }
+// Simulated queries execution and remember dists of objects the should be filtered out
     @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         DistanceFunctionInterface df = getDistanceFunction();
-        List<Object> queries = getQueryObjects(mapOfQueriesToCandidates.size());
-        Random r = new Random();
-        int qSize = queries.size();
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
-        TreeSet<Map.Entry<String, Float>> ret = new TreeSet(comp);
-        long end = objectCount * queriesCount;
-        int i = 0;
+        TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         Map<Object, T> cache = new HashMap<>();
-        while (i < end) {
-            Object q = queries.get(r.nextInt(qSize));
-            Object qID = metricSpace.getIDOfMetricObject(q);
-            List<Object> cands = mapOfQueriesToCandidates.get(qID);
-            Object o = cands.get(r.nextInt(cands.size()));
-            Object oID = metricSpace.getIDOfMetricObject(o);
-            if (qID.equals(oID)) {
-                continue;
+        List<Object> queries = getQueryObjects(Math.min(mapOfQueriesToCandidates.size(), queriesCount));
+        Map<Object, Object> qMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, queries, true);
+        int counter = 0;
+        int qRetSize = (int) Math.ceil(((double) retSize) / queries.size());
+        for (Map.Entry<Object, List<Object>> entry : mapOfQueriesToCandidates.entrySet()) {
+            TreeSet<Map.Entry<String, Float>> qResult = new TreeSet(comp);
+            counter++;
+            Object qID = entry.getKey();
+            Object qData = qMap.get(qID);
+            TreeSet<Map.Entry<Object, Float>> ans = new TreeSet<>(new Tools.MapByFloatValueComparator());
+            float qRange = Float.MAX_VALUE;
+            List<Object> cands = entry.getValue();
+            for (Object o : cands) {
+                T oData;
+                if (cache.containsKey(o)) {
+                    oData = cache.get(o);
+                } else {
+                    oData = metricSpace.getDataOfMetricObject(o);
+                    cache.put(o, oData);
+                }
+                Object oID = metricSpace.getIDOfMetricObject(o);
+                if (qID.equals(oID)) {
+                    continue;
+                }
+                float distance = df.getDistance(qData, oData);
+                if (distance < qRange) {
+                    ans.add(new AbstractMap.SimpleEntry<>(oID, distance));
+                    qRange = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(ans, 30, qRange);
+//?                    AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, qRange);
+                } else {
+                    String key = oID + ";" + qID;
+                    AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, distance);
+                    qResult.add(e);
+                    while (qResult.size() > qRetSize) {
+                        qResult.remove(qResult.last());
+                    }
+
+                }
+
             }
-            T qData;
-            if (cache.containsKey(qID)) {
-                qData = cache.get(qID);
-            } else {
-                qData = metricSpace.getDataOfMetricObject(q);
-                cache.put(qID, qData);
-            }
-            T oData;
-            if (cache.containsKey(o)) {
-                oData = cache.get(o);
-            } else {
-                oData = metricSpace.getDataOfMetricObject(o);
-                cache.put(o, oData);
-            }
-            i++;
-            float distance = df.getDistance(qData, oData);
-            String key = oID + ";" + qID;
-            AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, distance);
-            ret.add(e);
-            while (ret.size() > retSize) {
-                ret.remove(ret.last());
-            }
-            if (i % 100000 == 0) {
-                LOG.log(Level.INFO, "Evaluated {0} distances out of {1}", new Object[]{i, end});
+            result.addAll(qResult);
+            if (counter % 50 == 0) {
+                LOG.log(Level.INFO, "Processed {0} sampled queries out of {1}", new Object[]{counter, queries.size()});
             }
         }
         cache.clear();
-        LOG.log(Level.INFO, "Evaluated {0} distances", new Object[]{end});
-        return ret;
+        LOG.log(Level.INFO, "Evaluated {0} distances out of all {1} asked - diff is possible.", new Object[]{counter, objectCount * queriesCount});
+        return result;
     }
 
 }
