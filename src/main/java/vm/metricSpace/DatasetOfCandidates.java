@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ietf.jgss.Oid;
 import vm.datatools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
@@ -35,26 +34,28 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 
     private final Dataset origDataset;
     private final Map<Object, List<Object>> mapOfQueriesToCandidates;
+    private final Map<Object, List<Object>> mapOfTrainingQueriesToCandidates;
     private final Map<Object, Object> keyValueStorage;
+    private int maxCandSetSize = 0;
 
-    public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName) {
+    public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
         this.origDataset = origDataset;
         datasetName = newDatasetName;
         this.keyValueStorage = origDataset.getKeyValueStorage();
         metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
         metricSpacesStorage = origDataset.getMetricSpacesStorage();
         Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
-        mapOfQueriesToCandidates = transformToList(queryResultsForDataset);
+        mapOfQueriesToCandidates = transformToList(queryResultsForDataset, true);
+        if (trainingResultFolderName != null && trainingDirectResultFileName != null) {
+            queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
+            mapOfTrainingQueriesToCandidates = transformToList(queryResultsForDataset, false);
+        } else {
+            mapOfTrainingQueriesToCandidates = null;
+        }
     }
 
-    public DatasetOfCandidates(Dataset origDataset, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName) {
-        this.origDataset = origDataset;
-        datasetName = origDataset.getDatasetName();
-        this.keyValueStorage = origDataset.getKeyValueStorage();
-        metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
-        metricSpacesStorage = origDataset.getMetricSpacesStorage();
-        Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, getDatasetName(), getQuerySetName(), null);
-        mapOfQueriesToCandidates = transformToList(queryResultsForDataset);
+    public DatasetOfCandidates(Dataset origDataset, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
+        this(origDataset, origDataset.getDatasetName(), resultsStorage, resultFolderName, directResultFileName, trainingResultFolderName, trainingDirectResultFileName);
     }
 
     @Override
@@ -69,7 +70,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public Iterator<Object> getMetricObjectsFromDataset(Object... params) {
         if (params.length == 0) {
             Set ret = new HashSet();
-            for (Map.Entry<Object, List<Object>> next : mapOfQueriesToCandidates.entrySet()) {
+            for (Map.Entry<Object, List<Object>> next : mapOfTrainingQueriesToCandidates.entrySet()) {
                 ret.addAll(next.getValue());
             }
             return ret.iterator();
@@ -85,7 +86,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             objCount = Integer.MAX_VALUE;
         }
         List<Object> ret = new ArrayList<>();
-        Iterator<Map.Entry<Object, List<Object>>> it = mapOfQueriesToCandidates.entrySet().iterator();
+        Iterator<Map.Entry<Object, List<Object>>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
         while (ret.size() < objCount && it.hasNext()) {
             List<Object> objs = it.next().getValue();
             ret.addAll(objs);
@@ -144,7 +145,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         throw new UnsupportedOperationException();
     }
 
-    private Map<Object, List<Object>> transformToList(Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset) {
+    private Map<Object, List<Object>> transformToList(Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
         Map<Object, List<Object>> ret = new HashMap<>();
         Set<String> queryIDs = queryResultsForDataset.keySet();
         for (String queryID : queryIDs) {
@@ -152,6 +153,11 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             List<Object> candsIDs = new ArrayList<>();
             for (Map.Entry<Object, Float> candidate : candidates) {
                 candsIDs.add(candidate.getKey());
+            }
+            if (storeMaxCandSetSize) {
+                maxCandSetSize = Math.max(maxCandSetSize, candsIDs.size());
+            } else {
+                candsIDs = candsIDs.subList(0, maxCandSetSize);
             }
             ret.put(queryID, candsIDs);
         }
@@ -162,7 +168,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         float[] ret = new float[distCount];
         DistanceFunctionInterface df = getDistanceFunction();
-        List<Object> queries = getQueryObjects(mapOfQueriesToCandidates.size());
+        List<Object> queries = getQueryObjects(mapOfTrainingQueriesToCandidates.size());
         Random r = new Random();
         int qSize = queries.size();
         Map<Object, T> cache = new HashMap<>();
@@ -176,7 +182,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 qData = metricSpace.getDataOfMetricObject(q);
                 cache.put(qID, qData);
             }
-            List<Object> cands = mapOfQueriesToCandidates.get(qID);
+            List<Object> cands = mapOfTrainingQueriesToCandidates.get(qID);
             Object o = cands.get(r.nextInt(cands.size()));
             T oData;
             if (cache.containsKey(o)) {
@@ -300,19 +306,25 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 // Simulated queries execution and remember dists of objects the should be filtered out
     @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
+        //objectCount is ignored
+        queriesCount = queriesCount / 10;
+        retSize = retSize / 10;
         DistanceFunctionInterface df = getDistanceFunction();
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
         TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         Map<Object, T> cache = new HashMap<>();
-        List<Object> queries = getQueryObjects(Math.min(mapOfQueriesToCandidates.size(), queriesCount));
+        List<Object> queries = getSampleOfDataset(Math.min(mapOfTrainingQueriesToCandidates.size(), queriesCount));
         Map<Object, Object> qMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, queries, true);
         int counter = 0;
         int qRetSize = (int) Math.ceil(((double) retSize) / queries.size());
-        for (Map.Entry<Object, List<Object>> entry : mapOfQueriesToCandidates.entrySet()) {
+        for (Map.Entry<Object, List<Object>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
             TreeSet<Map.Entry<String, Float>> qResult = new TreeSet(comp);
-            counter++;
             Object qID = entry.getKey();
+            if (!qMap.containsKey(qID)) {
+                continue;
+            }
             Object qData = qMap.get(qID);
+            counter++;
             TreeSet<Map.Entry<Object, Float>> ans = new TreeSet<>(new Tools.MapByFloatValueComparator());
             float qRange = Float.MAX_VALUE;
             List<Object> cands = entry.getValue();
@@ -328,20 +340,28 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 if (qID.equals(oID)) {
                     continue;
                 }
+                if (qData == null) {
+                    String s = "";
+                }
+
                 float distance = df.getDistance(qData, oData);
+                String key = oID + ";" + qID;
+                AbstractMap.SimpleEntry<String, Float> distToNotice;
                 if (distance < qRange) {
                     ans.add(new AbstractMap.SimpleEntry<>(oID, distance));
+                    if (qRange == Float.MAX_VALUE) {
+                        distToNotice = new AbstractMap.SimpleEntry(key, distance);
+                    } else {
+                        distToNotice = new AbstractMap.SimpleEntry(key, qRange);
+                    }
                     qRange = SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne(ans, 30, qRange);
-//?                    AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, qRange);
                 } else {
-                    String key = oID + ";" + qID;
-                    AbstractMap.SimpleEntry<String, Float> e = new AbstractMap.SimpleEntry(key, distance);
-                    qResult.add(e);
+                    distToNotice = new AbstractMap.SimpleEntry(key, 3 * distance);
                     while (qResult.size() > qRetSize) {
                         qResult.remove(qResult.last());
                     }
-
                 }
+                qResult.add(distToNotice);
 
             }
             result.addAll(qResult);
@@ -350,7 +370,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             }
         }
         cache.clear();
-        LOG.log(Level.INFO, "Evaluated {0} distances out of all {1} asked - diff is possible.", new Object[]{counter, objectCount * queriesCount});
+        LOG.log(Level.INFO, "Evaluated {0} distances out of all {1} asked - diff is possible.", new Object[]{counter});
         return result;
     }
 

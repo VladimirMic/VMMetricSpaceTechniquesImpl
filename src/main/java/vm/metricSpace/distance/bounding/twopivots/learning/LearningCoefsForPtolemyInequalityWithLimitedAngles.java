@@ -15,6 +15,7 @@ import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering.CONSTANT_FOR_PRECISION;
 import vm.metricSpace.distance.bounding.twopivots.storeLearned.PtolemyInequalityWithLimitedAnglesCoefsStoreInterface;
+import vm.metricSpace.distance.storedPrecomputedDistances.PrecomputedPairsOfDistancesStoreInterface;
 
 /**
  *
@@ -43,7 +44,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
         this.storage = storage;
         this.smallDistsOfSampleObjectsAndQueries = smallDistsOfSampleObjectsAndQueries;
         this.allPivotPairs = allPivotPairs;
-        this.resultName = storage.getResultDescription(datasetName, smallDistsOfSampleObjectsAndQueries.size(), objectsCount, queriesCount, pivots.size(), allPivotPairs);
+        this.resultName = storage.getResultDescription(datasetName, PrecomputedPairsOfDistancesStoreInterface.IMPLICIT_K, objectsCount, queriesCount, pivots.size(), allPivotPairs);
     }
 
     public Map<Object, float[]> execute() {
