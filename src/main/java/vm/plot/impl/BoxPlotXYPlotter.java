@@ -6,11 +6,13 @@ package vm.plot.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
+import static vm.plot.AbstractPlotter.LOG;
 
 /**
  *
@@ -43,11 +45,15 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                     iValue = Tools.parseInteger(previousKey);
                     keyString = iValue == null ? previousKey.toString() : iValue.toString();
                     dataset.add(new ArrayList(), tracesNames[traceID], keyString);
+                    float mean = dataset.getItem(traceID, groupId).getMean().floatValue();
+                    LOG.log(Level.INFO, "Mean {3} for {0} in group {1}: {2}", new Object[]{tracesNames[traceID], groupName, mean, yAxisLabel});
                 }
                 iValue = Tools.parseInteger(groupName);
                 keyString = iValue == null ? groupName.toString() : iValue.toString();
                 if (valuesForGroupAndTrace != null) {
                     dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
+                    float mean = dataset.getItem(traceID, groupId).getMean().floatValue();
+                    LOG.log(Level.INFO, "Mean {3} for {0} in group {1}: {2}", new Object[]{tracesNames[traceID], groupName, mean, yAxisLabel});
                 }
                 previousKey = groupName;
             }

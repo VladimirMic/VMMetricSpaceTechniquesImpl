@@ -242,7 +242,8 @@ public abstract class SearchingAlgorithm<T> {
             incTime(qID, t);
             ret[i] = completeKnnSearch(metricSpace, q, k, candsIt);
             long timeOfQuery = getTimeOfQuery(qID);
-            LOG.log(Level.INFO, "Evaluated query {0} in {1} ms", new Object[]{i, timeOfQuery});
+            int dc = getDistCompsForQuery(qID);
+            LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
         }
         return ret;
     }

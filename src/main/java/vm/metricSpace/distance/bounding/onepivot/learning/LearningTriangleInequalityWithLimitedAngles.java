@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.storeLearned.TriangleInequalityWithLimitedAnglesCoefsStoreInterface;
@@ -48,22 +49,39 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
         Map<Object, Float> ret = new HashMap<>();
         AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
         List pivots = dataset.getPivots(pCount);
-        List queries = dataset.getQueryObjects(qCount);
-        Map<Object, T> queriesMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, queries, true);
-        Map<Object, T> oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, dataset.getMetricObjectsFromDataset(), true);
-        oMap.putAll(queriesMap);
+        Map<Object, T> oMap = null;
+        if (!(dataset instanceof DatasetOfCandidates)) {
+            oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, dataset.getMetricObjectsFromDataset(), true);
+        }
         DistanceFunctionInterface df = dataset.getDistanceFunction();
 
         for (Object pivot : pivots) {
             T pivotData = metricSpace.getDataOfMetricObject(pivot);
             Iterator<Map.Entry<String, Float>> it = dists.iterator();
             float coefForP = Float.MAX_VALUE;
+            Map<Object, T> cache = new HashMap<>();
             for (int i = 0; i < lastIndex && it.hasNext(); i++) {
                 Map.Entry<String, Float> dist = it.next();
                 String[] oqIDs = dist.getKey().split(";");
-                T qData = (T) oMap.get(oqIDs[1]);
-                T oData = (T) oMap.get(oqIDs[0]);
-
+                T qData;
+                T oData;
+                if (oMap == null) {
+                    if (cache.containsKey(oqIDs[1])) {
+                        qData = cache.get(oqIDs[1]);
+                    } else {
+                        qData = metricSpace.getDataOfMetricObject(oqIDs[1]);
+                        cache.put(oqIDs[1], qData);
+                    }
+                    if (cache.containsKey(oqIDs[0])) {
+                        oData = cache.get(oqIDs[0]);
+                    } else {
+                        oData = metricSpace.getDataOfMetricObject(oqIDs[0]);
+                        cache.put(oqIDs[0], oData);
+                    }
+                } else {
+                    qData = (T) oMap.get(oqIDs[1]);
+                    oData = (T) oMap.get(oqIDs[0]);
+                }
                 float c = Math.max(0, (float) dist.getValue());
                 float dPO = df.getDistance(pivotData, oData);
                 float dPQ = df.getDistance(pivotData, qData);
