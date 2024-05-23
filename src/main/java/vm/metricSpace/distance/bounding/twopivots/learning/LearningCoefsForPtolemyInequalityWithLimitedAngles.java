@@ -109,7 +109,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
             if (sixDists == null || Tools.isZeroInArray(sixDists)) {
                 continue;
             }
-            float c = Math.abs(sixDists[2]);
+            float c = Math.abs(smallDist.getValue());
             float ef = Math.abs(sixDists[4] * sixDists[5]);
             float bd = Math.abs(sixDists[1] * sixDists[3]);
             float fractionSum = CONSTANT_FOR_PRECISION * c / (bd + ef);

@@ -15,6 +15,7 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.plot.AbstractPlotter;
 import static vm.plot.AbstractPlotter.COLOURS;
@@ -50,7 +51,8 @@ public class BoxPlotPlotter extends AbstractPlotter {
                 String groupName = groupsNames == null ? "" : groupsNames[groupId].toString();
                 if (valuesForGroupAndTrace != null && !valuesForGroupAndTrace.isEmpty()) {
                     dataset.add(valuesForGroupAndTrace, tracesNames[traceID], groupName);
-                    float mean = dataset.getItem(traceID, groupId).getMean().floatValue();
+                    BoxAndWhiskerItem item = dataset.getItem(traceID, groupId);
+                    float mean = item.getMean().floatValue();
                     LOG.log(Level.INFO, "Mean {3} for {0} in group {1}: {2}", new Object[]{tracesNames[traceID], groupName, mean, yAxisLabel});
                 } else {
                     List<Float> atrapa = new ArrayList<>();
