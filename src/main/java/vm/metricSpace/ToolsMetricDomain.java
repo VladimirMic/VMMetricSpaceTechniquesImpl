@@ -462,4 +462,20 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static Object transformMetricObjectToOtherRepresentation(Object object, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest) {
+        Object id = metricSpaceSource.getIDOfMetricObject(object);
+        Object data = metricSpaceSource.getDataOfMetricObject(object);
+        Object o = metricSpaceDest.createMetricObject(id, data);
+        return o;
+    }
+
+    public static List<Object> transformMetricObjectsToOtherRepresentation(List<Object> objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest) {
+        List<Object> ret = new ArrayList<>();
+        for (Object object : objects) {
+            Object o = transformMetricObjectToOtherRepresentation(object, metricSpaceSource, metricSpaceDest);
+            ret.add(o);
+        }
+        return ret;
+    }
+
 }
