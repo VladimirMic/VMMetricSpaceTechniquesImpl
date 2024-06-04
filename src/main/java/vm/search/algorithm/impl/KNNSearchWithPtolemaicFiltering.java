@@ -30,7 +30,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
 
-    public static final Integer LB_COUNT = 16; //  128, 256
+    public static final Integer LB_COUNT = 64; //  128, 256
     protected final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     protected final float[][] poDists;
