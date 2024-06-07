@@ -470,8 +470,18 @@ public class ToolsMetricDomain {
     }
 
     public static List<Object> transformMetricObjectsToOtherRepresentation(List<Object> objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest) {
+        return transformMetricObjectsToOtherRepresentation(objects, metricSpaceDest, metricSpaceDest, null);
+    }
+
+    public static List transformMetricObjectsToOtherRepresentation(List objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest, Set alreadyDoneIDs) {
         List<Object> ret = new ArrayList<>();
         for (Object object : objects) {
+            if (alreadyDoneIDs != null && !alreadyDoneIDs.isEmpty()) {
+                Object id = metricSpaceSource.getIDOfMetricObject(object);
+                if (alreadyDoneIDs.contains(id)) {
+                    continue;
+                }
+            }
             Object o = transformMetricObjectToOtherRepresentation(object, metricSpaceSource, metricSpaceDest);
             ret.add(o);
         }
