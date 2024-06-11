@@ -470,7 +470,7 @@ public class ToolsMetricDomain {
     }
 
     public static List<Object> transformMetricObjectsToOtherRepresentation(List<Object> objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest) {
-        return transformMetricObjectsToOtherRepresentation(objects, metricSpaceDest, metricSpaceDest, null);
+        return transformMetricObjectsToOtherRepresentation(objects, metricSpaceSource, metricSpaceDest, null);
     }
 
     public static List transformMetricObjectsToOtherRepresentation(List objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest, Set alreadyDoneIDs) {
