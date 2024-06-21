@@ -46,7 +46,7 @@ public class MetricObjectsParallelTransformerImpl {
         int processedObjects = 0;
         boolean first = true;
         while (itOverMetricObjects.hasNext()) {
-            List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverMetricObjects);
+            List<Object> batch = Tools.getObjectsFromIterator(itOverMetricObjects, BATCH_SIZE);
             Object[] concatArrays = Tools.concatArrays(new Object[]{first}, additionalParamsToStoreWithNewDataset);
             processedObjects += processBatch(batch, objType, parallelisation, threadPool, concatArrays);
 //            System.gc();

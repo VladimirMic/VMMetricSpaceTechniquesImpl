@@ -50,7 +50,7 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
         AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
         List pivots = dataset.getPivots(pCount);
         Map<Object, T> oMap = null;
-        if (!(dataset instanceof DatasetOfCandidates)) {
+        if (dataset instanceof DatasetOfCandidates) { // the opposite statement was here ... ???
             oMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, dataset.getMetricObjectsFromDataset(), true);
         }
         DistanceFunctionInterface df = dataset.getDistanceFunction();
