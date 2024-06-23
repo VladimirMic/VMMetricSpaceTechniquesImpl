@@ -65,6 +65,7 @@ public class ToolsMetricDomain {
      */
     public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
         float[] distances = dataset.evaluateSampleOfRandomDistances(objCount, distCount, idsOfRandomPairs);
+        vm.math.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
         return createDistanceDensityPlot(distances);
     }
 
