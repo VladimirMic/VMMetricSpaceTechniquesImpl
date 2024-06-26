@@ -111,25 +111,19 @@ public class ToolsMetricDomain {
 
     /**
      *
+     * @param <T>
      * @param metricSpace
      * @param metricObjects
-     * @param valuesAsMetricObjectData if true, then the values are extracted
-     * data of the metric objects. If false, values are the whole metric objects
-     * with IDs
-     * @return
+     * @return map of IDs to full metric objects, i.e., id-data object
      */
-    public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Collection<Object> metricObjects, boolean valuesAsMetricObjectData) {
-        return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator(), valuesAsMetricObjectData);
-    }
-
-    public static Map<Object, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace metricSpace, Iterator<Object> metricObjects, boolean valuesAsMetricObjectData) {
-        Map<Object, Object> ret = new HashMap();
+    public static <T> Map<Comparable, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace<T> metricSpace, Iterator<Object> metricObjects) {
+        Map<Comparable, Object> ret = new HashMap();
         long t = -System.currentTimeMillis();
         for (int i = 1; metricObjects.hasNext(); i++) {
             Object metricObject = metricObjects.next();
-            Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
-            Object dataOfMetricObject = metricSpace.getDataOfMetricObject(metricObject);
-            Object value = valuesAsMetricObjectData ? dataOfMetricObject : metricSpace.createMetricObject(idOfMetricObject, dataOfMetricObject);
+            Comparable idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
+            T dataOfMetricObject = metricSpace.getDataOfMetricObject(metricObject);
+            Object value = metricSpace.createMetricObject(idOfMetricObject, dataOfMetricObject);
             if (dataOfMetricObject == null) {
                 continue;
             }
@@ -141,17 +135,53 @@ public class ToolsMetricDomain {
         }
         LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
         return ret;
+
     }
 
-    public static Object[] getData(Object[] objects, AbstractMetricSpace metricSpace) {
-        Object[] ret = new Object[objects.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = metricSpace.getDataOfMetricObject(objects[i]);
+    public static <T> Map<Comparable, T> getMetricObjectsAsIdDataMap(AbstractMetricSpace<T> metricSpace, Collection<Object> metricObjects) {
+        return getMetricObjectsAsIdDataMap(metricSpace, metricObjects.iterator());
+    }
+
+    public static <T> Map<Comparable, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace<T> metricSpace, Collection<Object> metricObjects) {
+        return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator());
+    }
+
+    /**
+     *
+     * @param <T>
+     * @param metricSpace
+     * @param metricObjects
+     * @return map of IDs to data used for the distance function
+     */
+    public static <T> Map<Comparable, T> getMetricObjectsAsIdDataMap(AbstractMetricSpace<T> metricSpace, Iterator<Object> metricObjects) {
+        Map<Comparable, T> ret = new HashMap();
+        long t = -System.currentTimeMillis();
+        for (int i = 1; metricObjects.hasNext(); i++) {
+            Object metricObject = metricObjects.next();
+            Comparable idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
+            T dataOfMetricObject = metricSpace.getDataOfMetricObject(metricObject);
+            if (dataOfMetricObject == null) {
+                continue;
+            }
+            ret.put(idOfMetricObject, dataOfMetricObject);
+            if (i % 100000 == 0 && t + System.currentTimeMillis() > 5000) {
+                LOG.log(Level.INFO, "Loaded {0} objects into map", i);
+                t = -System.currentTimeMillis();
+            }
         }
+        LOG.log(Level.INFO, "Finished loading map of size {0} objects", ret.size());
         return ret;
     }
 
-    public static List<Object> getDataAsList(Iterator objects, AbstractMetricSpace metricSpace) {
+    public static <T> T[] getData(Object[] objects, AbstractMetricSpace<T> metricSpace) {
+        List<T> retList = new ArrayList<>();
+        for (Object object : objects) {
+            retList.add(metricSpace.getDataOfMetricObject(object));
+        }
+        return (T[]) retList.toArray();
+    }
+
+    public static <T> List<T> getDataAsList(Iterator objects, AbstractMetricSpace<T> metricSpace) {
         List ret = new ArrayList<>();
         while (objects.hasNext()) {
             Object next = objects.next();
@@ -160,8 +190,8 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    public static Set<Object> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
-        Set<Object> ret = new HashSet<>();
+    public static Set<Comparable> getIDs(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
+        Set<Comparable> ret = new HashSet<>();
         for (int i = 1; objects.hasNext(); i++) {
             Object next = objects.next();
             ret.add(metricSpace.getIDOfMetricObject(next));
@@ -172,8 +202,8 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    public static List<Object> getIDsAsList(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
-        List<Object> ret = new ArrayList<>();
+    public static List<Comparable> getIDsAsList(Iterator<Object> objects, AbstractMetricSpace metricSpace) {
+        List<Comparable> ret = new ArrayList<>();
         for (int i = 1; objects.hasNext(); i++) {
             Object next = objects.next();
             ret.add(metricSpace.getIDOfMetricObject(next));
@@ -184,8 +214,8 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    public static Object[] getPivotPermutation(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
-        Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
+    public static <T> Object[] getPivotPermutation(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
+        Map<Comparable, T> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
         Object referentData = metricSpace.getDataOfMetricObject(referent);
         return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength, distsToPivotsStorage);
     }
@@ -238,30 +268,30 @@ public class ToolsMetricDomain {
      * @param distsToPivotsStorage
      * @return ids of the closest pivots
      */
-    public static Object[] getPivotIDsPermutation(DistanceFunctionInterface df, Map pivotsMap, Object referentData, int prefixLength, Map<Object, Float> distsToPivotsStorage) {
+    public static <T> Comparable[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
-        TreeSet<Map.Entry<Object, Float>> map = getPivotIDsPermutationWithDists(df, pivotsMap, referentData, prefixLength);
+        TreeSet<Map.Entry<Comparable, Float>> map = getPivotIDsPermutationWithDists(df, pivotsMap, referentData, prefixLength);
         if (distsToPivotsStorage != null) {
-            for (Map.Entry<Object, Float> entry : map) {
+            for (Map.Entry<Comparable, Float> entry : map) {
                 distsToPivotsStorage.put(entry.getKey(), entry.getValue());
             }
         }
-        Object[] ret = new Object[Math.min(pivotsMap.size(), prefixLength)];
-        Iterator<Map.Entry<Object, Float>> it = map.iterator();
+        Comparable[] ret = new Comparable[Math.min(pivotsMap.size(), prefixLength)];
+        Iterator<Map.Entry<Comparable, Float>> it = map.iterator();
         for (int i = 0; it.hasNext() && i < prefixLength; i++) {
-            Map.Entry<Object, Float> next = it.next();
+            Map.Entry<Comparable, Float> next = it.next();
             ret[i] = next.getKey();
         }
         return ret;
     }
 
-    public static TreeSet<Map.Entry<Object, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Object, Object> pivotsMap, Object referentData, int prefixLength) {
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByFloatValueComparator());
-        for (Map.Entry<Object, Object> pivot : pivotsMap.entrySet()) {
+    public static <T> TreeSet<Map.Entry<Comparable, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength) {
+        TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByFloatValueComparator());
+        for (Map.Entry<Comparable, T> pivot : pivotsMap.entrySet()) {
             Float dist = df.getDistance(referentData, pivot.getValue());
-            Map.Entry<Object, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);
+            Map.Entry<Comparable, Float> entry = new AbstractMap.SimpleEntry<>(pivot.getKey(), dist);
             ret.add(entry);
         }
         return ret;
@@ -271,7 +301,7 @@ public class ToolsMetricDomain {
         List<Object> ret = new ArrayList<>();
         for (Object obj : vectors) {
             Object oData = metricSpace.getDataOfMetricObject(obj);
-            Object oID = metricSpace.getIDOfMetricObject(obj);
+            Comparable oID = metricSpace.getIDOfMetricObject(obj);
             Object vec = null;
             if (oData instanceof float[]) {
                 vec = new float[finalDimensions];
@@ -289,11 +319,11 @@ public class ToolsMetricDomain {
     }
 
     public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator metricObjectsFromDataset, List pivots, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, int objCount) {
-        final Map<Object, Integer> columnHeaders = new ConcurrentHashMap<>();
-        final Map<Object, Integer> rowHeaders = new ConcurrentHashMap<>();
+        final Map<Comparable, Integer> columnHeaders = new ConcurrentHashMap<>();
+        final Map<Comparable, Integer> rowHeaders = new ConcurrentHashMap<>();
         for (int i = 0; i < pivots.size(); i++) {
             Object p = pivots.get(i);
-            Object pID = metricSpace.getIDOfMetricObject(p);
+            Comparable pID = metricSpace.getIDOfMetricObject(p);
             columnHeaders.put(pID.toString(), i);
         }
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
@@ -314,7 +344,7 @@ public class ToolsMetricDomain {
                     final int batchRowCounter = rowCounter;
                     threadPool.execute(() -> {
                         Object o = batch.get(batchRowCounter);
-                        Object oID = metricSpace.getIDOfMetricObject(o);
+                        Comparable oID = metricSpace.getIDOfMetricObject(o);
                         Object oData = metricSpace.getDataOfMetricObject(o);
                         rowHeaders.put(oID.toString(), rowCounterFinal);
                         float[] row = new float[pivots.size()];
@@ -354,10 +384,10 @@ public class ToolsMetricDomain {
         return pd;
     }
 
-    public static Map<Object, Float> getVectorsLength(List batch, AbstractMetricSpace metricSpace) {
-        Map<Object, Float> ret = new HashMap<>();
+    public static Map<Comparable, Float> getVectorsLength(List batch, AbstractMetricSpace metricSpace) {
+        Map<Comparable, Float> ret = new HashMap<>();
         for (Object object : batch) {
-            Object id = metricSpace.getIDOfMetricObject(object);
+            Comparable id = metricSpace.getIDOfMetricObject(object);
             float length = 0;
             float[] vector = (float[]) metricSpace.getDataOfMetricObject(object); // must be the space of floats
             for (int i = 0; i < vector.length; i++) {
@@ -398,9 +428,9 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    public static <T> Map<Object, Float> evaluateDistsToPivots(T qData, Map<Object, T> pivotsMap, DistanceFunctionInterface<T> df) {
-        Map<Object, Float> ret = new HashMap<>();
-        for (Map.Entry<Object, T> entry : pivotsMap.entrySet()) {
+    public static <T> Map<Comparable, Float> evaluateDistsToPivots(T qData, Map<Comparable, T> pivotsMap, DistanceFunctionInterface<T> df) {
+        Map<Comparable, Float> ret = new HashMap<>();
+        for (Map.Entry<Comparable, T> entry : pivotsMap.entrySet()) {
             float dist = df.getDistance(qData, entry.getValue());
             ret.put(entry.getKey(), dist);
         }
@@ -455,7 +485,7 @@ public class ToolsMetricDomain {
         Set idsSet = new HashSet();
         idsSet.addAll(Arrays.asList(ids));
         objects.forEach((Object obj) -> {
-            Object idOfMetricObject = metricSpace.getIDOfMetricObject(obj);
+            Comparable idOfMetricObject = metricSpace.getIDOfMetricObject(obj);
             if (idsSet.contains(idOfMetricObject)) {
                 ret.add(obj);
             }
@@ -464,7 +494,7 @@ public class ToolsMetricDomain {
     }
 
     public static Object transformMetricObjectToOtherRepresentation(Object object, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest) {
-        Object id = metricSpaceSource.getIDOfMetricObject(object);
+        Comparable id = metricSpaceSource.getIDOfMetricObject(object);
         Object data = metricSpaceSource.getDataOfMetricObject(object);
         Object o = metricSpaceDest.createMetricObject(id, data);
         return o;
@@ -474,11 +504,11 @@ public class ToolsMetricDomain {
         return transformMetricObjectsToOtherRepresentation(objects, metricSpaceSource, metricSpaceDest, null);
     }
 
-    public static List transformMetricObjectsToOtherRepresentation(List objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest, Set alreadyDoneIDs) {
+    public static List transformMetricObjectsToOtherRepresentation(List objects, AbstractMetricSpace metricSpaceSource, AbstractMetricSpace metricSpaceDest, Set<Comparable> alreadyDoneIDs) {
         List<Object> ret = new ArrayList<>();
         for (Object object : objects) {
             if (alreadyDoneIDs != null && !alreadyDoneIDs.isEmpty()) {
-                Object id = metricSpaceSource.getIDOfMetricObject(object);
+                Comparable id = metricSpaceSource.getIDOfMetricObject(object);
                 if (alreadyDoneIDs.contains(id)) {
                     continue;
                 }

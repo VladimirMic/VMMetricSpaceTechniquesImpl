@@ -29,19 +29,19 @@ public abstract class AbstractDatasetPartitioning {
         this.metricSpace = metricSpace;
     }
 
-    public abstract Map<Object, SortedSet<Object>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params);
+    public abstract Map<Comparable, SortedSet<Comparable>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params);
 
     public abstract class BatchProcessor implements Runnable {
 
         protected final List batch;
-        protected final ConcurrentMap<Object, SortedSet<Object>> ret;
+        protected final ConcurrentMap<Comparable, SortedSet<Comparable>> ret;
         protected final AbstractMetricSpace metricSpace;
-        protected final Map<Object, Float> pivotLengths;
-        protected final Map<Object, Float> objectsLengths;
+        protected final Map<Comparable, Float> pivotLengths;
+        protected final Map<Comparable, Float> objectsLengths;
 
         protected final CountDownLatch latch;
 
-        public BatchProcessor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
+        public BatchProcessor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
             this.batch = batch;
             this.ret = new ConcurrentHashMap<>();
             this.metricSpace = metricSpace;
@@ -50,7 +50,7 @@ public abstract class AbstractDatasetPartitioning {
             this.objectsLengths = objectsLengths == null ? new HashMap<>() : objectsLengths;
         }
 
-        public Map<Object, SortedSet<Object>> getRet() {
+        public Map<Comparable, SortedSet<Comparable>> getRet() {
             return Collections.unmodifiableMap(ret);
         }
 

@@ -28,12 +28,12 @@ public class MetricSpaceWithDiskBasedMap<T> extends AbstractMetricSpace<T> {
     }
 
     @Override
-    public Object getIDOfMetricObject(Object o) {
+    public Comparable getIDOfMetricObject(Object o) {
         try {
             return origMetricSpace.getIDOfMetricObject(o);
         } catch (Exception e) {
         }
-        return o;
+        return (Comparable) o;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class MetricSpaceWithDiskBasedMap<T> extends AbstractMetricSpace<T> {
     }
 
     @Override
-    public Object createMetricObject(Object id, T data) {
+    public Object createMetricObject(Comparable id, T data) {
         return origMetricSpace.createMetricObject(id, data);
     }
 

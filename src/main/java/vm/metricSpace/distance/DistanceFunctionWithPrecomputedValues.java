@@ -14,8 +14,8 @@ import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDis
 public class DistanceFunctionWithPrecomputedValues<T> extends DistanceFunctionInterface {
 
     private final float[][] dists;
-    private final Map<Object, Integer> columnHeaders;
-    private final Map<Object, Integer> rowHeaders;
+    private final Map<Comparable, Integer> columnHeaders;
+    private final Map<Comparable, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
     private final AbstractMetricSpace<T> metricSpace;
 
@@ -29,8 +29,8 @@ public class DistanceFunctionWithPrecomputedValues<T> extends DistanceFunctionIn
 
     @Override
     public float getDistance(Object obj1, Object obj2) {
-        String o1ID = metricSpace.getIDOfMetricObject(obj1).toString();
-        String o2ID = metricSpace.getIDOfMetricObject(obj2).toString();
+        Comparable o1ID = metricSpace.getIDOfMetricObject(obj1);
+        Comparable o2ID = metricSpace.getIDOfMetricObject(obj2);
         if (columnHeaders.containsKey(o1ID) && rowHeaders.containsKey(o2ID)) {
             int o1idx = columnHeaders.get(o1ID);
             int o2idx = rowHeaders.get(o2ID);

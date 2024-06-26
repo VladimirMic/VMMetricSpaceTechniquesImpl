@@ -19,7 +19,7 @@ import vm.queryResults.recallEvaluation.RecallOfCandsSetsEvaluator;
 public class CheckingOfNearestNeighbours {
 
     private static final Logger LOG = Logger.getLogger(CheckingOfNearestNeighbours.class.getName());
-    private final Map<String, TreeSet<Map.Entry<Object, Float>>> groundTruthForDataset;
+    private final Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> groundTruthForDataset;
 
     public CheckingOfNearestNeighbours(QueryNearestNeighboursStoreInterface resultsStorage, String groundTruthDatasetName, String groundTruthQuerySetName) {
         groundTruthForDataset = resultsStorage.getGroundTruthForDataset(groundTruthDatasetName, groundTruthQuerySetName);
@@ -31,14 +31,14 @@ public class CheckingOfNearestNeighbours {
      * @param groundTruthNNCount
      * @return k true nearest neighbours
      */
-    public Set<String> getIDsOfNNForQuery(String queryID, int groundTruthNNCount) {
+    public Set<Comparable> getIDsOfNNForQuery(String queryID, int groundTruthNNCount) {
         if (!groundTruthForDataset.containsKey(queryID)) {
             LOG.log(Level.SEVERE, "Query object {0} not evaluated in the ground truth", queryID);
             return null;
         }
-        Set<String> ret = RecallOfCandsSetsEvaluator.getFirstIDs(queryID, groundTruthForDataset.get(queryID), groundTruthNNCount);
-        for (String string : ret) {
-            System.out.println(string);
+        Set<Comparable> ret = RecallOfCandsSetsEvaluator.getFirstIDs(queryID, groundTruthForDataset.get(queryID), groundTruthNNCount);
+        for (Comparable s : ret) {
+            System.out.println(s.toString());
         }
         return ret;
     }

@@ -113,7 +113,7 @@ public abstract class Dataset<T> {
      *
      * @return
      */
-    public abstract Map<Object, Object> getKeyValueStorage();
+    public abstract Map<Comparable, T> getKeyValueStorage();
 
     @Override
     public int hashCode() {
@@ -155,10 +155,10 @@ public abstract class Dataset<T> {
         for (int i = 0; i < sampleObjects.size(); i++) {
             Object o = sampleObjects.get(i);
             Object oData = metricSpace.getDataOfMetricObject(o);
-            Object oID = metricSpace.getIDOfMetricObject(o);
+            Comparable oID = metricSpace.getIDOfMetricObject(o);
             for (Object q : queriesSamples) {
                 Object qData = metricSpace.getDataOfMetricObject(q);
-                Object qID = metricSpace.getIDOfMetricObject(q);
+                Comparable qID = metricSpace.getIDOfMetricObject(q);
                 if (qID.equals(oID)) {
                     continue;
                 }
@@ -187,8 +187,8 @@ public abstract class Dataset<T> {
         while (counter < distCount) {
             Object o1 = metricObjectsSample.get(r.nextInt(size));
             Object o2 = metricObjectsSample.get(r.nextInt(size));
-            Object id1 = metricSpace.getIDOfMetricObject(o1);
-            Object id2 = metricSpace.getIDOfMetricObject(o2);
+            Comparable id1 = metricSpace.getIDOfMetricObject(o1);
+            Comparable id2 = metricSpace.getIDOfMetricObject(o2);
             if (id1.equals(id2)) {
                 continue;
             }

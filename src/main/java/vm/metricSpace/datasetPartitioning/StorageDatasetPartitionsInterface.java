@@ -10,7 +10,7 @@ import java.util.TreeSet;
  */
 public interface StorageDatasetPartitionsInterface {
 
-    public void store(Map<Object, SortedSet<Object>> mapping, String datasetName, int origPivotCount);
+    public void store(Map<Comparable, SortedSet<Comparable>> mapping, String datasetName, int origPivotCount);
 
-    public Map<Object, TreeSet<Object>> load(String datasetName, int origPivotCount);
+    public Map<Comparable, TreeSet<Comparable>> load(String datasetName, int origPivotCount);
 }

@@ -12,7 +12,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
@@ -49,9 +48,9 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
     }
 
     @Override
-    public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
+    public Comparable[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
         Object[] pivotsArray = pivotsMap.entrySet().toArray();
-        SortedSet<AbstractMap.SimpleEntry<Object, Float>> pivotPairs = new TreeSet(new Tools.MapByFloatValueComparator<>());
+        SortedSet<AbstractMap.SimpleEntry<Comparable, Float>> pivotPairs = new TreeSet(new Tools.MapByFloatValueComparator<>());
         for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {
             Map.Entry<Object, T> p1 = (Map.Entry<Object, T>) pivotsArray[idx1];
             Object p1ID = p1.getKey();
@@ -72,26 +71,26 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 pivotPairs.add(new AbstractMap.SimpleEntry<>(key2, alphaCosine));
             }
         }
-        Iterator<AbstractMap.SimpleEntry<Object, Float>> it = pivotPairs.iterator();
-        Object[] ret = new Object[pivotPairs.size()];
+        Iterator<AbstractMap.SimpleEntry<Comparable, Float>> it = pivotPairs.iterator();
+        Comparable[] ret = new Comparable[pivotPairs.size()];
         for (int i = 0; it.hasNext(); i++) {
-            AbstractMap.SimpleEntry<Object, Float> entry = it.next();
+            AbstractMap.SimpleEntry<Comparable, Float> entry = it.next();
             ret[i] = entry.getKey();
         }
         return ret;
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         AtomicLong t = new AtomicLong(-System.currentTimeMillis());
         AtomicInteger distComps = new AtomicInteger();
-        Object qID = metricSpace.getIDOfMetricObject(queryObject);
+        Comparable qID = metricSpace.getIDOfMetricObject(queryObject);
         T qData = metricSpace.getDataOfMetricObject(queryObject);
         Map keyValueStorage = (Map) additionalParams[0];
         int kCandSetMaxSize = (int) additionalParams[1];
-        Iterator<Object> candSet = candSetKnnSearch(metricSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
-        Map<Object, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
+        Iterator<Comparable> candSet = candSetKnnSearch(metricSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
+        TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
+        Map<Comparable, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
         int total = 0;
         int ok = 0;
@@ -104,7 +103,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
                 add = oMetadata.getLBdOQ(queryToPivotsDists, range);
             }
             if (add) {
-                Object oID = oMetadata.getoID();
+                Comparable oID = oMetadata.getoID();
                 T metricObjectData;
                 metricObjectData = (T) keyValueStorage.get(oID);
                 float distance = df.getDistance(qData, metricObjectData);

@@ -67,20 +67,20 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         long t = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
 
-        TreeSet<Map.Entry<Object, Float>> currAnswer = null;
+        TreeSet<Map.Entry<Comparable, Float>> currAnswer = null;
         int paramIDX = 0;
         if (additionalParams.length > 0 && additionalParams[0] instanceof TreeSet) {
-            currAnswer = (TreeSet<Map.Entry<Object, Float>>) additionalParams[0];
+            currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) additionalParams[0];
             paramIDX++;
         }
-        Object qId = fullMetricSpace.getIDOfMetricObject(fullQ);
+        Comparable qId = fullMetricSpace.getIDOfMetricObject(fullQ);
         T fullQData = fullMetricSpace.getDataOfMetricObject(fullQ);
-        TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
+        TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
 
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
@@ -93,19 +93,19 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
 
         // first phase: voronoi
-        List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
+        List<Comparable> candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
 
         // simRel preparation
-        List<Object> simRelAns = new ArrayList<>();
-        Set<Object> objIdUnknownRelation = new HashSet<>();
-        Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
+        List<Comparable> simRelAns = new ArrayList<>();
+        Set<Comparable> objIdUnknownRelation = new HashSet<>();
+        Map<Comparable, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
         Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
         long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
         float range = Float.MAX_VALUE;
         for (int i = 0; i < candSetIDs.size(); i++) {
-            Object candID = candSetIDs.get(i);
+            Comparable candID = candSetIDs.get(i);
             boolean add;
             // zkusit skece pokud je ret plna
             if (ret.size() >= k) {
@@ -140,7 +140,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         }
         simRelAns.addAll(objIdUnknownRelation);
         // check by sketches again
-        for (Object candID : simRelAns) {
+        for (Comparable candID : simRelAns) {
             float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
             if (lowerBound == Float.MAX_VALUE) {
                 continue;
@@ -158,7 +158,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     }
 
-    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData) {
+    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Comparable idOfO, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData) {
         if (ansOfSimRel.isEmpty()) {
             ansOfSimRel.add(idOfO);
             mapOfData.put(idOfO, oData);
@@ -193,7 +193,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         return false;
     }
 
-    private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
+    private void deleteIndexes(List<Comparable> ret, int k, List<Integer> indexesToRemove, Map<Comparable, float[]> retData) {
         while (ret.size() >= k && !indexesToRemove.isEmpty()) {
             Integer idx = indexesToRemove.get(0);
             Object id = ret.get(idx);
@@ -205,14 +205,14 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     private final Set checked = new HashSet();
 
-    private int addToFullAnswerWithDists(TreeSet<Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator) {
+    private int addToFullAnswerWithDists(TreeSet<Entry<Comparable, Float>> queryAnswer, T fullQData, Iterator<Comparable> iterator) {
         int distComps = 0;
         Set<Object> currKeys = new HashSet();
-        for (Map.Entry<Object, Float> entry : queryAnswer) {
+        for (Map.Entry<Comparable, Float> entry : queryAnswer) {
             currKeys.add(entry.getKey());
         }
         while (iterator.hasNext()) {
-            Object key = iterator.next();
+            Comparable key = iterator.next();
             if (!checked.contains(key) && !currKeys.contains(key)) {
                 addToRet(queryAnswer, key, fullQData);
                 distComps++;
@@ -223,11 +223,11 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
-    private void addToRet(TreeSet<Entry<Object, Float>> ret, Object candID, T fullQData) {
+    private void addToRet(TreeSet<Entry<Comparable, Float>> ret, Comparable candID, T fullQData) {
         T candData = fullObjectsStorage.get(candID);
         float distance = fullDF.getDistance(fullQData, candData);
         ret.add(new AbstractMap.SimpleEntry(candID, distance));

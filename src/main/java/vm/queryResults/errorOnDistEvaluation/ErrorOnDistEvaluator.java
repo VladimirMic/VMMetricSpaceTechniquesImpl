@@ -21,15 +21,15 @@ public class ErrorOnDistEvaluator {
         this.errorsOnDistStorage = errorsOnDistStorage;
     }
 
-    public Map<String, Float> evaluateAndStoreErrorsOnDist(String groundTruthDatasetName, String groundTruthQuerySetName, int objCount,
+    public Map<Comparable, Float> evaluateAndStoreErrorsOnDist(String groundTruthDatasetName, String groundTruthQuerySetName, int objCount,
             String candSetName, String candSetQuerySetName, String resultSetName, Integer kForCandSet) {
 
-        Map<String, TreeSet<Map.Entry<Object, Float>>> groundTruthForDataset = resultsStorage.getGroundTruthForDataset(groundTruthDatasetName, groundTruthQuerySetName);
-        Map<String, TreeSet<Map.Entry<Object, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName, kForCandSet);
+        Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> groundTruthForDataset = resultsStorage.getGroundTruthForDataset(groundTruthDatasetName, groundTruthQuerySetName);
+        Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> candidateSets = resultsStorage.getQueryResultsForDataset(resultSetName, candSetName, candSetQuerySetName, kForCandSet);
 
-        Map<String, Float> ret = new HashMap<>();
-        Set<String> queryIDs = groundTruthForDataset.keySet();
-        for (String queryID : queryIDs) {
+        Map<Comparable, Float> ret = new HashMap<>();
+        Set<Comparable> queryIDs = groundTruthForDataset.keySet();
+        for (Comparable queryID : queryIDs) {
             float d1 = getKThDist(groundTruthForDataset.get(queryID), objCount);
             float d2 = getKThDist(candidateSets.get(queryID), objCount);
             float errorOnDist = (d2 - d1) / d1;
@@ -40,11 +40,11 @@ public class ErrorOnDistEvaluator {
         return ret;
     }
 
-    private Float getKThDist(TreeSet<Map.Entry<Object, Float>> set, int k) {
+    private Float getKThDist(TreeSet<Map.Entry<Comparable, Float>> set, int k) {
         if (set == null) {
             return Float.MAX_VALUE;
         }
-        Iterator<Map.Entry<Object, Float>> it = set.iterator();
+        Iterator<Map.Entry<Comparable, Float>> it = set.iterator();
         for (int i = 0; i < k - 1 && it.hasNext(); i++) {
             it.next();
         }

@@ -37,7 +37,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     private final Dataset origDataset;
     private final Map<Object, List<Object>> mapOfQueriesToCandidates;
     private final Map<Object, List<Object>> mapOfTrainingQueriesToCandidates;
-    private final Map<Object, Object> keyValueStorage;
+    private final Map<Comparable, T> keyValueStorage;
     private int maxCandSetSize = 0;
 
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
@@ -46,7 +46,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         this.keyValueStorage = origDataset.getKeyValueStorage();
         metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
         metricSpacesStorage = origDataset.getMetricSpacesStorage();
-        Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
+        Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
         mapOfQueriesToCandidates = transformToList(queryResultsForDataset, true);
         if (trainingResultFolderName != null && trainingDirectResultFileName != null) {
             queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
@@ -61,7 +61,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     }
 
     @Override
-    public Map<Object, Object> getKeyValueStorage() {
+    public Map<Comparable, T> getKeyValueStorage() {
         return Collections.unmodifiableMap(keyValueStorage);
     }
 
@@ -147,13 +147,13 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         throw new UnsupportedOperationException();
     }
 
-    private Map<Object, List<Object>> transformToList(Map<String, TreeSet<Map.Entry<Object, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
+    private Map<Object, List<Object>> transformToList(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
         Map<Object, List<Object>> ret = new HashMap<>();
-        Set<String> queryIDs = queryResultsForDataset.keySet();
-        for (String queryID : queryIDs) {
-            TreeSet<Map.Entry<Object, Float>> candidates = queryResultsForDataset.get(queryID);
+        Set<Comparable> queryIDs = queryResultsForDataset.keySet();
+        for (Comparable queryID : queryIDs) {
+            TreeSet<Map.Entry<Comparable, Float>> candidates = queryResultsForDataset.get(queryID);
             List<Object> candsIDs = new ArrayList<>();
-            for (Map.Entry<Object, Float> candidate : candidates) {
+            for (Map.Entry<Comparable, Float> candidate : candidates) {
                 candsIDs.add(candidate.getKey());
             }
             if (storeMaxCandSetSize) {
@@ -314,7 +314,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
         TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         Map<Object, T> cache = new HashMap<>();
-        Map<Object, Object> qMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, queries, true);
+        Map<Comparable, T> qMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, queries);
         int distCounter = 0;
         int skippedQ = 0;
         for (Map.Entry<Object, List<Object>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
@@ -325,7 +325,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 LOG.log(Level.INFO, "Skipped query object {0} during the learning ({1} in total)", new Object[]{qID, skippedQ});
                 continue;
             }
-            Object qData = qMap.get(qID);
+            T qData = qMap.get(qID);
             List<Object> cands = entry.getValue();
             for (Object o : cands) {
                 T oData;

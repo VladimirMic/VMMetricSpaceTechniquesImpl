@@ -17,11 +17,11 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
     /*
     Mapping of object IDs to column indexes
      */
-    protected Map<Object, Integer> columnHeaders;
+    protected Map<Comparable, Integer> columnHeaders;
     /*
     Mapping of object IDs to row indexes
      */
-    protected Map<Object, Integer> rowHeaders;
+    protected Map<Comparable, Integer> rowHeaders;
 
     public AbstractPrecomputedDistancesMatrixLoader() {
         this.rowHeaders = new HashMap<>();
@@ -42,16 +42,16 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
         return this.loadPrecomPivotsToObjectsDists(dataset, -1);
     }
 
-    public Map<Object, Integer> getRowHeaders() {
+    public Map<Comparable, Integer> getRowHeaders() {
         return Collections.unmodifiableMap(rowHeaders);
     }
 
-    public Map<Object, Integer> getColumnHeaders() {
+    public Map<Comparable, Integer> getColumnHeaders() {
         return Collections.unmodifiableMap(columnHeaders);
     }
 
-    public final void checkOrdersOfPivots(List<Object> pivots, AbstractMetricSpace metricSpace) {
-        List<Object> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots);
+    public final <T> void checkOrdersOfPivots(List<Object> pivots, AbstractMetricSpace<T> metricSpace) {
+        List<Comparable> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots.iterator());
         String[] pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
         for (int p = 0; p < pivotIDsList.size(); p++) {
             Object pId = pivotIDs[p];

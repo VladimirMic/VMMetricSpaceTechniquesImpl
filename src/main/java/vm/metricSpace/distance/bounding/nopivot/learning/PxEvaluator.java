@@ -30,20 +30,20 @@ public class PxEvaluator {
     private final int sketchLength;
     private final Dataset fullDataset;
     private final DistanceFunctionInterface<long[]> hammingDF;
-    private final Map<Object, Object> sketches;
+    private final Map<Comparable, long[]> sketches;
 
-    public PxEvaluator(Dataset fullDataset, Dataset<float[]> sketchesDataset, int objCount, int sketchLength, float distInterval) {
+    public PxEvaluator(Dataset fullDataset, Dataset<long[]> sketchesDataset, int objCount, int sketchLength, float distInterval) {
         this(fullDataset, sketchesDataset, objCount, sketchLength, distInterval, IMPLICIT_MIN_BUCKET_SIZE);
     }
 
-    protected PxEvaluator(Dataset fullDataset, Dataset<float[]> sketchesDataset, int objCount, int sketchLength, float distInterval, int minNumberOfExampleForBitToCount) {
+    protected PxEvaluator(Dataset fullDataset, Dataset<long[]> sketchesDataset, int objCount, int sketchLength, float distInterval, int minNumberOfExampleForBitToCount) {
         this.fullDataset = fullDataset;
         this.sampleObjects = fullDataset.getSampleOfDataset(objCount);
         this.distInterval = distInterval;
         this.sketchLength = sketchLength;
         this.minNumberOfDistsPerBucket = minNumberOfExampleForBitToCount;
         Iterator<Object> it = sketchesDataset.getMetricObjectsFromDataset();
-        sketches = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(sketchesDataset.getMetricSpace(), it, true);
+        sketches = ToolsMetricDomain.getMetricObjectsAsIdDataMap(sketchesDataset.getMetricSpace(), it);
         hammingDF = sketchesDataset.getDistanceFunction();
     }
 
@@ -74,8 +74,8 @@ public class PxEvaluator {
                 final int idx = i + 1;
                 final Object o1 = Tools.randomObject(sampleObjects);
                 final Object o2 = Tools.randomObject(sampleObjects);
-                Object o1ID = fullMetricSpace.getIDOfMetricObject(o1);
-                Object o2ID = fullMetricSpace.getIDOfMetricObject(o2);
+                Comparable o1ID = fullMetricSpace.getIDOfMetricObject(o1);
+                Comparable o2ID = fullMetricSpace.getIDOfMetricObject(o2);
                 Object o1Data = fullMetricSpace.getDataOfMetricObject(o1);
                 Object o2Data = fullMetricSpace.getDataOfMetricObject(o2);
                 long[] sk1 = (long[]) sketches.get(o1ID);

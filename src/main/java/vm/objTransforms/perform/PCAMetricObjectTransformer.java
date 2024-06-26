@@ -34,7 +34,7 @@ public class PCAMetricObjectTransformer implements MetricObjectTransformerInterf
 
     @Override
     public Object transformMetricObject(Object obj, Object... params) {
-        Object objID = origFloatVectorSpace.getIDOfMetricObject(obj);
+        Comparable objID = origFloatVectorSpace.getIDOfMetricObject(obj);
         float[] vector = origFloatVectorSpace.getDataOfMetricObject(obj);
         int length = pcaMatrix.length;
         final float[] ret = new float[length];

@@ -27,24 +27,24 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     protected final DistanceFunctionInterface df;
-    protected final Map<Object, Object> pivots;
+    protected final Map<Comparable, Object> pivots;
     protected final List<Object> pivotsList;
 
     public VoronoiPartitioning(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, List<Object> pivots) {
         super(metricSpace);
         this.df = df;
-        this.pivots = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
+        this.pivots = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
         this.pivotsList = pivots;
     }
 
     @Override
-    public Map<Object, SortedSet<Object>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
+    public Map<Comparable, SortedSet<Comparable>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
         Integer pivotCountUsedInTheFileName = (Integer) params[0];
-        Map<Object, SortedSet<Object>> ret = new HashMap<>();
+        Map<Comparable, SortedSet<Comparable>> ret = new HashMap<>();
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(1);
         int batchCounter = 0;
         long size = 0;
-        Map<Object, Float> lengthOfPivotVectors = null;
+        Map<Comparable, Float> lengthOfPivotVectors = null;
         if (df instanceof CosineDistance) {
             lengthOfPivotVectors = ToolsMetricDomain.getVectorsLength(pivotsList, metricSpace);
         }
@@ -57,7 +57,7 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
                     batchCounter++;
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
                     size += batch.size();
-                    Map<Object, Float> lengthOfBatchVectors = null;
+                    Map<Comparable, Float> lengthOfBatchVectors = null;
                     if (df instanceof CosineDistance) {
                         lengthOfBatchVectors = ToolsMetricDomain.getVectorsLength(batch, metricSpace);
                     }
@@ -66,11 +66,11 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
                 }
                 latch.await();
                 for (int j = 0; j < vm.javatools.Tools.PARALELISATION; j++) {
-                    Map<Object, SortedSet<Object>> partial = processes[j].getRet();
-                    for (Map.Entry<Object, SortedSet<Object>> partialEntry : partial.entrySet()) {
-                        Object key = partialEntry.getKey();
+                    Map<Comparable, SortedSet<Comparable>> partial = processes[j].getRet();
+                    for (Map.Entry<Comparable, SortedSet<Comparable>> partialEntry : partial.entrySet()) {
+                        Comparable key = partialEntry.getKey();
                         if (!ret.containsKey(key)) {
-                            SortedSet<Object> set = new TreeSet<>();
+                            SortedSet<Comparable> set = new TreeSet<>();
                             ret.put(key, set);
                         }
                         ret.get(key).addAll(partialEntry.getValue());
@@ -89,13 +89,13 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
         return ret;
     }
 
-    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
+    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
         return new ProcessBatch(batch, metricSpace, latch, pivotLengths, objectsLengths);
     }
 
     private class ProcessBatch extends AbstractDatasetPartitioning.BatchProcessor {
 
-        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
+        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
             super(batch, metricSpace, latch, pivotLengths, objectsLengths);
         }
 
@@ -106,12 +106,12 @@ public class VoronoiPartitioning extends AbstractDatasetPartitioning {
             for (int i = 0; dataObjects.hasNext(); i++) {
                 Object o = dataObjects.next();
                 Object oData = metricSpace.getDataOfMetricObject(o);
-                Object oID = metricSpace.getIDOfMetricObject(o);
+                Comparable oID = metricSpace.getIDOfMetricObject(o);
                 float minDist = Float.MAX_VALUE;
-                Object pivotWithMinDist = null;
+                Comparable pivotWithMinDist = null;
                 Float oLength = objectsLengths.get(oID);
-                for (Map.Entry<Object, Object> pivot : pivots.entrySet()) {
-                    Object pivotID = pivot.getKey();
+                for (Map.Entry<Comparable, Object> pivot : pivots.entrySet()) {
+                    Comparable pivotID = pivot.getKey();
                     float dist;
                     dist = df.getDistance(oData, pivot.getValue(), oLength, pivotLengths.get(pivotID));
                     if (dist < minDist) {

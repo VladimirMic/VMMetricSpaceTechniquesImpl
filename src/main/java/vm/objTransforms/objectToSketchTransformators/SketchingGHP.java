@@ -56,7 +56,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     @Override
     public final void setPivotPairsFromStorage(PivotPairsStoreInterface storage, String pivotPairsFileName) {
         List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(pivotPairsFileName);
-        Map<Object, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots), false);
+        Map<Comparable, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots));
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];
         for (int i = 0; i < pivotPairsIDs.size(); i++) {
             String[] pivotPairIDs = pivotPairsIDs.get(i);
@@ -128,7 +128,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
                 threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
             }
             List<Object> dataOfSampleObjects = metricSpace.getDataOfMetricObjects(sampleObjects);
-            List<Object> idsOfSampleObjects = metricSpace.getIDsOfMetricObjects(sampleObjects);
+            List<Comparable> idsOfSampleObjects = metricSpace.getIDsOfMetricObjects(sampleObjects.iterator());
             final float[][] dists = additionalInfo != null && additionalInfo.length >= 3 ? (float[][]) additionalInfo[0] : null;
             final Map<String, Integer> columns = additionalInfo != null && additionalInfo.length >= 3 ? (Map<String, Integer>) additionalInfo[1] : null;
             final Map<String, Integer> rows = additionalInfo != null && additionalInfo.length >= 3 ? (Map<String, Integer>) additionalInfo[2] : null;
@@ -136,15 +136,15 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
             CountDownLatch latch = new CountDownLatch(sampleObjects.size());
             for (int oIndex = 0; oIndex < sampleObjects.size(); oIndex++) {
                 final Object oData = dataOfSampleObjects.get(oIndex);
-                final Object oID = idsOfSampleObjects.get(oIndex);
+                final Comparable oID = idsOfSampleObjects.get(oIndex);
                 final Map<Object, Float> distsCache = new ConcurrentHashMap<>();
                 final int oIndexF = oIndex;
                 threadPool.execute(() -> {
                     for (int bitIndex = 0; bitIndex < invertedSketchesCount; bitIndex++) {
                         Object p1Data = metricSpace.getDataOfMetricObject(pivots[2 * bitIndex]);
                         Object p2Data = metricSpace.getDataOfMetricObject(pivots[2 * bitIndex + 1]);
-                        Object p1ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex]);
-                        Object p2ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex + 1]);
+                        Comparable p1ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex]);
+                        Comparable p2ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex + 1]);
                         final int p1idx = columns != null && columns.containsKey(p1ID) ? columns.get(p1ID) : -1;
                         final int p2idx = columns != null && columns.containsKey(p2ID) ? columns.get(p2ID) : -1;
                         int oidx = p1idx > -1 && p2idx > -1 && rows.containsKey(oID) ? rows.get(oID) : -1;

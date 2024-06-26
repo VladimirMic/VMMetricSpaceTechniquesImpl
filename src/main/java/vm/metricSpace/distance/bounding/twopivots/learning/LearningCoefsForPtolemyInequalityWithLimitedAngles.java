@@ -33,7 +33,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> sampleObjectsAndQueries;
     private final PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage;
     private final TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries;
-    
+
     private final boolean allPivotPairs;
 
     public LearningCoefsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
@@ -52,7 +52,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         CountDownLatch latch = new CountDownLatch(pivots.size());
         try {
-            Map<Object, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjectsAndQueries, false);
+            Map<Comparable, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjectsAndQueries);
             for (int p1 = 0; p1 < pivots.size(); p1++) {
                 int finalP1 = p1;
                 threadPool.execute(() -> {
@@ -68,7 +68,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
                                 fourObjectsData[1] = metricSpace.getDataOfMetricObject(fourObjects[1]);
                                 float[] extremes = learnForPivots(fourObjects, fourObjectsData, metricObjectsAsIdObjectMap);
                                 synchronized (LearningCoefsForPtolemyInequalityWithLimitedAngles.class) {
-                                    String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]) + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]);
+                                    String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]).toString() + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]).toString();
                                     results.put(pivotPairsID, extremes);
                                     LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                                 }
@@ -78,7 +78,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
                         fourObjects[1] = pivots.get((finalP1 + 1) % pivots.size());
                         fourObjectsData[1] = metricSpace.getDataOfMetricObject(fourObjects[1]);
                         float[] extremes = learnForPivots(fourObjects, fourObjectsData, metricObjectsAsIdObjectMap);
-                        String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]) + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]);
+                        String pivotPairsID = metricSpace.getIDOfMetricObject(fourObjects[0]).toString() + "-" + metricSpace.getIDOfMetricObject(fourObjects[1]).toString();
                         results.put(pivotPairsID, extremes);
 //                        LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                     }

@@ -75,17 +75,17 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
-        TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         T qData = metricSpace.getDataOfMetricObject(q);
-        Object qId = metricSpace.getIDOfMetricObject(q);
+        Comparable qId = metricSpace.getIDOfMetricObject(q);
         int distComps = 0;
         float qRange = range;
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Object oId = metricSpace.getIDOfMetricObject(o);
+            Comparable oId = metricSpace.getIDOfMetricObject(o);
             T oData = metricSpace.getDataOfMetricObject(o);
             distComps++;
             float distance = distanceFunction.getDistance(qData, oData);

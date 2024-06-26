@@ -5,15 +5,11 @@
 package vm.metricSpace.data;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 
@@ -22,9 +18,9 @@ import vm.metricSpace.AbstractMetricSpacesStorage;
  * @author au734419 based on the BP of Matej Hamala (469228), Masaryk University
  * Brno
  */
-public class RandomVectorsGenerator {
+public class RandomVectorsGenerator2 {
 
-    private static final Logger LOG = Logger.getLogger(RandomVectorsGenerator.class.getName());
+    private static final Logger LOG = Logger.getLogger(RandomVectorsGenerator2.class.getName());
 
     private static int[] dimensions;
     private static final AbstractMetricSpacesStorage.OBJECT_TYPE[] OBJECT_TYPES = {AbstractMetricSpacesStorage.OBJECT_TYPE.DATASET_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.QUERY_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.PIVOT_OBJECT};
@@ -34,7 +30,7 @@ public class RandomVectorsGenerator {
     private final AbstractMetricSpacesStorage storage;
     private final AbstractMetricSpace metricSpace;
 
-    public RandomVectorsGenerator(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
+    public RandomVectorsGenerator2(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
         dimensions = new int[]{10, 15, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100};
         this.storage = storage;
         this.metricSpace = metricSpace;

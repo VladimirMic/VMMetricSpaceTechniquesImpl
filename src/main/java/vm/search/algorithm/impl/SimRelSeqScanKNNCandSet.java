@@ -40,15 +40,15 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             euclid.resetEarlyStopsOnCoordsCounts();
         }
         float[] pcaQueryObjData = pcaMetricSpace.getDataOfMetricObject(pcaQueryObject);
-        List<Object> ansOfSimRel = new ArrayList<>();
-        Set<Object> objIdUnknownRelation = new HashSet<>();
-        Map<Object, float[]> candSet = new HashMap<>();
+        List<Comparable> ansOfSimRel = new ArrayList<>();
+        Set<Comparable> objIdUnknownRelation = new HashSet<>();
+        Map<Comparable, float[]> candSet = new HashMap<>();
         distCompsOfLastExecutedQuery = 0;
         simRelEvalCounter = 0;
         sequentilScanWithSimRel(pcaMetricSpace, objects, k, pcaQueryObjData, ansOfSimRel, candSet, objIdUnknownRelation);
@@ -56,16 +56,16 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
             ansOfSimRel.addAll(objIdUnknownRelation);
         }
         distCompsOfLastExecutedQuery = ansOfSimRel.size();
-        Object qID = pcaMetricSpace.getIDOfMetricObject(pcaQueryObject);
+        Comparable qID = pcaMetricSpace.getIDOfMetricObject(pcaQueryObject);
         incDistsComps(qID, ansOfSimRel.size());
         LOG.log(Level.INFO, "distancesCounter;{0}; simRelCounter;{1}", new Object[]{distCompsOfLastExecutedQuery, simRelEvalCounter});
         return ansOfSimRel;
     }
 
-    private void sequentilScanWithSimRel(AbstractMetricSpace<float[]> metricSpace, Iterator<Object> objects, int k, float[] queryObjectData, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData, Set<Object> objIdUnknownRelation, Object... paramsToExtractDataFromMetricObject) {
+    private void sequentilScanWithSimRel(AbstractMetricSpace<float[]> metricSpace, Iterator<Object> objects, int k, float[] queryObjectData, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData, Set<Comparable> objIdUnknownRelation, Object... paramsToExtractDataFromMetricObject) {
         for (int i = 1; objects.hasNext(); i++) {
             Object metricObject = objects.next();
-            Object oID = metricSpace.getIDOfMetricObject(metricObject);
+            Comparable oID = metricSpace.getIDOfMetricObject(metricObject);
             float[] oData = metricSpace.getDataOfMetricObject(metricObject);
             boolean knownRelation = addOToAnswer(k, queryObjectData, oData, oID, ansOfSimRel, mapOfData);
             if (!knownRelation) {
@@ -86,7 +86,7 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
         throw new RuntimeException("No simRel stats for the last query");
     }
 
-    private boolean addOToAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData) {
+    private boolean addOToAnswer(int k, float[] queryObjectData, float[] oData, Comparable idOfO, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData) {
         if (ansOfSimRel.isEmpty()) {
             ansOfSimRel.add(idOfO);
             mapOfData.put(idOfO, oData);
@@ -121,7 +121,7 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
         return false;
     }
 
-    private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
+    private void deleteIndexes(List<Comparable> ret, int k, List<Integer> indexesToRemove, Map<Comparable, float[]> retData) {
         while (ret.size() >= k && !indexesToRemove.isEmpty()) {
             Integer idx = indexesToRemove.get(0);
             Object id = ret.get(idx);
@@ -148,7 +148,7 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... paramsToExtractDataFromMetricObject) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... paramsToExtractDataFromMetricObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

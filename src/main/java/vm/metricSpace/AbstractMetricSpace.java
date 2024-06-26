@@ -28,7 +28,7 @@ public abstract class AbstractMetricSpace<T> {
      * @param o
      * @return id of o
      */
-    public abstract Object getIDOfMetricObject(Object o);
+    public abstract Comparable getIDOfMetricObject(Object o);
 
     /**
      * Get actual data of the metric object (i.e. usually the metric object
@@ -41,27 +41,14 @@ public abstract class AbstractMetricSpace<T> {
      */
     public abstract T getDataOfMetricObject(Object o);
 
-    public abstract Object createMetricObject(Object id, T data);
+    public abstract Object createMetricObject(Comparable id, T data);
 
-    public List<Object> getIDsOfMetricObjects(Iterator<Object> metricObjects) {
-        List<Object> ret = new ArrayList<>();
-        while (metricObjects.hasNext()) {
-            Object metricObject = metricObjects.next();
-            ret.add(getIDOfMetricObject(metricObject));
-        }
-        return ret;
-    }
-
-    public List<Object> getIDsOfMetricObjects(Collection<Object> metricObjects) {
-        return getIDsOfMetricObjects(metricObjects.iterator());
+    public List<Comparable> getIDsOfMetricObjects(Iterator<Object> metricObjects) {
+        return ToolsMetricDomain.getIDsAsList(metricObjects, this);
     }
 
     public List<T> getDataOfMetricObjects(Collection<Object> metricObjects) {
-        List<T> ret = new ArrayList<>();
-        for (Object metricObject : metricObjects) {
-            ret.add(getDataOfMetricObject(metricObject));
-        }
-        return ret;
+        return ToolsMetricDomain.getDataAsList(metricObjects.iterator(), this);
     }
 
     public float[][] getDistanceMap(DistanceFunctionInterface<T> df, List<Object> list1, List<Object> list2) {

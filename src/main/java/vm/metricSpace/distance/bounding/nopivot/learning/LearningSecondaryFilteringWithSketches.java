@@ -91,8 +91,8 @@ public class LearningSecondaryFilteringWithSketches<T> {
         while (i < numberOfDists) {
             Object sk1 = sketches.get(r.nextInt(sketches.size()));
             Object sk2 = sketches.get(r.nextInt(sketches.size()));
-            Object id1 = metricSpaceOfSketches.getIDOfMetricObject(sk1);
-            Object id2 = metricSpaceOfSketches.getIDOfMetricObject(sk2);
+            Comparable id1 = metricSpaceOfSketches.getIDOfMetricObject(sk1);
+            Comparable id2 = metricSpaceOfSketches.getIDOfMetricObject(sk2);
             if (id1.equals(id2)) {
                 continue;
             }

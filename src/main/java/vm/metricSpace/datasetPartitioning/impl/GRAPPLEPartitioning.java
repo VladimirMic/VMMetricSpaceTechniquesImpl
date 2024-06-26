@@ -35,13 +35,13 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
     }
 
     @Override
-    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
+    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
         return new ProcessBatch(batch, metricSpace, latch, pivotLengths, objectsLengths);
     }
 
     private class ProcessBatch extends AbstractDatasetPartitioning.BatchProcessor {
 
-        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Object, Float> pivotLengths, Map<Object, Float> objectsLengths) {
+        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
             super(batch, metricSpace, latch, pivotLengths, objectsLengths);
         }
 
@@ -54,7 +54,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             for (int i = 0; dataObjects.hasNext(); i++) {
                 Object o = dataObjects.next();
                 Object oData = metricSpace.getDataOfMetricObject(o);
-                Object oID = metricSpace.getIDOfMetricObject(o);
+                Comparable oID = metricSpace.getIDOfMetricObject(o);
 
                 float minCosAlpha = Float.MAX_VALUE;
 
@@ -67,18 +67,18 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 ObjectMetadata oMetadata = new ObjectMetadata(oID);
                 for (int p1Index = 0; p1Index < pivotsList.size() - 1; p1Index++) {
                     Object p1 = pivotsList.get(p1Index);
-                    Object p1ID = metricSpace.getIDOfMetricObject(p1);
+                    Comparable p1ID = metricSpace.getIDOfMetricObject(p1);
                     Object p1Data = metricSpace.getDataOfMetricObject(p1);
                     float distOP1 = df.getDistance(oData, p1Data, oLength, pivotLengths.get(p1ID));
                     for (int p2Index = p1Index + 1; p2Index < pivotsList.size(); p2Index++) {
                         Object p2 = pivotsList.get(p2Index);
-                        Object p2ID = metricSpace.getIDOfMetricObject(p2);
+                        Comparable p2ID = metricSpace.getIDOfMetricObject(p2);
                         Object p2Data = metricSpace.getDataOfMetricObject(p2);
                         float distOP2 = df.getDistance(oData, p2Data, oLength, pivotLengths.get(p2ID));
                         Float distP1P2 = interPivotDists.get(p1ID + "-" + p2ID);
                         if (distP1P2 == null) {
                             distP1P2 = df.getDistance(p1Data, p2Data, pivotLengths.get(p1ID), pivotLengths.get(p2ID));
-                            interPivotDists.put(p1ID + "-" + p2ID, distP1P2);
+                            interPivotDists.put(p1ID.toString() + "-" + p2ID.toString(), distP1P2);
                         }
                         // is this pivot pair best for the partitioning?
                         float alphaCosine = (distOP1 * distOP1 + distOP2 * distOP2 - distP1P2 * distP1P2);
@@ -128,7 +128,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
 
     public static class ObjectMetadata implements Comparable<ObjectMetadata> {
 
-        private final Object oID;
+        private final Comparable oID;
         private final SortedSet<LBMetadata> lbData;
 
         private int p1IdxForUB;
@@ -138,7 +138,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         private float dP1P2ForUB;
         private float coefP1P2ForUB;
 
-        public ObjectMetadata(Object oID) {
+        public ObjectMetadata(Comparable oID) {
             if (oID == null) {
                 throw new IllegalArgumentException("oID cannot be null");
             }
@@ -182,7 +182,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             return coefP1P2ForUB * (dQP1 * dOP2ForUB + dQP2 * dOP1ForUB) / (dP1P2ForUB);
         }
 
-        public boolean getLBdOQ(Map<Object, Float> queryToPivotsDists, float range) {
+        public boolean getLBdOQ(Map<Comparable, Float> queryToPivotsDists, float range) {
             for (LBMetadata lBMetadata : lbData) {
                 float dQP1 = queryToPivotsDists.get(lBMetadata.p1IDForLB);
                 float dQP2 = queryToPivotsDists.get(lBMetadata.p2IDForLB);
@@ -207,7 +207,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             return oID.toString().compareTo(t.oID.toString());
         }
 
-        public Object getoID() {
+        public Comparable getoID() {
             return oID;
         }
 

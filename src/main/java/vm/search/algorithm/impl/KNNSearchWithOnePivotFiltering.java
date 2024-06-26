@@ -43,11 +43,11 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
-        TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
-        Object qId = metricSpace.getIDOfMetricObject(q);
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
+        Comparable qId = metricSpace.getIDOfMetricObject(q);
         T qData = metricSpace.getDataOfMetricObject(q);
         float[] qpDists = qpDistsCached.get(qId);
         if (qpDists == null) {
@@ -73,7 +73,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Object oId = metricSpace.getIDOfMetricObject(o);
+            Comparable oId = metricSpace.getIDOfMetricObject(o);
             if (range < Float.MAX_VALUE) {
                 oIdx = rowHeaders.get(oId.toString());
                 for (p = 0; p < pivotsData.size(); p++) {
@@ -104,7 +104,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

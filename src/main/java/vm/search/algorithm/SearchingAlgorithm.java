@@ -30,12 +30,12 @@ public abstract class SearchingAlgorithm<T> {
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 500000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
 
-    protected final ConcurrentHashMap<Object, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
-    protected final ConcurrentHashMap<Object, AtomicLong> timesPerQueries = new ConcurrentHashMap();
-    protected final ConcurrentHashMap<Object, float[]> qpDistsCached = new ConcurrentHashMap<>();
-    protected final ConcurrentHashMap<Object, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Comparable, AtomicLong> timesPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Comparable, float[]> qpDistsCached = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Comparable, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
 
-    public abstract List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
+    public abstract List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams);
 
     /**
      * Implicit implementation that just reranks the candidate set defined in
@@ -48,13 +48,13 @@ public abstract class SearchingAlgorithm<T> {
      * @param additionalParams
      * @return
      */
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
-        List<Object> candSet = candSetKnnSearch(metricSpace, queryObject, k, objects, additionalParams);
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+        List<Comparable> candSet = candSetKnnSearch(metricSpace, queryObject, k, objects, additionalParams);
         Dataset dataset = (Dataset) additionalParams[0];
         return rerankCandidateSet(metricSpace, queryObject, k, dataset.getDistanceFunction(), dataset.getKeyValueStorage(), candSet);
     }
 
-    public Map.Entry<Object, Float> adjustAndReturnLastEntry(TreeSet<Map.Entry<Object, Float>> currAnswer, int k) {
+    public Map.Entry<Comparable, Float> adjustAndReturnLastEntry(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k) {
         int size = currAnswer.size();
         if (size < k) {
             return null;
@@ -65,7 +65,7 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last();
     }
 
-    public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
+    public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
             return searchRadius;
@@ -76,7 +76,7 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last().getValue();
     }
 
-    public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Object, Float>> currAnswer, int k, float searchRadius) {
+    public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
         int size = currAnswer.size();
         if (size < k) {
             return searchRadius;
@@ -87,18 +87,18 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last().getValue();
     }
 
-    public TreeSet<Map.Entry<Object, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, DistanceFunctionInterface df, Map<Object, Object> mapOfAllFullObjects, List<Object> candsIDs) {
+    public TreeSet<Map.Entry<Comparable, Float>> rerankCandidateSet(AbstractMetricSpace<T> metricSpace, Object queryObj, int k, DistanceFunctionInterface df, Map<Comparable, T> mapOfAllFullObjects, List<Comparable> candsIDs) {
         T queryObjData = metricSpace.getDataOfMetricObject(queryObj);
-        TreeSet<Map.Entry<Object, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
+        TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         if (mapOfAllFullObjects == null) {
             for (int i = 0; i < Math.min(candsIDs.size(), k); i++) {
-                Object id = candsIDs.get(i);
+                Comparable id = candsIDs.get(i);
                 ret.add(new AbstractMap.SimpleEntry<>(id, (float) i));
             }
             return ret;
         }
         float qRange = Float.MAX_VALUE;
-        for (Object candID : candsIDs) {
+        for (Comparable candID : candsIDs) {
             T metricObjectData;
             try {
                 metricObjectData = (T) mapOfAllFullObjects.get(candID);
@@ -125,11 +125,11 @@ public abstract class SearchingAlgorithm<T> {
      * @return evaluates all query objects in parallel. Parallelisation is done
      * over the query objects
      */
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnFilteringWithQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+    public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnFilteringWithQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+        final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queryObjects.size()];
         final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
-            Object qID = metricSpace.getIDOfMetricObject(queryObjects.get(i));
+            Comparable qID = metricSpace.getIDOfMetricObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
@@ -162,9 +162,9 @@ public abstract class SearchingAlgorithm<T> {
                 t = -System.currentTimeMillis();
                 for (int i = 0; i < queryObjects.size(); i++) {
                     final Object queryObject = queryObjects.get(i);
-                    final TreeSet<Map.Entry<Object, Float>> answerToQuery = ret[i];
+                    final TreeSet<Map.Entry<Comparable, Float>> answerToQuery = ret[i];
                     threadPool.execute(() -> {
-                        TreeSet<Map.Entry<Object, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
+                        TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
                     });
@@ -180,8 +180,8 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public static TreeSet<Map.Entry<Object, Float>>[] initKNNResultSets(int numberOfQueries) {
-        TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[numberOfQueries];
+    public static TreeSet<Map.Entry<Comparable, Float>>[] initKNNResultSets(int numberOfQueries) {
+        TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[numberOfQueries];
         for (int i = 0; i < numberOfQueries; i++) {
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
         }
@@ -197,8 +197,8 @@ public abstract class SearchingAlgorithm<T> {
      * @param additionalParams
      * @return
      */
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, int kCandSetMaxSize, Map<Object, T> keyValueStorage, Object... additionalParams) {
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+    public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnSearchWithPartitioningForQuerySet(AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, int kCandSetMaxSize, Map<Object, T> keyValueStorage, Object... additionalParams) {
+        final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queryObjects.size()];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         try {
             CountDownLatch latch = new CountDownLatch(queryObjects.size());
@@ -226,7 +226,7 @@ public abstract class SearchingAlgorithm<T> {
         LOG.log(Level.INFO, "Warming up disk storage");
         for (int i = 0; i < 20; i++) { // for the sake of disk caching
             Object q = queryObjects.get(queryObjects.size() - 1 - i);
-            Object qID = metricSpace.getIDOfMetricObject(q);
+            Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
             while (candsIt.hasNext()) {
                 Object cand = candsIt.next();
@@ -236,7 +236,7 @@ public abstract class SearchingAlgorithm<T> {
         for (int i = 0; i < queryObjects.size(); i++) {
             long t = -System.currentTimeMillis();
             Object q = queryObjects.get(i);
-            Object qID = metricSpace.getIDOfMetricObject(q);
+            Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
             t += System.currentTimeMillis();
             incTime(qID, t);
@@ -248,7 +248,7 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public void incTime(Object qId, long time) {
+    public void incTime(Comparable qId, long time) {
         AtomicLong ai = timesPerQueries.get(qId);
         if (ai != null) {
             ai.addAndGet(time);
@@ -258,7 +258,7 @@ public abstract class SearchingAlgorithm<T> {
     }
 
     @Deprecated
-    protected void incDistsComps(Object qId) {
+    protected void incDistsComps(Comparable qId) {
         AtomicInteger ai = distCompsPerQueries.get(qId);
         if (ai != null) {
             ai.incrementAndGet();
@@ -267,7 +267,7 @@ public abstract class SearchingAlgorithm<T> {
         }
     }
 
-    protected void incDistsComps(Object qId, int byValue) {
+    protected void incDistsComps(Comparable qId, int byValue) {
         AtomicInteger ai = distCompsPerQueries.get(qId);
         if (ai != null) {
             ai.addAndGet(byValue);
@@ -277,7 +277,7 @@ public abstract class SearchingAlgorithm<T> {
         }
     }
 
-    public void resetDistComps(Object qId) {
+    public void resetDistComps(Comparable qId) {
         distCompsPerQueries.put(qId, new AtomicInteger());
     }
 

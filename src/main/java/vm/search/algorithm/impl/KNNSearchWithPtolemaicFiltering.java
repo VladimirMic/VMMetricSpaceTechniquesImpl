@@ -34,7 +34,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     protected final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     protected final float[][] poDists;
-    protected final Map<Object, Integer> rowHeaders;
+    protected final Map<Comparable, Integer> rowHeaders;
     protected final DistanceFunctionInterface<T> df;
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
     protected final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
@@ -42,7 +42,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private final Set<String> qSkip = new HashSet<>();
 
-    public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
         this.filter = ptolemaicFilter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
@@ -56,10 +56,10 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
-        TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
-        Object qId = metricSpace.getIDOfMetricObject(q);
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
+        Comparable qId = metricSpace.getIDOfMetricObject(q);
         if (qSkip.contains(qId)) {
             bruteForceAlg.resetDistComps(qId);
             ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
@@ -86,7 +86,8 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         int oIdx, p1Idx, p2Idx, p;
         float distP1O, distP2O, distP2Q, distQP1, lowerBound, distance;
         float[] poDistsArray;
-        Object o, oId;
+        Object o;
+        Comparable oId;
         T oData;
         int oCounter = 0;
         objectsLoop:
@@ -141,7 +142,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

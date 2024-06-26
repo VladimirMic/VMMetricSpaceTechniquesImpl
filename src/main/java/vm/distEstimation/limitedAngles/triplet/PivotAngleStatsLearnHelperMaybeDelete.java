@@ -18,7 +18,7 @@ import vm.math.Tools;
  *
  * @author Vlada
  */
-public class PivotAngleStatsLearnHelper {
+public class PivotAngleStatsLearnHelperMaybeDelete {
 
     /**
      * All sizes of angles are rounded with this granularity for printing. The
@@ -39,7 +39,7 @@ public class PivotAngleStatsLearnHelper {
     /**
      * Identifier of this pivot p
      */
-    private final String pivotId;
+    private final Comparable pivotId;
 
     /**
      * Stores (encoded) sampled angles in a triangles randomly sampled from the
@@ -57,21 +57,21 @@ public class PivotAngleStatsLearnHelper {
 
     private final String output;
 
-    private static final Logger LOGGER = Logger.getLogger(PivotAngleStatsLearnHelper.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PivotAngleStatsLearnHelperMaybeDelete.class.getName());
 
-    public PivotAngleStatsLearnHelper(String pivotId) {
+    public PivotAngleStatsLearnHelperMaybeDelete(Comparable pivotId) {
         this(pivotId, null);
     }
 
-    public PivotAngleStatsLearnHelper(String pivotId, String output) {
+    public PivotAngleStatsLearnHelperMaybeDelete(Comparable pivotId, String output) {
         this(pivotId, IMPLICIT_K, output);
     }
 
-    public PivotAngleStatsLearnHelper(String pivotId, int k) {
+    public PivotAngleStatsLearnHelperMaybeDelete(Comparable pivotId, int k) {
         this(pivotId, k, null);
     }
 
-    public PivotAngleStatsLearnHelper(String pivotId, int k, String output) {
+    public PivotAngleStatsLearnHelperMaybeDelete(Comparable pivotId, int k, String output) {
         this.pivotId = pivotId;
         anglesInAllTriangles = new HashSet<>();
         nnTriangles = new TreeSet<>((Map.Entry<Float, String> o1, Map.Entry<Float, String> o2) -> {

@@ -23,12 +23,12 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
 
     private static final Logger LOG = Logger.getLogger(VoronoiPartitionsCandSetIdentifier.class.getName());
 
-    protected final Map<Object, T> pivotsMap;
+    protected final Map<Comparable, T> pivotsMap;
     protected final DistanceFunctionInterface<T> df;
-    protected final Map<Object, TreeSet<Object>> datasetPartitioning;
+    protected final Map<Comparable, TreeSet<Comparable>> datasetPartitioning;
 
     public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractMetricSpace<T> metricSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
-        pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, pivots, true);
+        pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
         this.df = df;
         datasetPartitioning = voronoiPartitioningStorage.load(datasetName, pivotCountUsedForVoronoiLearning);
     }
@@ -47,7 +47,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
      * @return
      */
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> ignored, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> ignored, Object... additionalParams) {
         T qData = metricSpace.getDataOfMetricObject(fullQueryObject);
         Map<Object, Float> distsToPivots = null;
         for (Object param : additionalParams) {
@@ -55,10 +55,10 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
                 distsToPivots = (Map<Object, Float>) param;
             }
         }
-        Object[] priorityQueue = evaluateKeyOrdering(df, pivotsMap, qData, distsToPivots);
-        List<Object> ret = new ArrayList<>();
+        Comparable[] priorityQueue = evaluateKeyOrdering(df, pivotsMap, qData, distsToPivots);
+        List<Comparable> ret = new ArrayList<>();
         int idxOfNext = 0;
-        TreeSet<Object> nextCell = null;
+        TreeSet<Comparable> nextCell = null;
         while ((nextCell == null || ret.size() + nextCell.size() < k) && idxOfNext < priorityQueue.length) {
             if (nextCell != null) {
                 ret.addAll(nextCell);
@@ -73,10 +73,10 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         return ret;
     }
 
-    public Object[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Object, T> pivotsMap, T qData, Object... params) {
-        Map<Object, Float> distsToPivots = null;
+    public Comparable[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
+        Map<Comparable, Float> distsToPivots = null;
         if (params.length > 0) {
-            distsToPivots = (Map<Object, Float>) params[1];
+            distsToPivots = (Map<Comparable, Float>) params[1];
         }
         return ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
     }

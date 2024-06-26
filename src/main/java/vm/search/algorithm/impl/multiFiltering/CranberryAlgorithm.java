@@ -76,22 +76,22 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //    private Set<String> ANSWER = null;
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
 //        time_addToFull = 0;
         long overallTime = -System.currentTimeMillis();
         int distComps = 0;
         AtomicLong simRelEvalCounter = new AtomicLong();
 
-        TreeSet<Map.Entry<Object, Float>> currAnswer = null;
+        TreeSet<Map.Entry<Comparable, Float>> currAnswer = null;
         int paramIDX = 0;
         if (additionalParams.length > 0 && additionalParams[0] instanceof TreeSet) {
-            currAnswer = (TreeSet<Map.Entry<Object, Float>>) additionalParams[0];
+            currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) additionalParams[0];
             paramIDX++;
         }
-        Object qId = fullMetricSpace.getIDOfMetricObject(fullQ);
+        Comparable qId = fullMetricSpace.getIDOfMetricObject(fullQ);
         T fullQData = fullMetricSpace.getDataOfMetricObject(fullQ);
-        TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
+        TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
 
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
@@ -110,9 +110,9 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //        t1 += System.currentTimeMillis();
 
         // simRel preparation
-        List<Object> simRelAns = new ArrayList<>();
-        Set<Object> objIdUnknownRelation = new TreeSet<>();
-        Map<Object, float[]> simRelCandidatesMap = new HashMap<>();
+        List<Comparable> simRelAns = new ArrayList<>();
+        Set<Comparable> objIdUnknownRelation = new TreeSet<>();
+        Map<Comparable, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
 //        long t2 = -System.currentTimeMillis();
@@ -122,7 +122,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         float range = Float.MAX_VALUE;
 
 //        long t3 = -System.currentTimeMillis();
-        List<AbstractMap.SimpleEntry<Object, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
+        List<AbstractMap.SimpleEntry<Comparable, Integer>>[] hammingDists = sketchSecondaryFilter.evaluateHammingDistancesInParallel(qSketchData, candSetIDs);
 //        t3 += System.currentTimeMillis();
 
         TreeSet<AbstractMap.SimpleEntry<Integer, Integer>> mapOfCandSetsIdxsToCurHamDist = new TreeSet(new Tools.MapByValueIntComparator<>());
@@ -131,7 +131,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             if (hammingDists[i].isEmpty()) {
                 continue;
             }
-            AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[i].get(curIndexes[i]);
+            AbstractMap.SimpleEntry<Comparable, Integer> next = hammingDists[i].get(curIndexes[i]);
             mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(i, next.getValue()));
         }
 //        long retrieveFromPCAMemoryMap = 0;
@@ -143,7 +143,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //            ANSWER = (Set<String>) additionalParams[paramIDX];
 //            paramIDX++;
 //        }
-        Set checkedIDs = new HashSet();
+        Set<Comparable> checkedIDs = new HashSet();
 
         while (!mapOfCandSetsIdxsToCurHamDist.isEmpty() && distComps < maxDistComps) {
             AbstractMap.SimpleEntry<Integer, Integer> candSetRunIndexAndHamDist = mapOfCandSetsIdxsToCurHamDist.first();
@@ -151,14 +151,14 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
             int candSetRunIndex = candSetRunIndexAndHamDist.getKey();
             int indexInTheRun = curIndexes[candSetRunIndex];
-            AbstractMap.SimpleEntry<Object, Integer> next = hammingDists[candSetRunIndex].get(indexInTheRun);
+            AbstractMap.SimpleEntry<Comparable, Integer> next = hammingDists[candSetRunIndex].get(indexInTheRun);
             curIndexes[candSetRunIndex]++;
             if (curIndexes[candSetRunIndex] < hammingDists[candSetRunIndex].size()) {
-                AbstractMap.SimpleEntry<Object, Integer> nextCandWithHamDist = hammingDists[candSetRunIndex].get(curIndexes[candSetRunIndex]);
+                AbstractMap.SimpleEntry<Comparable, Integer> nextCandWithHamDist = hammingDists[candSetRunIndex].get(curIndexes[candSetRunIndex]);
                 mapOfCandSetsIdxsToCurHamDist.add(new AbstractMap.SimpleEntry<>(candSetRunIndex, nextCandWithHamDist.getValue()));
             }
 
-            Object candID = next.getKey();
+            Comparable candID = next.getKey();
 //            if (ANSWER != null && ANSWER.contains(candID.toString())) {
 //                COUNT_OF_SEEN++;
 //                ANSWER.remove(candID.toString());
@@ -207,7 +207,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
 //        long t6 = -System.currentTimeMillis();
         // check by sketches again
-        for (Object candID : simRelAns) {
+        for (Comparable candID : simRelAns) {
             float lowerBound = sketchSecondaryFilter.lowerBound(qSketchData, candID, range);
             if (lowerBound == Float.MAX_VALUE) {
                 continue;
@@ -236,7 +236,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Object idOfO, List<Object> ansOfSimRel, Map<Object, float[]> mapOfData, AtomicLong simRelEvalCounter) {
+    private boolean addOToSimRelAnswer(int k, float[] queryObjectData, float[] oData, Comparable idOfO, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData, AtomicLong simRelEvalCounter) {
         if (ansOfSimRel.isEmpty()) {
             ansOfSimRel.add(idOfO);
             mapOfData.put(idOfO, oData);
@@ -273,7 +273,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         return false;
     }
 
-    private void deleteIndexes(List<Object> ret, int k, List<Integer> indexesToRemove, Map<Object, float[]> retData) {
+    private void deleteIndexes(List<Comparable> ret, int k, List<Integer> indexesToRemove, Map<Comparable, float[]> retData) {
         if (indexesToRemove != null) {
             while (ret.size() >= k && !indexesToRemove.isEmpty()) {
                 Integer idx = indexesToRemove.get(0);
@@ -289,7 +289,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
 //    private long time_addToFull = 0;
-    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Object id, Set checkedIDs) {
+    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Comparable, Float>> queryAnswer, T fullQData, Comparable id, Set<Comparable> checkedIDs) {
         if (!checkedIDs.contains(id)) {
             addToRet(queryAnswer, id, fullQData);
             checkedIDs.add(id);
@@ -298,11 +298,11 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         return 0;
     }
 
-    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Object, Float>> queryAnswer, T fullQData, Iterator<Object> iterator, Set checkedIDs) {
+    private int addToFullAnswerWithDists(TreeSet<Map.Entry<Comparable, Float>> queryAnswer, T fullQData, Iterator<Comparable> iterator, Set<Comparable> checkedIDs) {
 //        time_addToFull -= System.currentTimeMillis();
         int distComps = 0;
         while (iterator.hasNext()) {
-            Object key = iterator.next();
+            Comparable key = iterator.next();
             distComps += addToFullAnswerWithDists(queryAnswer, fullQData, key, checkedIDs);
         }
 //        time_addToFull += System.currentTimeMillis();
@@ -310,12 +310,12 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>>[] completeKnnFilteringWithQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnFilteringWithQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
         AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
         Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
         int queriesCount = -1;
@@ -325,14 +325,14 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         if (queriesCount < 0) {
             queriesCount = queryObjects.size();
         }
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queriesCount];
+        final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queriesCount];
         int datasetSize = getDatasetSize();
         int paralelism = datasetSize >= 300000 ? QUERIES_PARALELISM : 1;
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(paralelism);
         CountDownLatch latch = new CountDownLatch(queriesCount);
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
-            Object qID = metricSpace.getIDOfMetricObject(queryObject);
+            Comparable qID = metricSpace.getIDOfMetricObject(queryObject);
             final Object pcaQueryObject = pcaQMap.get(qID);
             int iFinal = i;
             threadPool.execute(() -> {
@@ -352,7 +352,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    private void addToRet(TreeSet<Map.Entry<Object, Float>> ret, Object candID, T fullQData) {
+    private void addToRet(TreeSet<Map.Entry<Comparable, Float>> ret, Object candID, T fullQData) {
         T candData = fullObjectsStorage.get(candID);
         float distance = fullDF.getDistance(fullQData, candData);
         ret.add(new AbstractMap.SimpleEntry(candID, distance));

@@ -21,7 +21,7 @@ public class PCAPrefixMetricObjectTransformer extends PCAMetricObjectTransformer
 
     @Override
     public Object transformMetricObject(Object obj, Object... params) {
-        Object objID = origFloatVectorSpace.getIDOfMetricObject(obj);
+        Comparable objID = origFloatVectorSpace.getIDOfMetricObject(obj);
         float[] vector = origFloatVectorSpace.getDataOfMetricObject(obj);
         int length = Math.min(prefix, pcaMatrix.length);
         final float[] ret = new float[length];

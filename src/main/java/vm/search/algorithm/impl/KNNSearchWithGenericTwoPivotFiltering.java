@@ -27,7 +27,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     private final AbstractTwoPivotsFilter filter;
     private final List<T> pivotsData;
     private final float[][] poDists;
-    private final Map<Object, Integer> rowHeaders;
+    private final Map<Comparable, Integer> rowHeaders;
     private final float[][] pivotPivotDists;
     private final DistanceFunctionInterface<T> df;
 
@@ -36,7 +36,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
 
     private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
 
-    public KNNSearchWithGenericTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithGenericTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
@@ -49,12 +49,12 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
-        TreeSet<Map.Entry<Object, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Object, Float>>) params[0];
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         T qData = metricSpace.getDataOfMetricObject(q);
-        Object qId = metricSpace.getIDOfMetricObject(q);
+        Comparable qId = metricSpace.getIDOfMetricObject(q);
         float[] qpDists = qpDistsCached.get(qId);
         if (qpDists == null) {
             qpDists = new float[pivotsData.size()];
@@ -86,7 +86,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Object oId = metricSpace.getIDOfMetricObject(o);
+            Comparable oId = metricSpace.getIDOfMetricObject(o);
             T oData = metricSpace.getDataOfMetricObject(o);
             oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
@@ -124,7 +124,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public List<Object> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

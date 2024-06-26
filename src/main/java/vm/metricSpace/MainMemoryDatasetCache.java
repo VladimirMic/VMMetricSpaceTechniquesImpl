@@ -124,11 +124,11 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     @Override
-    public Map<Object, Object> getKeyValueStorage() {
+    public Map<Comparable, T> getKeyValueStorage() {
         if (!dataLoaded()) {
             loadAllDataObjets();
         }
-        VMArrayMap ret = new VMArrayMap(metricSpace, dataObjects);
+        VMMemoryMapForDataWithIntIDs ret = new VMMemoryMapForDataWithIntIDs(metricSpace, dataObjects);
         LOG.log(Level.INFO, "Returning the cached map of objects from the main memory. Size: {0} objects.", ret.size());
         return ret;
     }
@@ -168,21 +168,22 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         System.gc();
     }
 
-    private class VMArrayMap implements Map<Object, Object> {
+    private class VMMemoryMapForDataWithIntIDs implements Map<Comparable, T> {
 
-        private final Object[] array;
+        private final List<T> array;
 
-        public VMArrayMap(AbstractMetricSpace metricSpace, List<Object> metricObjects) {
-            array = new Object[metricObjects.size()];
+        public VMMemoryMapForDataWithIntIDs(AbstractMetricSpace<T> metricSpace, List<Object> metricObjects) {
+            array = new ArrayList<>(metricObjects.size());
             for (int i = 0; i < metricObjects.size(); i++) {
                 Object metricObject = metricObjects.get(i);
-                Object idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
-                Object value = metricSpace.getDataOfMetricObject(metricObject);
+                Comparable idOfMetricObject = metricSpace.getIDOfMetricObject(metricObject);
+                T data = metricSpace.getDataOfMetricObject(metricObject);
                 int idx = Integer.parseInt(idOfMetricObject.toString()) - 1;
-                if (array.length < idx || array[idx] != null) {
+                if (array.size() < idx || array.get(idx) != null) {
                     throw new Error("The array already contains the value with key " + idx);
                 }
-                array[idx] = value;
+                array.remove(idx);
+                array.add(idx, data);
                 if ((i + 1) % 100000 == 0) {
                     LOG.log(Level.INFO, "Loaded {0} objects into map", i + 1);
                 }
@@ -192,7 +193,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
 
         @Override
         public int size() {
-            return array.length;
+            return array.size();
         }
 
         @Override
@@ -200,7 +201,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
             return size() == 0;
         }
 
-        private int getKeyAsIdx(Object key) {
+        private int getKeyAsIdx(Comparable key) {
             int id;
             if (key instanceof String) {
                 id = Integer.parseInt(key.toString());
@@ -214,8 +215,11 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
 
         @Override
         public boolean containsKey(Object key) {
-            int id = getKeyAsIdx(key);
-            return id > 0 && id <= size();
+            if (key instanceof Comparable) {
+                int id = getKeyAsIdx((Comparable) key);
+                return id > 0 && id <= size();
+            }
+            return false;
         }
 
         @Override
@@ -224,16 +228,18 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         }
 
         @Override
-        public Object get(Object key) {
-            int id = getKeyAsIdx(key);
-            if (id >= 0 && id < size()) {
-                return array[id];
+        public T get(Object key) {
+            if (key instanceof Comparable) {
+                int id = getKeyAsIdx((Comparable) key);
+                if (id >= 0 && id < size()) {
+                    return array.get(id);
+                }
             }
             return null;
         }
 
         @Override
-        public Object put(Object key, Object value) {
+        public Object put(Comparable key, Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 

@@ -40,19 +40,19 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public TreeSet<Map.Entry<Object, Float>> completeKnnSearch(AbstractMetricSpace<T> hammingSpace, Object fullQuery, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> hammingSpace, Object fullQuery, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
-        TreeSet<Map.Entry<Object, Float>> currAnswer = null;
+        TreeSet<Map.Entry<Comparable, Float>> currAnswer = null;
         if (params.length > 0 && params[0] instanceof TreeSet) {
-            currAnswer = (TreeSet<Map.Entry<Object, Float>>) params[0];
+            currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         }
         DistanceFunctionInterface fullDF = fullDataset.getDistanceFunction();
         AbstractMetricSpace fullDatasetMetricSpace = fullDataset.getMetricSpace();
         Object qData = fullDatasetMetricSpace.getDataOfMetricObject(fullQuery);
         Object qSketch = sketchingTechnique.transformMetricObject(fullQuery);
         long[] qSketchData = (long[]) hammingSpace.getDataOfMetricObject(qSketch);
-        Object qId = hammingSpace.getIDOfMetricObject(qSketch);
-        TreeSet<Map.Entry<Object, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
+        Comparable qId = hammingSpace.getIDOfMetricObject(qSketch);
+        TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
         AtomicInteger distComps = new AtomicInteger();
         boolean justIDsProvided = params.length > 0 && params[0] instanceof Map;
         Map fullObjectsStorage = null;
@@ -62,9 +62,9 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         float range = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, Float.MAX_VALUE);
         while (objects.hasNext()) {
             Object fullO = objects.next();
-            Object oId;
+            Comparable oId;
             if (justIDsProvided) {
-                oId = fullO;
+                oId = (Comparable) fullO;
             } else {
                 oId = hammingSpace.getIDOfMetricObject(fullO);
             }
