@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.TreeSet;
@@ -36,6 +37,10 @@ public abstract class Dataset<T> {
      */
     public Iterator<Object> getMetricObjectsFromDataset(Object... params) {
         return metricSpacesStorage.getObjectsFromDataset(datasetName, params);
+    }
+
+    public Iterator<Object> getMetricObjectsFromDatasetKeyValueStorage(Object... params) {
+        return new IteratorOfMetricObjectsMadeOfKeyValueMap(params);
     }
 
     /**
@@ -209,5 +214,79 @@ public abstract class Dataset<T> {
     public abstract boolean hasKeyValueStorage();
 
     public abstract void deleteKeyValueStorage();
+
+    public static class StaticIteratorOfMetricObjectsMadeOfKeyValueMap<T> implements Iterator<Object> {
+
+        protected final AbstractMetricSpace<T> metricSpace;
+        private final int maxCount;
+        private int counter;
+
+        private final Iterator<Map.Entry<Comparable, T>> it;
+
+        public StaticIteratorOfMetricObjectsMadeOfKeyValueMap(Iterator<Map.Entry<Comparable, T>> it, AbstractMetricSpace<T> metricSpace, Object... params) {
+            this.metricSpace = metricSpace;
+            if (params.length > 0) {
+                int value = Integer.parseInt(params[0].toString());
+                maxCount = value > 0 ? value : Integer.MAX_VALUE;
+            } else {
+                maxCount = Integer.MAX_VALUE;
+            }
+            this.it = it;
+            counter = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return counter < maxCount && it.hasNext();
+        }
+
+        @Override
+        public Object next() {
+            counter++;
+            if (!it.hasNext()) {
+                throw new NoSuchElementException("No more objects in the map");
+            }
+            Map.Entry<Comparable, T> next = it.next();
+            return metricSpace.createMetricObject(next.getKey(), next.getValue());
+        }
+
+    }
+
+    private class IteratorOfMetricObjectsMadeOfKeyValueMap implements Iterator<Object> {
+
+        protected final AbstractMetricSpace<T> metricSpace;
+        private final int maxCount;
+        private int counter;
+
+        private final Iterator<Map.Entry<Comparable, T>> it;
+
+        public IteratorOfMetricObjectsMadeOfKeyValueMap(Object... params) {
+            this.metricSpace = getMetricSpace();
+            if (params.length > 0) {
+                int value = Integer.parseInt(params[0].toString());
+                maxCount = value > 0 ? value : Integer.MAX_VALUE;
+            } else {
+                maxCount = Integer.MAX_VALUE;
+            }
+            this.it = getKeyValueStorage().entrySet().iterator();
+            counter = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return counter < maxCount && it.hasNext();
+        }
+
+        @Override
+        public Object next() {
+            counter++;
+            if (!it.hasNext()) {
+                throw new NoSuchElementException("No more objects in the map");
+            }
+            Map.Entry<Comparable, T> next = it.next();
+            return metricSpace.createMetricObject(next.getKey(), next.getValue());
+        }
+
+    }
 
 }
