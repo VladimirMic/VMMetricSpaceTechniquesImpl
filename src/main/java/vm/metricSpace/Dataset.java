@@ -206,4 +206,8 @@ public abstract class Dataset<T> {
         return distances;
     }
 
+    public abstract boolean hasKeyValueStorage();
+
+    public abstract void deleteKeyValueStorage();
+
 }

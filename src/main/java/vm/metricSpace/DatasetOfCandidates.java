@@ -364,4 +364,14 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         return result;
 
     }
+
+    @Override
+    public boolean hasKeyValueStorage() {
+        return true;
+    }
+
+    @Override
+    public void deleteKeyValueStorage() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

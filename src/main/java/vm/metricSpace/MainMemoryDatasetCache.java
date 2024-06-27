@@ -168,6 +168,15 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
         System.gc();
     }
 
+    @Override
+    public boolean hasKeyValueStorage() {
+        return false;
+    }
+
+    @Override
+    public void deleteKeyValueStorage() {
+    }
+
     private class VMMemoryMapForDataWithIntIDs implements Map<Comparable, T> {
 
         private final List<T> array;
