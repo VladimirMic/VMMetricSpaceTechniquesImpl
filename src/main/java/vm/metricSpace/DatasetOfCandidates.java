@@ -35,8 +35,8 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public static final Float RATIO_OF_SMALLES_DISTS = 0.4f / 100f;
 
     private final Dataset origDataset;
-    private final Map<Object, List<Object>> mapOfQueriesToCandidates;
-    private final Map<Object, List<Object>> mapOfTrainingQueriesToCandidates;
+    private final Map<Comparable, List<Comparable>> mapOfQueriesToCandidates;
+    private final Map<Comparable, List<Comparable>> mapOfTrainingQueriesToCandidates;
     private final Map<Comparable, T> keyValueStorage;
     private int maxCandSetSize = 0;
 
@@ -72,13 +72,17 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public Iterator<Object> getMetricObjectsFromDataset(Object... params) {
         if (params.length == 0) {
             Set ret = new HashSet();
-            for (Map.Entry<Object, List<Object>> next : mapOfTrainingQueriesToCandidates.entrySet()) {
+            for (Map.Entry<Comparable, List<Comparable>> next : mapOfTrainingQueriesToCandidates.entrySet()) {
                 ret.addAll(next.getValue());
             }
             return ret.iterator();
         }
-        Object queryObjID = params[0];
-        List<Object> candidatesIDs = mapOfQueriesToCandidates.get(queryObjID);
+        Comparable queryObjID = (Comparable) params[0];
+        List candidatesIDs = mapOfQueriesToCandidates.get(queryObjID);
+        if (candidatesIDs == null) {
+            LOG.log(Level.SEVERE, "The dataset of candidates does not contain candidates for query {0}", queryObjID.toString());
+            throw new IllegalArgumentException();
+        }
         return candidatesIDs.iterator();
     }
 
@@ -88,9 +92,9 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             objCount = Integer.MAX_VALUE;
         }
         List<Object> ret = new ArrayList<>();
-        Iterator<Map.Entry<Object, List<Object>>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
+        Iterator<Map.Entry<Comparable, List<Comparable>>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
         while (ret.size() < objCount && it.hasNext()) {
-            List<Object> objs = it.next().getValue();
+            List<Comparable> objs = it.next().getValue();
             ret.addAll(objs);
         }
         ret = ret.subList(0, objCount);
@@ -147,12 +151,12 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         throw new UnsupportedOperationException();
     }
 
-    private Map<Object, List<Object>> transformToList(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
-        Map<Object, List<Object>> ret = new HashMap<>();
+    private Map<Comparable, List<Comparable>> transformToList(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
+        Map<Comparable, List<Comparable>> ret = new HashMap<>();
         Set<Comparable> queryIDs = queryResultsForDataset.keySet();
         for (Comparable queryID : queryIDs) {
             TreeSet<Map.Entry<Comparable, Float>> candidates = queryResultsForDataset.get(queryID);
-            List<Object> candsIDs = new ArrayList<>();
+            List<Comparable> candsIDs = new ArrayList<>();
             for (Map.Entry<Comparable, Float> candidate : candidates) {
                 candsIDs.add(candidate.getKey());
             }
@@ -170,23 +174,29 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         float[] ret = new float[distCount];
         DistanceFunctionInterface df = getDistanceFunction();
-        List<Object> queries = getQueryObjects(mapOfTrainingQueriesToCandidates.size());
+        List<Object> queries = new ArrayList<>(mapOfTrainingQueriesToCandidates.keySet());
+
         Random r = new Random();
         int qSize = queries.size();
-        Map<Object, T> cache = new HashMap<>();
+        Map<Comparable, T> qCache = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, queries);
+        Map<Comparable, T> cache = new HashMap<>();
         for (int i = 0; i < ret.length; i++) {
             Object q = queries.get(r.nextInt(qSize));
-            Object qID = metricSpace.getIDOfMetricObject(q);
+            Comparable qID = metricSpace.getIDOfMetricObject(q);
             T qData;
-            if (cache.containsKey(qID)) {
-                qData = cache.get(qID);
+            if (qCache.containsKey(qID)) {
+                qData = qCache.get(qID);
             } else {
                 qData = metricSpace.getDataOfMetricObject(q);
-                cache.put(qID, qData);
+                qCache.put(qID, qData);
             }
-            List<Object> cands = mapOfTrainingQueriesToCandidates.get(qID);
-            Object o = cands.get(r.nextInt(cands.size()));
+            List<Comparable> cands = mapOfTrainingQueriesToCandidates.get(qID);
+            Comparable o = cands.get(r.nextInt(cands.size()));
             T oData;
+            if (vm.javatools.Tools.getRatioOfConsumedRam() > 0.95) {
+                cache.clear();
+                System.gc();
+            }
             if (cache.containsKey(o)) {
                 oData = cache.get(o);
             } else {
@@ -305,6 +315,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 //        LOG.log(Level.INFO, "Evaluated {0} distances out of all {1} asked - diff is possible.", new Object[]{counter});
 //        return result;
 //    }
+    @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         //objectCount and queriesCount here are ignored
         queriesCount = QUERIES_COUNT_FOR_SMALLEST_DISTS;
@@ -317,7 +328,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         Map<Comparable, T> qMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, queries);
         int distCounter = 0;
         int skippedQ = 0;
-        for (Map.Entry<Object, List<Object>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
+        for (Map.Entry<Comparable, List<Comparable>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
             TreeSet<Map.Entry<String, Float>> qResult = new TreeSet(comp);
             Object qID = entry.getKey();
             if (!qMap.containsKey(qID)) {
@@ -326,8 +337,8 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 continue;
             }
             T qData = qMap.get(qID);
-            List<Object> cands = entry.getValue();
-            for (Object o : cands) {
+            List<Comparable> cands = entry.getValue();
+            for (Comparable o : cands) {
                 T oData;
                 if (cache.containsKey(o)) {
                     oData = cache.get(o);
