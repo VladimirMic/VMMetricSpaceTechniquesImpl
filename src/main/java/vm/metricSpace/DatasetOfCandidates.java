@@ -193,7 +193,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             List<Comparable> cands = mapOfTrainingQueriesToCandidates.get(qID);
             Comparable o = cands.get(r.nextInt(cands.size()));
             T oData;
-            if (vm.javatools.Tools.getRatioOfConsumedRam() > 0.95) {
+            if (vm.javatools.Tools.getRatioOfConsumedRam(false) > 0.95) {
                 cache.clear();
                 System.gc();
             }
@@ -358,7 +358,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 } else {
                     if (oCount % 1000 == 0) {
                         System.err.print("oCount " + oCount + " out of " + objectCount + ", ");
-                        if (vm.javatools.Tools.getRatioOfConsumedRam() > 0.95) {
+                        if (vm.javatools.Tools.getRatioOfConsumedRam(false) > 0.95) {
                             System.gc();
                         }
                     }
