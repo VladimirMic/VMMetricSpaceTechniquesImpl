@@ -30,7 +30,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
 
-    public static final Integer LB_COUNT = 64; //  128, 256
     protected final AbstractPtolemaicBasedFiltering filter;
     private final List<T> pivotsData;
     protected final float[][] poDists;
@@ -78,7 +77,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         }
         int[] pivotArrays = qPivotArraysCached.get(qId);
         if (pivotArrays == null) {
-            pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, LB_COUNT);
+            pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, SearchingAlgorithm.IMPLICIT_LB_COUNT);
             qPivotArraysCached.put(qId, pivotArrays);
         }
         int distComps = 0;
@@ -148,7 +147,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     @Override
     public String getResultName() {
-        String ret = filter.getTechFullName() + "_" + LB_COUNT + "LB";
+        String ret = filter.getTechFullName() + "_" + SearchingAlgorithm.IMPLICIT_LB_COUNT + "LB";
         if (thresholdOnLBsPerObjForSeqScan > 0) {
             ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }

@@ -75,6 +75,11 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     @Override
+    public int getRecommendedNumberOfPivotsForFiltering() {
+        return -1;
+    }
+
+    @Override
     public List<Object> getPivots(int count) {
         if (count < 0) {
             count = pivots.size();

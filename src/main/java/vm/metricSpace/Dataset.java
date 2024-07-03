@@ -112,14 +112,6 @@ public abstract class Dataset<T> {
         metricSpacesStorage.storeQueryObjects(queryObjs, querySetName, additionalParamsToStoreWithNewQuerySet);
     }
 
-    /**
-     * Return (usually disk stored) map of IDs of objects and their data. Feel
-     * free to skip this method if not needed
-     *
-     * @return
-     */
-    public abstract Map<Comparable, T> getKeyValueStorage();
-
     @Override
     public int hashCode() {
         int hash = 7;
@@ -211,9 +203,24 @@ public abstract class Dataset<T> {
         return distances;
     }
 
+    /**
+     * Return (disk stored on main memory stored) map of IDs of objects and
+     * their data. Feel free to skip this method if not needed
+     *
+     * @return
+     */
+    public abstract Map<Comparable, T> getKeyValueStorage();
+
     public abstract boolean hasKeyValueStorage();
 
     public abstract void deleteKeyValueStorage();
+
+    /**
+     * Return a negative number if all
+     *
+     * @return
+     */
+    public abstract int getRecommendedNumberOfPivotsForFiltering();
 
     public static class StaticIteratorOfMetricObjectsMadeOfKeyValueMap<T> implements Iterator<Object> {
 
