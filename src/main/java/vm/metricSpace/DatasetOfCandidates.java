@@ -317,38 +317,53 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
 //    }
     @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
-        //objectCount and queriesCount here are ignored
+        // queriesCount here are ignored
+        // objectCount is used as the maxium of the candidate set size per query
         queriesCount = QUERIES_COUNT_FOR_SMALLEST_DISTS;
         int qRetSize = MAX_RETURNED_SMALLEST_DISTS_PER_Q;
-        List<Object> queries = origDataset.getSampleOfDataset(Math.min(mapOfTrainingQueriesToCandidates.size(), queriesCount));
         DistanceFunctionInterface df = getDistanceFunction();
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
         TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         Map<Object, T> cache = new HashMap<>();
-        Map<Comparable, T> qMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, queries);
         int distCounter = 0;
-        int skippedQ = 0;
+        int qCount = 0;
         for (Map.Entry<Comparable, List<Comparable>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
+            qCount++;
+            if (qCount == queriesCount) {
+                break;
+            }
             TreeSet<Map.Entry<String, Float>> qResult = new TreeSet(comp);
             Object qID = entry.getKey();
-            if (!qMap.containsKey(qID)) {
-                skippedQ++;
-                LOG.log(Level.INFO, "Skipped query object {0} during the learning ({1} in total)", new Object[]{qID, skippedQ});
-                continue;
+            T qData = metricSpace.getDataOfMetricObject(qID);
+            if (qData == null) {
+                LOG.log(Level.SEVERE, "Sample queries has to be from the test dataset");
             }
-            T qData = qMap.get(qID);
             List<Comparable> cands = entry.getValue();
+            if (cands.size() > objectCount) {
+                cands = cands.subList(0, objectCount);
+            }
+            int oCount = 0;
             for (Comparable o : cands) {
-                T oData;
-                if (cache.containsKey(o)) {
-                    oData = cache.get(o);
-                } else {
-                    oData = metricSpace.getDataOfMetricObject(o);
-                    cache.put(o, oData);
+                oCount++;
+                if (oCount == objectCount) {
+                    LOG.log(Level.INFO, "Processed query {0} out of {1}", new Object[]{qCount, queriesCount});
                 }
                 Object oID = metricSpace.getIDOfMetricObject(o);
                 if (qID.equals(oID)) {
                     continue;
+                }
+                T oData;
+                if (cache.containsKey(o)) {
+                    oData = cache.get(o);
+                } else {
+                    if (oCount % 1000 == 0) {
+                        System.err.print("oCount " + oCount + " out of " + objectCount + ", ");
+                        if (vm.javatools.Tools.getRatioOfConsumedRam() > 0.95) {
+                            System.gc();
+                        }
+                    }
+                    oData = metricSpace.getDataOfMetricObject(o);
+                    cache.put(o, oData);
                 }
                 distCounter++;
                 float distance = df.getDistance(qData, oData);
