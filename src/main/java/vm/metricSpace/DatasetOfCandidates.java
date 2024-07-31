@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +28,7 @@ import vm.queryResults.QueryNearestNeighboursStoreInterface;
  * @author Vlada
  * @param <T>
  */
-public class DatasetOfCandidates<T> extends Dataset<T> {
+public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 
     public static final Logger LOG = Logger.getLogger(DatasetOfCandidates.class.getName());
     public static final Integer QUERIES_COUNT_FOR_SMALLEST_DISTS = 100;
@@ -35,10 +36,9 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public static final Float RATIO_OF_SMALLES_DISTS = 0.4f / 100f;
 
     private final Dataset origDataset;
-    private final Map<Comparable, List<Comparable>> mapOfQueriesToCandidates;
-    private final Map<Comparable, List<Comparable>> mapOfTrainingQueriesToCandidates;
+    private final Map<Comparable, Comparable[]> mapOfQueriesToCandidates;
+    private final Map<Comparable, Comparable[]> mapOfTrainingQueriesToCandidates;
     private final Map<Comparable, T> keyValueStorage;
-    private int maxCandSetSize = 0;
 
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
         this.origDataset = origDataset;
@@ -46,14 +46,52 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         this.keyValueStorage = origDataset.getKeyValueStorage();
         metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
         metricSpacesStorage = origDataset.getMetricSpacesStorage();
-        Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
-        mapOfQueriesToCandidates = transformToList(queryResultsForDataset, true);
+        Map<Comparable, Comparable[]> map = getDiskBasedDatasetOfCandsMap(datasetName);
+        if (map == null) {
+            Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
+            mapOfQueriesToCandidates = transformToDistBasedMap(queryResultsForDataset, true, datasetName);
+        } else {
+            mapOfQueriesToCandidates = map;
+        }
         if (trainingResultFolderName != null && trainingDirectResultFileName != null) {
-            queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
-            mapOfTrainingQueriesToCandidates = transformToList(queryResultsForDataset, false);
+            String trainingStorageName = datasetName + "_training_data";
+            map = getDiskBasedDatasetOfCandsMap(trainingStorageName);
+            if (map == null) {
+                Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
+                mapOfTrainingQueriesToCandidates = transformToDistBasedMap(queryResultsForDataset, false, trainingStorageName);
+            } else {
+                mapOfTrainingQueriesToCandidates = map;
+            }
         } else {
             mapOfTrainingQueriesToCandidates = null;
         }
+        System.gc();
+    }
+
+    protected abstract Map<Comparable, Comparable[]> getDiskBasedDatasetOfCandsMap(String datasetName);
+
+    protected abstract void materialiseMap(Map<Comparable, Comparable[]> map, String storageName);
+
+    private Map<Comparable, Comparable[]> transformToDistBasedMap(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize, String storageName) {
+        Map<Comparable, Comparable[]> ret = new TreeMap<>();
+        Set<Comparable> queryIDs = queryResultsForDataset.keySet();
+        int maxCandSetSize = Integer.MAX_VALUE;
+        if (!storeMaxCandSetSize) {
+            maxCandSetSize = mapOfQueriesToCandidates.entrySet().iterator().next().getValue().length;
+        }
+        for (Comparable queryID : queryIDs) {
+            TreeSet<Map.Entry<Comparable, Float>> candidates = queryResultsForDataset.get(queryID);
+            List<Comparable> candsIDs = new ArrayList<>();
+            for (Map.Entry<Comparable, Float> candidate : candidates) {
+                candsIDs.add(candidate.getKey());
+            }
+            if (!storeMaxCandSetSize) {
+                candsIDs = candsIDs.subList(0, maxCandSetSize);
+            }
+            ret.put(queryID, candsIDs.toArray(new Comparable[0]));
+        }
+        materialiseMap(ret, storageName);
+        return getDiskBasedDatasetOfCandsMap(storageName);
     }
 
     public DatasetOfCandidates(Dataset origDataset, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
@@ -71,19 +109,19 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
      */
     public Iterator<Object> getMetricObjectsFromDataset(Object... params) {
         if (params.length == 0) {
-            Set ret = new HashSet();
-            for (Map.Entry<Comparable, List<Comparable>> next : mapOfTrainingQueriesToCandidates.entrySet()) {
-                ret.addAll(next.getValue());
+            Comparable[] ret = new Comparable[0];
+            for (Map.Entry<Comparable, Comparable[]> next : mapOfTrainingQueriesToCandidates.entrySet()) {
+                Tools.concatArrays(ret, next.getValue());
             }
-            return ret.iterator();
+            return new vm.javatools.Tools.ArrayIterator(ret);
         }
         Comparable queryObjID = (Comparable) params[0];
-        List candidatesIDs = mapOfQueriesToCandidates.get(queryObjID);
-        if (candidatesIDs == null) {
+        Comparable[] ret = mapOfQueriesToCandidates.get(queryObjID);
+        if (ret == null) {
             LOG.log(Level.SEVERE, "The dataset of candidates does not contain candidates for query {0}", queryObjID.toString());
             throw new IllegalArgumentException();
         }
-        return candidatesIDs.iterator();
+        return new vm.javatools.Tools.ArrayIterator(ret);
     }
 
     @Override
@@ -92,10 +130,10 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             objCount = Integer.MAX_VALUE;
         }
         List<Object> ret = new ArrayList<>();
-        Iterator<Map.Entry<Comparable, List<Comparable>>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
+        Iterator<Map.Entry<Comparable, Comparable[]>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
         while (ret.size() < objCount && it.hasNext()) {
-            List<Comparable> objs = it.next().getValue();
-            ret.addAll(objs);
+            Comparable[] objs = it.next().getValue();
+            ret.addAll(Tools.arrayToList(objs));
         }
         ret = ret.subList(0, objCount);
         return ret;
@@ -151,25 +189,6 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         throw new UnsupportedOperationException();
     }
 
-    private Map<Comparable, List<Comparable>> transformToList(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize) {
-        Map<Comparable, List<Comparable>> ret = new HashMap<>();
-        Set<Comparable> queryIDs = queryResultsForDataset.keySet();
-        for (Comparable queryID : queryIDs) {
-            TreeSet<Map.Entry<Comparable, Float>> candidates = queryResultsForDataset.get(queryID);
-            List<Comparable> candsIDs = new ArrayList<>();
-            for (Map.Entry<Comparable, Float> candidate : candidates) {
-                candsIDs.add(candidate.getKey());
-            }
-            if (storeMaxCandSetSize) {
-                maxCandSetSize = Math.max(maxCandSetSize, candsIDs.size());
-            } else {
-                candsIDs = candsIDs.subList(0, maxCandSetSize);
-            }
-            ret.put(queryID, candsIDs);
-        }
-        return ret;
-    }
-
     @Override
     public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         float[] ret = new float[distCount];
@@ -190,8 +209,8 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
                 qData = metricSpace.getDataOfMetricObject(q);
                 qCache.put(qID, qData);
             }
-            List<Comparable> cands = mapOfTrainingQueriesToCandidates.get(qID);
-            Comparable o = cands.get(r.nextInt(cands.size()));
+            Comparable[] cands = mapOfTrainingQueriesToCandidates.get(qID);
+            Comparable o = cands[r.nextInt(cands.length)];
             T oData;
             if (vm.javatools.Tools.getRatioOfConsumedRam(false) > 0.95) {
                 cache.clear();
@@ -327,7 +346,7 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
         Map<Object, T> cache = new HashMap<>();
         int distCounter = 0;
         int qCount = 0;
-        for (Map.Entry<Comparable, List<Comparable>> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
+        for (Map.Entry<Comparable, Comparable[]> entry : mapOfTrainingQueriesToCandidates.entrySet()) {
             qCount++;
             if (qCount == queriesCount) {
                 break;
@@ -338,13 +357,9 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
             if (qData == null) {
                 LOG.log(Level.SEVERE, "Sample queries has to be from the test dataset");
             }
-            List<Comparable> cands = entry.getValue();
-            if (cands.size() > objectCount) {
-                cands = cands.subList(0, objectCount);
-            }
-            int oCount = 0;
-            for (Comparable o : cands) {
-                oCount++;
+            Comparable[] cands = entry.getValue();
+            for (int oCount = 0; oCount < objectCount; oCount++) {
+                Comparable o = cands[oCount];
                 if (oCount == objectCount) {
                     LOG.log(Level.INFO, "Processed query {0} out of {1}", new Object[]{qCount, queriesCount});
                 }
@@ -392,11 +407,6 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     }
 
     @Override
-    public boolean hasKeyValueStorage() {
-        return true;
-    }
-
-    @Override
     public void deleteKeyValueStorage() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -405,4 +415,5 @@ public class DatasetOfCandidates<T> extends Dataset<T> {
     public int getRecommendedNumberOfPivotsForFiltering() {
         return -1;
     }
+
 }

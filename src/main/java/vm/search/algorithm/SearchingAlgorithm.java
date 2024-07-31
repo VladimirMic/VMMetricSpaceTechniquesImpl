@@ -29,7 +29,7 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 500000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
-    public static final Integer IMPLICIT_LB_COUNT = 64; //  128, 256
+    public static final Integer IMPLICIT_LB_COUNT = 48; //  128, 256
     public static final Integer IMPLICIT_PIVOT_COUNT = SearchingAlgorithm.IMPLICIT_LB_COUNT;
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
@@ -236,12 +236,9 @@ public abstract class SearchingAlgorithm<T> {
             }
         }
         for (int i = 0; i < queryObjects.size(); i++) {
-            long t = -System.currentTimeMillis();
             Object q = queryObjects.get(i);
             Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            t += System.currentTimeMillis();
-            incTime(qID, t);
             ret[i] = completeKnnSearch(metricSpace, q, k, candsIt);
             long timeOfQuery = getTimeOfQuery(qID);
             int dc = getDistCompsForQuery(qID);

@@ -31,7 +31,7 @@ import vm.metricSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
 public class ToolsMetricDomain {
 
     private static final Logger LOG = Logger.getLogger(ToolsMetricDomain.class.getName());
-    private static final Integer BATCH_FOR_MATRIX_OF_DISTANCES = 2000000;
+    private static final Integer BATCH_FOR_MATRIX_OF_DISTANCES = 100000;
 
     public static float[][] transformMetricObjectsToVectorMatrix(AbstractMetricSpace<float[]> metricSpace, List<Object> metricObjects) {
         float[] first = metricSpace.getDataOfMetricObject(metricObjects.get(0));
@@ -335,7 +335,7 @@ public class ToolsMetricDomain {
         for (int batchCount = 0; metricObjectsFromDataset.hasNext(); batchCount++) {
             System.gc();
             try {
-                List<Object> batch = vm.datatools.Tools.getObjectsFromIterator(metricObjectsFromDataset, BATCH_FOR_MATRIX_OF_DISTANCES);
+                List<Object> batch = vm.datatools.Tools.getObjectsFromIterator(metricObjectsFromDataset, BATCH_FOR_MATRIX_OF_DISTANCES, -1);
                 CountDownLatch latch = new CountDownLatch(batch.size());
                 float[][] distsForBatch = new float[batch.size()][pivots.size()];
                 int rowCounter;

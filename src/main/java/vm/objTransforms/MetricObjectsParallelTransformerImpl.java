@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.javatools.Tools.MetricObjectArrayIterator;
+import vm.javatools.Tools.ArrayIterator;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.metricSpace.AbstractMetricSpacesStorage.OBJECT_TYPE;
 import vm.metricSpace.MainMemoryDatasetCache;
@@ -81,7 +81,7 @@ public class MetricObjectsParallelTransformerImpl {
                 LOG.log(Level.SEVERE, "Warning - wrong transformation position {0} vs. {1}", new Object[]{retPos.get() + 1, batch.size()});
                 throw new Error();
             }
-            MetricObjectArrayIterator it = new MetricObjectArrayIterator(transformedMetricObjects);
+            ArrayIterator it = new ArrayIterator(transformedMetricObjects);
             MainMemoryDatasetCache cache = null;
             if (additionalParamsToStoreWithNewDataset.length != 0) {
                 for (Object param : additionalParamsToStoreWithNewDataset) {
