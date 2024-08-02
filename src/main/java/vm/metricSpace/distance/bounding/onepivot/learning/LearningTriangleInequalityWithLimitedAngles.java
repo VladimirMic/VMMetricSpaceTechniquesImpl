@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,7 +14,7 @@ import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.storeLearned.TriangleInequalityWithLimitedAnglesCoefsStoreInterface;
-import vm.metricSpace.distance.storedPrecomputedDistances.PrecomputedPairsOfDistancesStoreInterface;
+import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
 
 /**
  *
@@ -31,9 +32,9 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
     private final Integer pCount;
     private final Integer oCount;
     private final Integer qCount;
-    private final PrecomputedPairsOfDistancesStoreInterface storageOfSmallDists;
+    private final AbstractPrecomputedPairsOfDistancesStorage storageOfSmallDists;
 
-    public LearningTriangleInequalityWithLimitedAngles(Dataset dataset, PrecomputedPairsOfDistancesStoreInterface storageOfSmallDists, int pivotCount, Integer oCount, Integer qCount, TriangleInequalityWithLimitedAnglesCoefsStoreInterface storage, String resultName) {
+    public LearningTriangleInequalityWithLimitedAngles(Dataset dataset, AbstractPrecomputedPairsOfDistancesStorage storageOfSmallDists, int pivotCount, Integer oCount, Integer qCount, TriangleInequalityWithLimitedAnglesCoefsStoreInterface storage, String resultName) {
         this.dataset = dataset;
         this.storage = storage;
         this.resultName = resultName;
@@ -49,39 +50,21 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
         Map<Object, Float> ret = new HashMap<>();
         AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
         List pivots = dataset.getPivots(pCount);
-        Map<Object, T> oMap = null;
-        if (!(dataset instanceof DatasetOfCandidates) && dataset.getPrecomputedDatasetSize() <= 1000000) { // the opposite statement was here ... ???
-            oMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, dataset.getMetricObjectsFromDataset());
-        }
+        TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries = storageOfSmallDists.loadPrecomputedDistances();
+        Set<Comparable> setOfIDs = AbstractPrecomputedPairsOfDistancesStorage.getIDsOfObjects(smallDistsOfSampleObjectsAndQueries);
+        List objectsWithSmallestDists = ToolsMetricDomain.getObjectsForIDs(setOfIDs, dataset);
+        Map<Object, T> oMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, objectsWithSmallestDists);
         DistanceFunctionInterface df = dataset.getDistanceFunction();
 
         for (Object pivot : pivots) {
             T pivotData = metricSpace.getDataOfMetricObject(pivot);
             Iterator<Map.Entry<String, Float>> it = dists.iterator();
             float coefForP = Float.MAX_VALUE;
-            Map<Object, T> cache = new HashMap<>();
             for (int i = 0; i < lastIndex && it.hasNext(); i++) {
                 Map.Entry<String, Float> dist = it.next();
                 String[] oqIDs = dist.getKey().split(";");
-                T qData;
-                T oData;
-                if (oMap == null) {
-                    if (cache.containsKey(oqIDs[1])) {
-                        qData = cache.get(oqIDs[1]);
-                    } else {
-                        qData = metricSpace.getDataOfMetricObject(oqIDs[1]);
-                        cache.put(oqIDs[1], qData);
-                    }
-                    if (cache.containsKey(oqIDs[0])) {
-                        oData = cache.get(oqIDs[0]);
-                    } else {
-                        oData = metricSpace.getDataOfMetricObject(oqIDs[0]);
-                        cache.put(oqIDs[0], oData);
-                    }
-                } else {
-                    qData = (T) oMap.get(oqIDs[1]);
-                    oData = (T) oMap.get(oqIDs[0]);
-                }
+                T qData = (T) oMap.get(oqIDs[1]);
+                T oData = (T) oMap.get(oqIDs[0]);
                 float c = Math.max(0, (float) dist.getValue());
                 float dPO = df.getDistance(pivotData, oData);
                 float dPQ = df.getDistance(pivotData, qData);

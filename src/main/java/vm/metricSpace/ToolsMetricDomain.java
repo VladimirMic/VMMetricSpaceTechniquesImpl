@@ -519,4 +519,22 @@ public class ToolsMetricDomain {
         return ret;
     }
 
+    public static <T> List getObjectsForIDs(Collection<Comparable> setOfIDs, Dataset<T> dataset) {
+        Map<Comparable, T> keyValueStorage = dataset.getKeyValueStorage();
+        AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
+        if (keyValueStorage == null) {
+            keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, dataset.getMetricObjectsFromDataset());
+        }
+        List<Object> ret = new ArrayList<>();
+        for (Comparable id : setOfIDs) {
+            T data = keyValueStorage.get(id);
+            if (data == null) {
+                throw new IllegalArgumentException("Storage does not contain id " + id + ". SStorage contains " + keyValueStorage.size() + " objects");
+            }
+            Object o = metricSpace.createMetricObject(id, data);
+            ret.add(o);
+        }
+        return ret;
+    }
+
 }

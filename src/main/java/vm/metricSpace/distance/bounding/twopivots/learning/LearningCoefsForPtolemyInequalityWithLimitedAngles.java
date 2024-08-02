@@ -3,6 +3,7 @@ package vm.metricSpace.distance.bounding.twopivots.learning;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -11,11 +12,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
+import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering.CONSTANT_FOR_PRECISION;
 import vm.metricSpace.distance.bounding.twopivots.storeLearned.PtolemyInequalityWithLimitedAnglesCoefsStoreInterface;
-import vm.metricSpace.distance.storedPrecomputedDistances.PrecomputedPairsOfDistancesStoreInterface;
+import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
 
 /**
  *
@@ -27,24 +29,24 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
     public static final Logger LOG = Logger.getLogger(LearningCoefsForPtolemyInequalityWithLimitedAngles.class.getName());
 
     private final String resultName;
+    private final Dataset<T> dataset;
     private final AbstractMetricSpace<T> metricSpace;
     private final DistanceFunctionInterface<T> df;
     private final List<Object> pivots;
-    private final List<Object> sampleObjectsAndQueries;
     private final PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage;
     private final TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries;
 
     private final boolean allPivotPairs;
 
-    public LearningCoefsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
-        this.metricSpace = metricSpace;
-        this.df = df;
+    public LearningCoefsForPtolemyInequalityWithLimitedAngles(Dataset<T> dataset, List<Object> pivots, int objectsCount, int queriesCount, TreeSet<Map.Entry<String, Float>> smallDistsOfSampleObjectsAndQueries, PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage, String datasetName, boolean allPivotPairs) {
+        this.dataset = dataset;
+        this.metricSpace = dataset.getMetricSpace();
+        this.df = dataset.getDistanceFunction();
         this.pivots = pivots;
-        this.sampleObjectsAndQueries = sampleObjectsAndQueries;
         this.storage = storage;
         this.smallDistsOfSampleObjectsAndQueries = smallDistsOfSampleObjectsAndQueries;
         this.allPivotPairs = allPivotPairs;
-        this.resultName = storage.getResultDescription(datasetName, PrecomputedPairsOfDistancesStoreInterface.IMPLICIT_K, objectsCount, queriesCount, pivots.size(), allPivotPairs);
+        this.resultName = storage.getResultDescription(datasetName, AbstractPrecomputedPairsOfDistancesStorage.IMPLICIT_K, objectsCount, queriesCount, pivots.size(), allPivotPairs);
     }
 
     public Map<Object, float[]> execute() {
@@ -52,7 +54,9 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         CountDownLatch latch = new CountDownLatch(pivots.size());
         try {
-            Map<Comparable, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, sampleObjectsAndQueries);
+            Set<Comparable> setOfIDs = AbstractPrecomputedPairsOfDistancesStorage.getIDsOfObjects(smallDistsOfSampleObjectsAndQueries);
+            List objectsWithSmallestDists = ToolsMetricDomain.getObjectsForIDs(setOfIDs, dataset);
+            Map<Comparable, Object> metricObjectsAsIdObjectMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, objectsWithSmallestDists);
             for (int p1 = 0; p1 < pivots.size(); p1++) {
                 int finalP1 = p1;
                 threadPool.execute(() -> {
