@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +26,8 @@ import vm.search.algorithm.SearchingAlgorithm;
  * @param <T> type of object data
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
+
+    public static final Boolean QUERY_DYNAMNIC_PIVOTS = false;
 
     private int thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
@@ -77,7 +80,11 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         }
         int[] pivotArrays = qPivotArraysCached.get(qId);
         if (pivotArrays == null) {
-            pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, SearchingAlgorithm.IMPLICIT_LB_COUNT);
+            if (QUERY_DYNAMNIC_PIVOTS) {
+                pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
+            } else {
+                pivotArrays = identifyRandomPivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
+            }
             qPivotArraysCached.put(qId, pivotArrays);
         }
         int distComps = 0;
@@ -151,6 +158,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         if (thresholdOnLBsPerObjForSeqScan > 0) {
             ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }
+        if (!QUERY_DYNAMNIC_PIVOTS) {
+            ret += "random_pivots";
+        }
         return ret;
     }
 
@@ -187,6 +197,18 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         for (int i = 0; i < size; i++) {
             ret[2 * i] = i;
             ret[2 * i + 1] = (i + 1) % pivotCount;
+        }
+        return ret;
+    }
+
+    private static final Random rand = new Random();
+
+    private int[] identifyRandomPivotPairs(float[][] coefs, int size) {
+        int[] ret = new int[size * 2];
+        int pivotCount = coefs.length;
+        for (int i = 0; i < size; i++) {
+            ret[2 * i] = rand.nextInt(pivotCount);
+            ret[2 * i + 1] = rand.nextInt(pivotCount);
         }
         return ret;
     }
