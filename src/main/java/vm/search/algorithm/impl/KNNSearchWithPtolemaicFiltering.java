@@ -159,7 +159,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }
         if (!QUERY_DYNAMNIC_PIVOTS) {
-            ret += "random_pivots";
+            ret += "_random_pivots";
         }
         return ret;
     }

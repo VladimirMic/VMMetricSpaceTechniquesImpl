@@ -58,7 +58,7 @@ public abstract class AbstractPlotter {
     public static final Float SERIES_STROKE = 2f;
     public static final Float GRID_STROKE = 0.6f;
 
-    public static final Integer IMPLICIT_WIDTH = 800;
+    public static final Integer IMPLICIT_WIDTH = 600;
     public static final Integer IMPLICIT_HEIGHT = 600;
 
     public static final Font FONT_AXIS_TITLE = new Font("Arial", Font.PLAIN, FONT_SIZE_AXIS_LABEL);
@@ -270,15 +270,17 @@ public abstract class AbstractPlotter {
         }
     }
 
-    protected void setSpacingOfCategoriesAndTraces(BoxAndWhiskerRenderer renderer, CategoryAxis xAxis, int tracesPerGroupCount, int groupCount) {
+    protected void setSpacingOfCategoriesAndTraces(CategoryPlot plot, BoxAndWhiskerRenderer renderer, CategoryAxis xAxis, int tracesPerGroupCount, int groupCount) {
         if (groupCount == 1) {
-            renderer.setItemMargin(0.4);
-            xAxis.setCategoryMargin(0.3);
+            renderer.setItemMargin(0.3);
+            xAxis.setCategoryMargin(0);
         }
-        int tracesTotalCount = tracesPerGroupCount * groupCount;
-        double edgeMarging = 1f / (4 * tracesTotalCount);
-        xAxis.setLowerMargin(edgeMarging);
-        xAxis.setUpperMargin(edgeMarging);
+        xAxis.setLowerMargin(0);
+        xAxis.setUpperMargin(0);
+//        int tracesTotalCount = tracesPerGroupCount * groupCount;
+//        double edgeMarging = 1f / (4 * tracesTotalCount);
+//        xAxis.setLowerMargin(edgeMarging);
+//        xAxis.setUpperMargin(edgeMarging);
     }
 
     private float minRecall = 0.9f;

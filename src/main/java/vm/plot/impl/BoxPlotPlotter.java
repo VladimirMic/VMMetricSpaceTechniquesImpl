@@ -67,7 +67,12 @@ public class BoxPlotPlotter extends AbstractPlotter {
 
     public int precomputeSuitableWidth(int height, int tracesCount, int groupsCount) {
         int tracesTotalCount = tracesCount * groupsCount;
-        double usedWidth = 28 * tracesTotalCount + 30 * (tracesTotalCount - 1) + 45 * groupsCount + 160;
+        double usedWidth = 28 * tracesTotalCount + 30 * (tracesTotalCount - 1);
+        if (groupsCount > 1) {
+            usedWidth += 45 * groupsCount + 160;
+        } else {
+            usedWidth += 70;
+        }
         float ratio = height / 500f;
         return (int) (ratio * usedWidth);
     }
@@ -120,7 +125,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
             xAxis.setTickMarkOutsideLength(0);
             xAxis.setTickMarksVisible(false);
         }
-        setSpacingOfCategoriesAndTraces(renderer, xAxis, tracesNames.length, groupsNames.length);
+        setSpacingOfCategoriesAndTraces(plot, renderer, xAxis, tracesNames.length, groupsNames.length);
 
         // set traces strokes
         for (int i = 0; i < tracesNames.length; i++) {
