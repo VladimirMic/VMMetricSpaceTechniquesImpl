@@ -54,7 +54,7 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
         List<Comparable> pivotIDsList = metricSpace.getIDsOfMetricObjects(pivots.iterator());
         String[] pivotIDs = DataTypeConvertor.objectsToStrings(pivotIDsList);
         for (int p = 0; p < pivotIDsList.size(); p++) {
-            Object pId = pivotIDs[p];
+            Comparable pId = pivotIDs[p];
             if (!columnHeaders.containsKey(pId)) {
                 throw new IllegalArgumentException("Precomputed distances dost not contain pivot " + pId);
             }

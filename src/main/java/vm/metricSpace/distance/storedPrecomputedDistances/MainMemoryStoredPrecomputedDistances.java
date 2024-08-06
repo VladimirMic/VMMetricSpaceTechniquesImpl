@@ -21,6 +21,12 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
         this.dists = dists;
     }
 
+    /**
+     * 
+     * @param dataset ignored - the class is just holder of variables given in the constructor
+     * @param pivotCount ignored - the class is just holder of variables given in the constructor
+     * @return 
+     */
     @Override
     public float[][] loadPrecomPivotsToObjectsDists(Dataset dataset, int pivotCount) {
         return dists;

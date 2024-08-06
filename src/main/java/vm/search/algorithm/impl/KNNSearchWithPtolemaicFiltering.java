@@ -154,7 +154,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     @Override
     public String getResultName() {
-        String ret = filter.getTechFullName() + "_" + SearchingAlgorithm.IMPLICIT_LB_COUNT + "LB";
+        String ret = filter.getTechFullName() + "_" + pivotsData.size() + "LB";
         if (thresholdOnLBsPerObjForSeqScan > 0) {
             ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }
