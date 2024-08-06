@@ -18,6 +18,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
@@ -27,7 +28,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    public static final Boolean QUERY_DYNAMNIC_PIVOTS = false;
+    public static Boolean query_dynamic_pivots = false;
 
     private int thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
@@ -46,6 +47,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
         this.filter = ptolemaicFilter;
+        if (ptolemaicFilter instanceof DataDependentGeneralisedPtolemaicFiltering) {
+            query_dynamic_pivots = true;
+        }
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
         this.df = df;
@@ -80,7 +84,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         }
         int[] pivotArrays = qPivotArraysCached.get(qId);
         if (pivotArrays == null) {
-            if (QUERY_DYNAMNIC_PIVOTS) {
+            if (query_dynamic_pivots) {
                 pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
             } else {
                 pivotArrays = identifyRandomPivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
@@ -158,7 +162,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         if (thresholdOnLBsPerObjForSeqScan > 0) {
             ret += "_" + thresholdOnLBsPerObjForSeqScan + "perc_" + objBeforeSeqScan + "objMem";
         }
-        if (!QUERY_DYNAMNIC_PIVOTS) {
+        if (!query_dynamic_pivots) {
             ret += "_random_pivots";
         }
         return ret;

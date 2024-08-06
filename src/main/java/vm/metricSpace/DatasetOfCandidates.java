@@ -337,7 +337,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         // queriesCount here are ignored
-        // objectCount is used as the maxium of the candidate set size per query
+        // objectCount is used as the maximum of the candidate set size per query
         queriesCount = QUERIES_COUNT_FOR_SMALLEST_DISTS;
         int qRetSize = MAX_RETURNED_SMALLEST_DISTS_PER_Q;
         DistanceFunctionInterface df = getDistanceFunction();
