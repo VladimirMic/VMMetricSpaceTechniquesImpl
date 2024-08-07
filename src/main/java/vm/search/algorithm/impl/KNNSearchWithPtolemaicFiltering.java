@@ -28,7 +28,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    public static Boolean query_dynamic_pivots = false;
+    private static Boolean query_dynamic_pivots = false;
 
     private int thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
