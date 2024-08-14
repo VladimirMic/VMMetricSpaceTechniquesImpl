@@ -32,6 +32,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 
     public static final Logger LOG = Logger.getLogger(DatasetOfCandidates.class.getName());
     public static final Integer QUERIES_COUNT_FOR_SMALLEST_DISTS = 100;
+    public static final Integer SMALLEST_DISTS = 40000;
     public static final Integer MAX_RETURNED_SMALLEST_DISTS_PER_Q = 30;
     public static final Float RATIO_OF_SMALLES_DISTS = 0.4f / 100f;
 
@@ -39,6 +40,8 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     private final Map<Comparable, Comparable[]> mapOfQueriesToCandidates;
     private final Map<Comparable, Comparable[]> mapOfTrainingQueriesToCandidates;
     private final Map<Comparable, T> keyValueStorage;
+
+    private int maxNumberOfCandidatesToReturn = Integer.MAX_VALUE;
 
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
         this.origDataset = origDataset;
@@ -66,6 +69,10 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
             mapOfTrainingQueriesToCandidates = null;
         }
         System.gc();
+    }
+
+    public void setMaxNumberOfCandidatesToReturn(int maxNumberOfCandidatesToReturn) {
+        this.maxNumberOfCandidatesToReturn = maxNumberOfCandidatesToReturn;
     }
 
     protected abstract Map<Comparable, Comparable[]> getDiskBasedDatasetOfCandsMap(String datasetName);
@@ -121,7 +128,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
             LOG.log(Level.SEVERE, "The dataset of candidates does not contain candidates for query {0}", queryObjID.toString());
             throw new IllegalArgumentException();
         }
-        return new vm.javatools.Tools.ArrayIterator(ret);
+        return new vm.javatools.Tools.ArrayIterator(ret, maxNumberOfCandidatesToReturn);
     }
 
     @Override
@@ -336,7 +343,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 //    }
     @Override
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
-        // queriesCount here are ignored
+        // queriesCount and retSize here are ignored
         // objectCount is used as the maximum of the candidate set size per query
         queriesCount = QUERIES_COUNT_FOR_SMALLEST_DISTS;
         int qRetSize = MAX_RETURNED_SMALLEST_DISTS_PER_Q;
@@ -358,11 +365,8 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
                 LOG.log(Level.SEVERE, "Sample queries has to be from the test dataset");
             }
             Comparable[] cands = entry.getValue();
-            for (int oCount = 0; oCount < objectCount; oCount++) {
+            for (int oCount = 0; oCount < Math.min(objectCount, cands.length); oCount++) {
                 Comparable o = cands[oCount];
-                if (oCount == objectCount) {
-                    LOG.log(Level.INFO, "Processed query {0} out of {1}", new Object[]{qCount, queriesCount});
-                }
                 Object oID = metricSpace.getIDOfMetricObject(o);
                 if (qID.equals(oID)) {
                     continue;
@@ -372,7 +376,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
                     oData = cache.get(o);
                 } else {
                     if (oCount % 1000 == 0) {
-                        System.err.print("oCount " + oCount + " out of " + objectCount + ", ");
+//                        System.err.print("oCount " + oCount + " out of " + objectCount + ", ");
                         if (vm.javatools.Tools.getRatioOfConsumedRam(false) > 0.95) {
                             System.gc();
                         }
@@ -392,11 +396,10 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
                     qResult.remove(qResult.first());
                 }
             }
+            LOG.log(Level.INFO, "Processed query {0} out of {1}", new Object[]{qCount, queriesCount});
             result.addAll(qResult);
         }
-        retSize = (int) (RATIO_OF_SMALLES_DISTS * distCounter);
-
-        while (result.size() > retSize) {
+        while (result.size() > SMALLEST_DISTS) {
             LOG.log(Level.INFO, "Removing  dist {0}. Min / max dist is {1} / {2}", new Object[]{result.first().getValue(), result.first().getValue(), result.last().getValue()});
             result.remove(result.first());
         }

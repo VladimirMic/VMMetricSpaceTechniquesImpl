@@ -19,6 +19,7 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 
 /**
@@ -28,8 +29,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    private static Boolean query_dynamic_pivots = false;
-
+    private static Boolean query_dynamic_pivots = true;
     private int thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
@@ -47,8 +47,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
         this.filter = ptolemaicFilter;
-        if (ptolemaicFilter instanceof DataDependentGeneralisedPtolemaicFiltering) {
-            query_dynamic_pivots = true;
+        if (ptolemaicFilter instanceof PtolemaicFiltering) {
+            PtolemaicFiltering cast = (PtolemaicFiltering) ptolemaicFilter;
+            query_dynamic_pivots = cast.getQueryDynamicPivotPairs();
         }
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;

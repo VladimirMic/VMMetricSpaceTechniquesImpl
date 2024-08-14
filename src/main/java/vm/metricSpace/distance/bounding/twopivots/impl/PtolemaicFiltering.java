@@ -12,8 +12,9 @@ import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFilterin
 public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
 
     private final float[][] coefsPivotPivot;
+    private final boolean queryDynamicPivotPairs;
 
-    public PtolemaicFiltering(String resultNamePrefix, List<T> pivotsData, DistanceFunctionInterface<T> df) {
+    public PtolemaicFiltering(String resultNamePrefix, List<T> pivotsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
         super(resultNamePrefix);
         coefsPivotPivot = new float[pivotsData.size()][pivotsData.size()];
         for (int i = 0; i < pivotsData.size() - 1; i++) {
@@ -25,6 +26,7 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
                 coefsPivotPivot[j][i] = coef;
             }
         }
+        this.queryDynamicPivotPairs = queryDynamicPivotPairs;
     }
 
     @Override
@@ -50,6 +52,10 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
     @Override
     public float getCoefPivotPivotForUB(int p1Idx, int p2Idx) {
         return coefsPivotPivot[p1Idx][p2Idx];
+    }
+
+    public boolean getQueryDynamicPivotPairs() {
+        return queryDynamicPivotPairs;
     }
 
 }
