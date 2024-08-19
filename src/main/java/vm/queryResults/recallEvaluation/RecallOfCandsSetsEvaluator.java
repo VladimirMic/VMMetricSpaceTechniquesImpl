@@ -66,7 +66,8 @@ public class RecallOfCandsSetsEvaluator {
             ret.add(nn.getKey().toString());
         }
         if (count != null && count > ret.size()) {
-            throw new IllegalArgumentException("The candidate set evaluated the query " + queryID + " does not contain so many objects. Required: " + count + ", found: " + ret.size());
+            Logger.getLogger(RecallOfCandsSetsEvaluator.class.getName()).log(Level.WARNING, "The candidate set evaluated the query {0} does not contain so many objects. Required: {1}, found: {2}", new Object[]{queryID, count, ret.size()});
+            ret.clear();
         }
         return ret;
     }

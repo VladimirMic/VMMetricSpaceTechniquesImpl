@@ -29,7 +29,6 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
-    public static final Integer IMPLICIT_PIVOT_COUNT = 24;
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, AtomicLong> timesPerQueries = new ConcurrentHashMap();

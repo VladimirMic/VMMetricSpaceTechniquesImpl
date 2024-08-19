@@ -18,7 +18,6 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
-import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
 import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 
@@ -29,7 +28,7 @@ import vm.search.algorithm.SearchingAlgorithm;
  */
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
-    private static Boolean query_dynamic_pivots = true;
+    private static boolean query_dynamic_pivots = true;
     private int thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
