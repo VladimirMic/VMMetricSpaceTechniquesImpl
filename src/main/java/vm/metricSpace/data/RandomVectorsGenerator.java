@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.AbstractMetricSpacesStorage;
+import vm.metricSpace.Dataset;
+import vm.metricSpace.SimpleDatasetImpl;
 
 /**
  *
@@ -22,26 +24,51 @@ public class RandomVectorsGenerator {
 
     private static final Logger LOG = Logger.getLogger(RandomVectorsGenerator.class.getName());
 
-    private static int[] dimensions;
     private static final AbstractMetricSpacesStorage.OBJECT_TYPE[] OBJECT_TYPES = {AbstractMetricSpacesStorage.OBJECT_TYPE.DATASET_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.QUERY_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.PIVOT_OBJECT};
     private static final String[] OBJECT_TYPES_ID_PREFIXES = {"D", "Q", "P"};
-    private static int[] sizesOfGeneratedSets;
+    private int[] dimensions;
+    private int[] sizesOfGeneratedSets;
 
     private final AbstractMetricSpacesStorage storage;
     private final AbstractMetricSpace metricSpace;
 
-    public RandomVectorsGenerator(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
-        dimensions = new int[]{10, 15, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100};
+    public RandomVectorsGenerator(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage, int[] sizesOfGeneratedSets, int... dimensions) {
         this.storage = storage;
         this.metricSpace = metricSpace;
-        sizesOfGeneratedSets = new int[]{1000000, 1000, 2560};
+        this.dimensions = dimensions;
+        this.sizesOfGeneratedSets = sizesOfGeneratedSets;
     }
 
-    public void generate() {
+    public RandomVectorsGenerator(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
+        this(metricSpace, storage, new int[]{1000000, 1000, 2560}, new int[]{10, 15, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100});
+    }
+
+    public Dataset[] run() {
+        return createOrGet("random");
+    }
+
+    public SimpleDatasetImpl[] createOrGet(String datasetNamePrefix) {
         Random generator = new Random();
-        for (int dimension : dimensions) {
-            String datasetName = getDatasetName(dimension, true);
+        SimpleDatasetImpl[] ret = new SimpleDatasetImpl[dimensions.length];
+        for (int dimIdx = 0; dimIdx < dimensions.length; dimIdx++) {
+            int dimension = dimensions[dimIdx];
+            String datasetName = getDatasetName(datasetNamePrefix, dimension, true) + sizesOfGeneratedSets[0];
+            String querysetName = getDatasetName(datasetNamePrefix, dimension, true) + sizesOfGeneratedSets[1];
+            String pivotsetName = getDatasetName(datasetNamePrefix, dimension, true) + sizesOfGeneratedSets[2];
             for (int i = 0; i < OBJECT_TYPES.length; i++) {
+
+                if (i == 0 && storage.getObjectsFromDataset(datasetName) != null) {
+                    continue;
+                }
+
+                if (i == 1 && storage.getQueryObjects(querysetName, 1) != null) {
+                    continue;
+                }
+
+                if (i == 2 && storage.getPivots(pivotsetName, 1) != null) {
+                    continue;
+                }
+
                 List<Object> objects = generateData(sizesOfGeneratedSets[i], dimension, OBJECT_TYPES_ID_PREFIXES[i], generator, random -> {
                     return (float) random.nextFloat() - 0.5f;
                 });
@@ -54,17 +81,20 @@ public class RandomVectorsGenerator {
                         break;
                     }
                     case 1: {
-                        storage.storeQueryObjects(objects, datasetName, true);
+                        storage.storeQueryObjects(objects, querysetName, true);
                         break;
                     }
                     case 2: {
-                        storage.storePivots(objects, datasetName, true);
+                        storage.storePivots(objects, pivotsetName, true);
                         break;
                     }
                 }
             }
             LOG.log(Level.INFO, "Data for dimension {0} generated", dimension);
+            ret[dimIdx] = new SimpleDatasetImpl(datasetName, querysetName, pivotsetName, metricSpace, storage);
+            ret[dimIdx].setRecommendedNumberOfPivots(sizesOfGeneratedSets[2]);
         }
+        return ret;
     }
 
     /**
@@ -106,9 +136,9 @@ public class RandomVectorsGenerator {
         return vector;
     }
 
-    private String getDatasetName(int dimension, boolean uniform) {
+    private String getDatasetName(String prefix, int dimension, boolean uniform) {
         String distribution = uniform ? "uniform" : "gaussian";
-        return "random_" + dimension + "dim_" + distribution + "_1M";
+        return prefix + "_" + dimension + "dim_" + distribution;
     }
 
 }

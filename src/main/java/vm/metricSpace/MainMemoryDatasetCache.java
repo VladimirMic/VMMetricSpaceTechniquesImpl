@@ -30,9 +30,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     public MainMemoryDatasetCache(AbstractMetricSpace<T> metricSpace, String datasetName, AbstractMetricSpacesStorage metricSpacesStorage) {
-        this.datasetName = datasetName;
-        this.metricSpace = metricSpace;
-        this.metricSpacesStorage = metricSpacesStorage;
+        super(datasetName, metricSpace, metricSpacesStorage);
     }
 
     public MainMemoryDatasetCache(AbstractMetricSpace<T> metricSpace) {

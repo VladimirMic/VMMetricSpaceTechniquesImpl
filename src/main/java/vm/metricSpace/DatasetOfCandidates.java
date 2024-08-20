@@ -43,11 +43,13 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     private int maxNumberOfCandidatesToReturn = Integer.MAX_VALUE;
 
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
+        super(
+                newDatasetName,
+                new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), origDataset.getKeyValueStorage()),
+                origDataset.getMetricSpacesStorage()
+        );
         this.origDataset = origDataset;
-        datasetName = newDatasetName;
         this.keyValueStorage = origDataset.getKeyValueStorage();
-        metricSpace = new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), keyValueStorage);
-        metricSpacesStorage = origDataset.getMetricSpacesStorage();
         Map<Comparable, Comparable[]> map = getDiskBasedDatasetOfCandsMap(datasetName);
         if (map == null) {
             Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);

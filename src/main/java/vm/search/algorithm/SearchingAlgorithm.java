@@ -156,7 +156,7 @@ public abstract class SearchingAlgorithm<T> {
                     break;
                 }
                 batchCounter++;
-                LOG.log(Level.INFO, "Batch size {0}. Start processing", batch.size());
+                LOG.log(Level.INFO, "Start processing {1} , batch size {0} ... This will take some time, depending on the algorithm efficiency", new Object[]{batch.size(), getResultName()});
                 System.gc();
                 CountDownLatch latch = new CountDownLatch(queryObjects.size());
                 final AbstractMetricSpace<T> metricSpaceFinal = metricSpace;

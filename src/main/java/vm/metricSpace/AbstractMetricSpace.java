@@ -48,6 +48,9 @@ public abstract class AbstractMetricSpace<T> {
     }
 
     public List<T> getDataOfMetricObjects(Collection<Object> metricObjects) {
+        if (metricObjects == null) {
+            return null;
+        }
         return ToolsMetricDomain.getDataAsList(metricObjects.iterator(), this);
     }
 

@@ -526,8 +526,11 @@ public class ToolsMetricDomain {
     }
 
     public static <T> List getObjectsForIDs(Collection<Comparable> setOfIDs, Dataset<T> dataset) {
-        Map<Comparable, T> keyValueStorage = dataset.getKeyValueStorage();
         AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
+        Map<Comparable, T> keyValueStorage = null;
+        if (dataset.hasKeyValueStorage()) {
+            keyValueStorage = dataset.getKeyValueStorage();
+        }
         if (keyValueStorage == null) {
             keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, dataset.getMetricObjectsFromDataset());
         }

@@ -28,6 +28,12 @@ public abstract class Dataset<T> {
     protected AbstractMetricSpace<T> metricSpace;
     protected AbstractMetricSpacesStorage metricSpacesStorage;
 
+    public Dataset(String datasetName, AbstractMetricSpace<T> metricSpace, AbstractMetricSpacesStorage metricSpacesStorage) {
+        this.datasetName = datasetName;
+        this.metricSpace = metricSpace;
+        this.metricSpacesStorage = metricSpacesStorage;
+    }
+
     /**
      *
      * @param params volutary, if you want to use them to get your metric
@@ -144,6 +150,9 @@ public abstract class Dataset<T> {
 
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         List<Object> metricObjects = getSampleOfDataset(objectCount + queriesCount);
+        if (objectCount + queriesCount > metricObjects.size()) {
+            throw new IllegalArgumentException("Unsufficient number of data objects. Need " + (objectCount + queriesCount) + ", found " + metricObjects.size());
+        }
         List<Object> sampleObjects = metricObjects.subList(0, objectCount);
         List<Object> queriesSamples = metricObjects.subList(objectCount, objectCount + queriesCount);
         DistanceFunctionInterface df = getDistanceFunction();
