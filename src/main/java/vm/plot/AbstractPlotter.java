@@ -51,7 +51,8 @@ public abstract class AbstractPlotter {
     public static final Integer FONT_SIZE_AXIS_TICKS = 28;
 
     public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC = 12;
-    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC = 8; // 9 is too much // pripadne udelat mapu pro ruzne max delky popisu. 8 by bylo pro delku 5
+    public static final Integer X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC = 8;
+    // 9 is too much // possibly create map for different lengths of descriptions. 8 for length 5
 
     public static final Integer Y_TICKS_IMPLICIT_NUMBER = 14;
 

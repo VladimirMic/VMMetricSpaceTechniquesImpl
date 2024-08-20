@@ -29,7 +29,7 @@ import vm.search.algorithm.SearchingAlgorithm;
 public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private static boolean query_dynamic_pivots = true;
-    private int thresholdOnLBsPerObjForSeqScan;
+    private float thresholdOnLBsPerObjForSeqScan;
     protected int objBeforeSeqScan;
     private final GroundTruthEvaluator bruteForceAlg;
 
@@ -99,7 +99,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         Object o;
         Comparable oId;
         T oData;
-        int oCounter = 0;
+        int oCounter = -k;
         objectsLoop:
         while (objects.hasNext()) {
             oCounter++;
@@ -258,7 +258,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    public void setThresholdOnLBsPerObjForSeqScan(int thresholdOnLBsPerObjForSeqScan) {
+    public void setThresholdOnLBsPerObjForSeqScan(float thresholdOnLBsPerObjForSeqScan) {
         this.thresholdOnLBsPerObjForSeqScan = thresholdOnLBsPerObjForSeqScan;
     }
 

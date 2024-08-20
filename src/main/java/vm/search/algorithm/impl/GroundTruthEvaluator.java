@@ -26,7 +26,6 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
 
     public static final Integer K_IMPLICIT_FOR_GROUND_TRUTH = 1000;
-    public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
     private final AbstractMetricSpace metricSpace;
     private final DistanceFunctionInterface distanceFunction;
     private final List<Object> queryObjects;

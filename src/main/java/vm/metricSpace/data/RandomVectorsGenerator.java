@@ -18,22 +18,23 @@ import vm.metricSpace.AbstractMetricSpacesStorage;
  * @author au734419 based on the BP of Matej Hamala (469228), Masaryk University
  * Brno
  */
-public class RandomVectorsGenerator2 {
+public class RandomVectorsGenerator {
 
-    private static final Logger LOG = Logger.getLogger(RandomVectorsGenerator2.class.getName());
+    private static final Logger LOG = Logger.getLogger(RandomVectorsGenerator.class.getName());
 
     private static int[] dimensions;
     private static final AbstractMetricSpacesStorage.OBJECT_TYPE[] OBJECT_TYPES = {AbstractMetricSpacesStorage.OBJECT_TYPE.DATASET_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.QUERY_OBJECT, AbstractMetricSpacesStorage.OBJECT_TYPE.PIVOT_OBJECT};
     private static final String[] OBJECT_TYPES_ID_PREFIXES = {"D", "Q", "P"};
-    private static final int[] SIZES_OF_GENERATED_SETS = {1000000, 1000, 2560};
+    private static int[] sizesOfGeneratedSets;
 
     private final AbstractMetricSpacesStorage storage;
     private final AbstractMetricSpace metricSpace;
 
-    public RandomVectorsGenerator2(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
+    public RandomVectorsGenerator(AbstractMetricSpace metricSpace, AbstractMetricSpacesStorage storage) {
         dimensions = new int[]{10, 15, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100};
         this.storage = storage;
         this.metricSpace = metricSpace;
+        sizesOfGeneratedSets = new int[]{1000000, 1000, 2560};
     }
 
     public void generate() {
@@ -41,7 +42,7 @@ public class RandomVectorsGenerator2 {
         for (int dimension : dimensions) {
             String datasetName = getDatasetName(dimension, true);
             for (int i = 0; i < OBJECT_TYPES.length; i++) {
-                List<Object> objects = generateData(SIZES_OF_GENERATED_SETS[i], dimension, OBJECT_TYPES_ID_PREFIXES[i], generator, random -> {
+                List<Object> objects = generateData(sizesOfGeneratedSets[i], dimension, OBJECT_TYPES_ID_PREFIXES[i], generator, random -> {
                     return (float) random.nextFloat() - 0.5f;
                 });
 //                generateData(objectTypesSampleSizes[i], dimension, objectTypesPrefixes[i], generator, x -> {
