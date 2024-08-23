@@ -52,7 +52,12 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
         this.keyValueStorage = origDataset.getKeyValueStorage();
         Map<Comparable, Comparable[]> map = getDiskBasedDatasetOfCandsMap(datasetName);
         if (map == null) {
-            Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
+            Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = null;
+            try {
+                queryResultsForDataset = resultsStorage.getQueryResultsForDataset(resultFolderName, directResultFileName, "", null);
+            } catch (IllegalArgumentException e) {
+                LOG.log(Level.WARNING, "The file with results for the dataset of candidates does not exist");
+            }
             mapOfQueriesToCandidates = transformToDistBasedMap(queryResultsForDataset, true, datasetName);
         } else {
             mapOfQueriesToCandidates = map;
@@ -61,7 +66,12 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
             String trainingStorageName = datasetName + "_training_data";
             map = getDiskBasedDatasetOfCandsMap(trainingStorageName);
             if (map == null) {
-                Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
+                Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset = null;
+                try {
+                    queryResultsForDataset = resultsStorage.getQueryResultsForDataset(trainingResultFolderName, trainingDirectResultFileName, "", null);
+                } catch (IllegalArgumentException e) {
+                    LOG.log(Level.WARNING, "The file with training results for the dataset of candidates does not exist");
+                }
                 mapOfTrainingQueriesToCandidates = transformToDistBasedMap(queryResultsForDataset, false, trainingStorageName);
             } else {
                 mapOfTrainingQueriesToCandidates = map;
@@ -81,6 +91,9 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     protected abstract void materialiseMap(Map<Comparable, Comparable[]> map, String storageName);
 
     private Map<Comparable, Comparable[]> transformToDistBasedMap(Map<Comparable, TreeSet<Map.Entry<Comparable, Float>>> queryResultsForDataset, boolean storeMaxCandSetSize, String storageName) {
+        if (queryResultsForDataset == null) {
+            return null;
+        }
         Map<Comparable, Comparable[]> ret = new TreeMap<>();
         Set<Comparable> queryIDs = queryResultsForDataset.keySet();
         int maxCandSetSize = Integer.MAX_VALUE;

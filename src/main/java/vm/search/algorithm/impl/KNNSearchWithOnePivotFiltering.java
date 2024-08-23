@@ -83,6 +83,10 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                     lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     if (lowerBound > range) {
                         lbChecked += p + 1;
+                        T oData = metricSpace.getDataOfMetricObject(o);
+                        if (df.getDistance(qData, oData) > lowerBound) {
+                            String s = "Achtung";
+                        }
                         continue objectsLoop;
                     }
                 }
@@ -100,6 +104,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incLBChecked(qId, lbChecked);
+        System.out.println(qId + ": " + t + " ms");
         return ret;
     }
 
