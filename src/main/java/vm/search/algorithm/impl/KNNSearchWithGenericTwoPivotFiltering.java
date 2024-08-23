@@ -120,6 +120,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incLBChecked(qId, lbChecked);
+        System.err.println(qId + ": " + t + " ms ");
         return ret;
     }
 

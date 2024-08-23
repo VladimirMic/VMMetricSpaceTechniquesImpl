@@ -144,7 +144,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             }
         }
         t += System.currentTimeMillis();
-//        System.err.println("XXX:" + t + ";" + dc);
+        System.err.println(qId + ": " + t + " ms ");
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incLBChecked(qId, lbChecked);
