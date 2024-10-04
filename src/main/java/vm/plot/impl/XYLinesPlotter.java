@@ -121,7 +121,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         // x axis settings
         NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         setLabelsOfAxis(xAxis);
-        xAxis.setUpperMargin(0.15);
+        xAxis.setUpperMargin(0.5);
         setTicksOfXNumericAxis(xAxis);
 
         // y axis settings
