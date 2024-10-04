@@ -6,6 +6,8 @@ package vm.plot.impl;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.util.AbstractMap;
 import java.util.Iterator;
@@ -16,7 +18,11 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.GradientPaintTransformType;
+import org.jfree.chart.ui.StandardGradientPaintTransformer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import vm.datatools.DataTypeConvertor;
@@ -107,7 +113,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         return ret;
     }
 
-    private JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces, COLOUR_NAMES[] tracesColours, String xAxisLabel, String yAxisLabel) {
+    protected JFreeChart setAppearence(JFreeChart chart, XYSeries[] traces, COLOUR_NAMES[] tracesColours, String xAxisLabel, String yAxisLabel) {
         XYPlot plot = (XYPlot) chart.getPlot();
         // chart colours
         setChartColor(chart, plot);
@@ -140,24 +146,47 @@ public class XYLinesPlotter extends AbstractPlotter {
         }
 
         // set traces strokes
-        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        XYItemRenderer renderer = plot.getRenderer();
+        XYLineAndShapeRenderer lineAndShapeRenderer = null;
+        XYBarRenderer barRenderer = null;
+        if (renderer instanceof XYLineAndShapeRenderer) {
+            lineAndShapeRenderer = (XYLineAndShapeRenderer) renderer;
+        }
+        if (renderer instanceof XYBarRenderer) {
+            barRenderer = (XYBarRenderer) renderer;
+        }
         AffineTransform resize = new AffineTransform();
         resize.scale(1000, 1000);
-        if (traces.length == 1) {
-            renderer.setSeriesStroke(0, new BasicStroke(SERIES_STROKE));
-            renderer.setSeriesShapesVisible(0, true);
-            Color color = tracesColours == null ? BOX_BLACK : getColor(tracesColours[0], false);
-            renderer.setSeriesPaint(0, color);
-        } else {
-            for (int i = 0; i < traces.length; i++) {
-                renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
-                renderer.setSeriesShapesVisible(i, true);
-                Color color = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
-                renderer.setSeriesPaint(i, color);
+        if (barRenderer != null) {
+            XYBarRenderer.setDefaultShadowsVisible(false);
+            barRenderer.setDrawBarOutline(true); // border of the columns
+//            barRenderer.setMargin(0.5);
+            barRenderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
+        }
+        for (int i = 0; i < traces.length; i++) {
+            if (lineAndShapeRenderer != null) {
+                lineAndShapeRenderer.setSeriesShapesVisible(i, true);
             }
+            Color darkColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
+            Color lightColor = tracesColours == null ? LIGHT_COLOURS[i % LIGHT_COLOURS.length] : getColor(tracesColours[i], true);
+            if (traces.length == 1 && barRenderer == null) {
+                darkColor = BOX_BLACK;
+                lightColor = LIGHT_BOX_BLACK;
+            }
+            if (renderer != null) {
+                renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
+                if (barRenderer == null) {
+                    renderer.setSeriesPaint(i, darkColor);
+                } else {
+                    Paint gradientPaint = new GradientPaint(0.0f, 0.0f, lightColor, Float.MAX_VALUE, Float.MAX_VALUE, lightColor);
+                    barRenderer.setSeriesPaint(i, gradientPaint);
+                    barRenderer.setSeriesOutlinePaint(i, darkColor);
+                }
+            }
+
         }
         plot.setBackgroundAlpha(0);
-
+        plot.setRenderer(renderer);
         return chart;
     }
 

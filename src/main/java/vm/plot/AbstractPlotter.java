@@ -225,7 +225,10 @@ public abstract class AbstractPlotter {
 
     protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
         try {
-            if (includeZeroForXAxis == null) {
+            boolean coversZero = xAxis.getLowerBound() <= 0 && xAxis.getUpperBound() >= 0;
+            if (coversZero) {
+                includeZeroForXAxis = true;
+            } else if (includeZeroForXAxis == null) {
                 LOG.log(Level.WARNING, "Asking for involving zero to x axis");
                 Object[] options = new String[]{"Yes", "No"};
                 String question = "Do you want to involve ZERO to the X axis for all the plots being produced?";

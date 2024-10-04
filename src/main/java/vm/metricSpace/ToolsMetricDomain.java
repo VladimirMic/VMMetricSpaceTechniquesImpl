@@ -69,39 +69,33 @@ public class ToolsMetricDomain {
         return createDistanceDensityPlot(distances);
     }
 
-    private static float basicInterval;
-
-    public static float getBasicInterval() {
-        return basicInterval;
-    }
-
     /**
      * Evaluates distCount distances of random pairs of objects from the list
      * metricObjectsSample
      *
      * @param distances
-     * @param pairsOfExaminedIDs if not null, adds all examined pairs of objects
      * @return
      */
-    public static TreeMap<Float, Float> createDistanceDensityPlot(float[] distances) {
-        int distCount = distances.length;
-        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
-        basicInterval = computeBasicDistInterval(distances);
-        LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
-        for (float distance : distances) {
-            distance = Tools.round(distance, basicInterval, false);
-            if (!absoluteCounts.containsKey(distance)) {
-                absoluteCounts.put(distance, 1f);
-            } else {
-                Float count = absoluteCounts.get(distance);
-                absoluteCounts.put(distance, count + 1);
-            }
-        }
-        TreeMap<Float, Float> histogram = new TreeMap<>();
-        for (Float key : absoluteCounts.keySet()) {
-            histogram.put(key, absoluteCounts.get(key) / distCount);
-        }
-        return histogram;
+    public static SortedMap<Float, Float> createDistanceDensityPlot(float[] distances) {
+        return vm.math.Tools.createHistogramOfValues(distances);
+//        int distCount = distances.length;
+//        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
+//        basicInterval = Tools.computeBasicXIntervalForHistogram(distances);
+//        LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
+//        for (float distance : distances) {
+//            distance = Tools.round(distance, basicInterval, false);
+//            if (!absoluteCounts.containsKey(distance)) {
+//                absoluteCounts.put(distance, 1f);
+//            } else {
+//                Float count = absoluteCounts.get(distance);
+//                absoluteCounts.put(distance, count + 1);
+//            }
+//        }
+//        TreeMap<Float, Float> histogram = new TreeMap<>();
+//        for (Float key : absoluteCounts.keySet()) {
+//            histogram.put(key, absoluteCounts.get(key) / distCount);
+//        }
+//        return histogram;
     }
 
     public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances) {
@@ -443,47 +437,8 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    private static float computeBasicDistInterval(float[] distances) {
-        float max = (float) Tools.getMax(distances);
-        return computeBasicDistInterval(max);
-    }
-
     public static float computeBasicDistInterval(float max) {
-        int exp = 0;
-        while (max < 1) {
-            max *= 10;
-            exp++;
-        }
-        float maxCopy = max;
-        int untilZero = (int) maxCopy;
-        float prev;
-        int counter = 0;
-        if (untilZero < 0) {
-            while (untilZero != maxCopy) {
-                untilZero = (int) (maxCopy * 10);
-                maxCopy *= 10;
-                counter--;
-            }
-        }
-        prev = (int) maxCopy;
-        untilZero = (int) (maxCopy / 10);
-        while (untilZero != 0) {
-            prev = untilZero;
-            untilZero = (int) (maxCopy / 10);
-            maxCopy /= 10;
-            counter++;
-        }
-        counter -= 3;
-        float ret = (float) (prev * Math.pow(10, counter));
-        while (80 * ret > max) {
-            ret /= 1.2;
-        }
-        while (200 * ret < max) {
-            ret *= 1.2;
-        }
-        ret = (float) (ret / Math.pow(10, exp));
-        ret = Tools.ifSmallerThanOneRoundToFirstNonzeroFloatingNumber(ret);
-        return ret;
+        return Tools.computeBasicXIntervalForHistogram(0, max);
     }
 
     public static List filterObjectsByIDs(AbstractMetricSpace metricSpace, List objects, Object... ids) {
