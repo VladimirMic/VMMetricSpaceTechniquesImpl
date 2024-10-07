@@ -121,7 +121,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         // x axis settings
         NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         setLabelsOfAxis(xAxis);
-        xAxis.setUpperMargin(0.5);
+        xAxis.setUpperMargin(0.15);
         setTicksOfXNumericAxis(xAxis);
 
         // y axis settings
@@ -160,7 +160,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         if (barRenderer != null) {
             XYBarRenderer.setDefaultShadowsVisible(false);
             barRenderer.setDrawBarOutline(true); // border of the columns
-//            barRenderer.setMargin(0.5);
+            barRenderer.setMargin(0.5);
             barRenderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
         }
         for (int i = 0; i < traces.length; i++) {

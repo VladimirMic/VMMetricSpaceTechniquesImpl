@@ -224,21 +224,22 @@ public abstract class AbstractPlotter {
     }
 
     protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
+        Boolean includeZeroForXAxisLocal = includeZeroForXAxis;
         try {
             boolean coversZero = xAxis.getLowerBound() <= 0 && xAxis.getUpperBound() >= 0;
             if (coversZero) {
-                includeZeroForXAxis = true;
-            } else if (includeZeroForXAxis == null) {
+                includeZeroForXAxisLocal = true;
+            } else if (includeZeroForXAxisLocal == null) {
                 LOG.log(Level.WARNING, "Asking for involving zero to x axis");
                 Object[] options = new String[]{"Yes", "No"};
                 String question = "Do you want to involve ZERO to the X axis for all the plots being produced?";
                 int add = JOptionPane.showOptionDialog(null, question, "Involve zero to the axis?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, JOptionPane.NO_OPTION);
-                includeZeroForXAxis = add == 0;
+                includeZeroForXAxisLocal = add == 0;
             }
         } catch (Throwable e) {
-            includeZeroForXAxis = true;
+            includeZeroForXAxisLocal = true;
         }
-        xAxis.setAutoRangeIncludesZero(includeZeroForXAxis);
+        xAxis.setAutoRangeIncludesZero(includeZeroForXAxisLocal);
 
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
