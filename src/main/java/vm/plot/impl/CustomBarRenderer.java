@@ -182,10 +182,10 @@ public class CustomBarRenderer extends XYBarRenderer {
             beginElementGroup(g2, dataset.getSeriesKey(series), item);
         }
         XYBarPainter barPainter = getBarPainter();
-        if (getShadowsVisible()) {
-            barPainter.paintBarShadow(g2, this, series, item, bar, barBase,
-                    !getUseYInterval());
-        }
+//        if (getShadowsVisible()) {
+//            barPainter.paintBarShadow(g2, this, series, item, bar, barBase,
+//                    !getUseYInterval());
+//        }
         barPainter.paintBar(g2, this, series, item, bar, barBase);
         if (state.getElementHinting()) {
             endElementGroup(g2);

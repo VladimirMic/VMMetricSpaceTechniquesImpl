@@ -162,7 +162,6 @@ public class XYLinesPlotter extends AbstractPlotter {
         AffineTransform resize = new AffineTransform();
         resize.scale(1000, 1000);
         if (barRenderer != null) {
-            CustomBarRenderer.setDefaultShadowsVisible(false);
             barRenderer.setDrawBarOutline(true); // border of the columns
             int barCount = traces[0].getItemCount();
             Logger.getLogger(XYLinesPlotter.class.getName()).log(Level.INFO, "Creating bars-plot with X axis named {0} and {1} bars", new Object[]{xAxisLabel, barCount});
