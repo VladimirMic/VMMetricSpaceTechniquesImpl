@@ -13,6 +13,8 @@ import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
@@ -93,7 +95,7 @@ public class XYLinesPlotter extends AbstractPlotter {
             }
             int[] idxs = permutationOfIndexesToMakeXIncreasing(tracesXValues[i]);
             for (int idx : idxs) {
-                ret[i].add(tracesXValues[i][idx], tracesYValues[i][idx]);
+                ret[i].add(DataTypeConvertor.floatToPreciseDouble(tracesXValues[i][idx]), DataTypeConvertor.floatToPreciseDouble(tracesYValues[i][idx]));
             }
         }
         return ret;
@@ -153,15 +155,20 @@ public class XYLinesPlotter extends AbstractPlotter {
             lineAndShapeRenderer = (XYLineAndShapeRenderer) renderer;
         }
         if (renderer instanceof XYBarRenderer) {
-            barRenderer = (XYBarRenderer) renderer;
+            barRenderer = new CustomBarRenderer();
+            plot.setRenderer(barRenderer);
+            renderer = barRenderer;
         }
         AffineTransform resize = new AffineTransform();
         resize.scale(1000, 1000);
         if (barRenderer != null) {
-            XYBarRenderer.setDefaultShadowsVisible(false);
+            CustomBarRenderer.setDefaultShadowsVisible(false);
             barRenderer.setDrawBarOutline(true); // border of the columns
-            barRenderer.setMargin(0.5);
+            int barCount = traces[0].getItemCount();
+            Logger.getLogger(XYLinesPlotter.class.getName()).log(Level.INFO, "Creating bars-plot with X axis named {0} and {1} bars", new Object[]{xAxisLabel, barCount});
+            barRenderer.setMargin(0);
             barRenderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
+            barRenderer.setBarPainter(new MyBarRendererTMP(0, 0, 0));
         }
         for (int i = 0; i < traces.length; i++) {
             if (lineAndShapeRenderer != null) {
