@@ -136,7 +136,8 @@ public class XYLinesPlotter extends AbstractPlotter {
         } else {
             NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
             setLabelsOfAxis(yAxis);
-            setTicksOfYNumericAxis(yAxis);
+            boolean onlyIntegerYValues = isOnlyIntegerYValues(traces);
+            setTicksOfYNumericAxis(yAxis, onlyIntegerYValues);
         }
         //legend        
         setLegendFont(chart.getLegend());
@@ -199,6 +200,19 @@ public class XYLinesPlotter extends AbstractPlotter {
     @Override
     public String getSimpleName() {
         return "PlotXYLines";
+    }
+
+    private boolean isOnlyIntegerYValues(XYSeries[] traces) {
+        for (XYSeries trace : traces) {
+            int itemCount = trace.getItemCount();
+            for (int i = 0; i < itemCount; i++) {
+                Number y = trace.getY(i);
+                if (y.floatValue() != y.intValue()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }

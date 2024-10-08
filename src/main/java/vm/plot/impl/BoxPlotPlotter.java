@@ -15,6 +15,7 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.plot.AbstractPlotter;
@@ -109,7 +110,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
         // y axis settings
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         setLabelsOfAxis(yAxis);
-        setTicksOfYNumericAxis(yAxis);
+        setTicksOfYNumericAxis(yAxis, false); // todo integers
 
         BoxAndWhiskerRenderer renderer = new CustomBoxAndWhiskerRenderer();
 

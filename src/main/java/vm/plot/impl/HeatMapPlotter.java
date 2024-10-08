@@ -108,7 +108,7 @@ public class HeatMapPlotter extends AbstractPlotter {
         psl.setAxisLocation(AxisLocation.TOP_OR_RIGHT);
         psl.setMargin(50.0, 20.0, 80.0, 0.0);
 
-        double stepDouble = setAxisUnits(null, (NumberAxis) psl.getAxis(), legendCount);
+        double stepDouble = setAxisUnits(null, (NumberAxis) psl.getAxis(), legendCount, false); // todo - integers?
         float step = (float) stepDouble;
         minZ = vm.math.Tools.round((float) minZ, step, true) - step;
         for (int i = 0; minZ <= maxZ; i++) {

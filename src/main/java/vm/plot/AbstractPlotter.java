@@ -34,6 +34,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 import vm.javatools.SVGtoPDF;
@@ -132,20 +133,24 @@ public abstract class AbstractPlotter {
 
     public abstract String getSimpleName();
 
-    protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber) {
+    protected double setAxisUnits(Double step, NumberAxis axis, int axisImplicitTicksNumber, boolean forceIntegerStep) {
         if (step == null) {
             double diff = Math.abs(axis.getUpperBound() - axis.getLowerBound());
             float division = (float) (diff / axisImplicitTicksNumber);
             step = getStep(division);
             LOG.log(Level.INFO, "The step for the axis is set to {0}", step);
         }
+        if (forceIntegerStep) {
+            step = Math.ceil(step);
+        }
         TickUnits tickUnits = new TickUnits();
-        NumberTickUnit xTickUnitNumber = new NumberTickUnit(step);
-        tickUnits.add(xTickUnitNumber);
+        NumberTickUnit tickUnitNumber = new NumberTickUnit(step);
+        tickUnits.add(tickUnitNumber);
         axis.setStandardTickUnits(tickUnits);
-        axis.setTickUnit(xTickUnitNumber);
+        axis.setTickUnit(tickUnitNumber);
         return step;
     }
+
 
     private double getStep(float division) {
         int m = 0;
@@ -243,25 +248,25 @@ public abstract class AbstractPlotter {
 
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
-        Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC);
-        if (xStep >= 1000) {
+        Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC, false);
+        if (xStep >= 120) {
             NumberFormat nfBig = new CompactNumberFormat(
                     "#,##0.##",
                     DecimalFormatSymbols.getInstance(Locale.US),
                     new String[]{"", "", "", "0K", "00K", "000K", "0M", "00M", "000M", "0B", "00B", "000B", "0T", "00T", "000T"});
+            nf = nfBig;
             try {
                 setDecimalsForShortExpressionOfYTicks(nf, xStep, xAxis);
             } catch (ParseException ex) {
                 Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
             }
-            nf = nfBig;
         }
         xAxis.setNumberFormatOverride(nf);
         double ubShown = calculateHighestVisibleTickValue(xAxis);
         double lb = xAxis.getLowerBound();
         int maxTickLength = getMaxTickLabelLength(lb, ubShown, xStep, nf);
         if (maxTickLength >= 4) {
-            setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC);
+            setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_LONG_DESC, false);
         }
     }
 
@@ -295,7 +300,7 @@ public abstract class AbstractPlotter {
         this.minRecall = Math.min(minRecall, this.minRecall);
     }
 
-    protected void setTicksOfYNumericAxis(NumberAxis yAxis) {
+    protected void setTicksOfYNumericAxis(NumberAxis yAxis, boolean forceIntegers) {
         String label = yAxis.getLabel();
         label = label.toLowerCase().trim();
         if (enforceInvolvingZeroToYAxis) {
@@ -317,14 +322,14 @@ public abstract class AbstractPlotter {
             if (!enforceInvolvingZeroToYAxis) {
                 yAxis.setLowerBound(minRecall);
             }
-            setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
+            setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER, forceIntegers);
             return;
         }
         if (label.equals("frr") || label.equals("false reject rate")) {
             yAxis.setUpperBound(1 - minRecall);
         }
         yAxis.setAutoRangeIncludesZero(true);
-        double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER);
+        double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER, forceIntegers);
         if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = new CompactNumberFormat(
                     "#,##0.##",
