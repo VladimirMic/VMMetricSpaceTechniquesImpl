@@ -2,6 +2,8 @@ package vm.plot.impl;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jfree.chart.axis.ValueAxis;
@@ -88,11 +90,29 @@ public class CustomBarRenderer extends XYBarRenderer {
         double bottom = Math.min(translatedValue0, translatedValue1);
         double top = Math.max(translatedValue0, translatedValue1);
 
-        double startX = intervalDataset.getStartXValue(series, item);
+        RectangleEdge location = plot.getDomainAxisEdge();
+        List<Double> xValues = new ArrayList();
+        List<XYDataItem> items = ((XYSeriesCollection) dataset).getSeries(0).getItems();
+        for (XYDataItem xyDataItems : items) {
+            xValues.add(xyDataItems.getXValue());
+        }
+
+        Collections.sort(xValues);
+        double barWidthReal = Double.MAX_VALUE;
+        double translatedBarWidth = Double.MAX_VALUE;
+        for (int i = 1; i < xValues.size(); i++) {
+            barWidthReal = Math.min(barWidthReal, xValues.get(i) - xValues.get(i - 1));
+            double translatedDataWidth0 = domainAxis.valueToJava2D(xValues.get(i - 1), dataArea, location);
+            double translatedDataWidth1 = domainAxis.valueToJava2D(xValues.get(i), dataArea, location);
+            double diffCand = translatedDataWidth1 - translatedDataWidth0;
+            translatedBarWidth = Math.min(translatedBarWidth, diffCand);
+        }
+
+        double startX = intervalDataset.getXValue(series, item) - barWidthReal / 2;
         if (Double.isNaN(startX)) {
             return;
         }
-        double endX = intervalDataset.getEndXValue(series, item);
+        double endX = intervalDataset.getXValue(series, item) + barWidthReal / 2;
         if (Double.isNaN(endX)) {
             return;
         }
@@ -115,7 +135,6 @@ public class CustomBarRenderer extends XYBarRenderer {
             endX = startX + interval;
         }
 
-        RectangleEdge location = plot.getDomainAxisEdge();
         double translatedStartX = domainAxis.valueToJava2D(startX, dataArea, location);
         double translatedEndX = domainAxis.valueToJava2D(endX, dataArea, location);
 
@@ -123,17 +142,7 @@ public class CustomBarRenderer extends XYBarRenderer {
 
         double left = Math.min(translatedStartX, translatedEndX);
 
-        List<XYDataItem> items = ((XYSeriesCollection) dataset).getSeries(0).getItems();
-
-        double diff = Double.MAX_VALUE;
-
-        for (int i = 1; i < items.size(); i++) {
-            double translatedDataWidth0 = domainAxis.valueToJava2D(items.get(i - 1).getXValue(), dataArea, location);
-            double translatedDataWidth1 = domainAxis.valueToJava2D(items.get(i).getXValue(), dataArea, location);
-            double diffCand = translatedDataWidth1 - translatedDataWidth0;
-            diff = Math.min(diff, diffCand);
-        }
-        double ratio = diff / (translatedEndX - translatedStartX);
+        double ratio = translatedBarWidth / (translatedEndX - translatedStartX);
         double margin = getMargin();
         if (margin > 0 && margin < 1) {
             ratio = ratio * margin;
