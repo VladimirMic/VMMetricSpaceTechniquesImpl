@@ -4,12 +4,15 @@
  */
 package vm.plot.impl;
 
+import java.io.File;
+import java.util.List;
 import java.util.SortedMap;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import vm.datatools.DataTypeConvertor;
+import vm.math.Tools;
 
 /**
  *
@@ -43,6 +46,23 @@ public class XYBarsPlotter extends XYLinesPlotter {
         float[][] yTracesValues = DataTypeConvertor.objectToSingularArray(yFloats);
         COLOUR_NAMES[] colours = DataTypeConvertor.objectToSingularArray(traceColour);
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, mainTitle, colours, xTracesValues, yTracesValues);
+    }
+
+    public static SortedMap<Float, Float> createHistogramOfValuesWithPlot(List<Float> values, boolean absoluteValues, boolean logYScale, String xAxisLabel, String filePath, boolean storeAlsoPNG) {
+        String suf = logYScale ? "_log" : "";
+        XYBarsPlotter plotter = new XYBarsPlotter();
+        plotter.setLogY(logYScale);
+        plotter.setIncludeZeroForXAxis(false);
+        SortedMap<Float, Float> histogram = Tools.createHistogramOfValues(values, absoluteValues);
+        float step = vm.math.Tools.getStepOfAlreadyMadeHistogram(histogram);
+        String name = ", bar width: " + step;
+        JFreeChart histogramPlot = plotter.createHistogramPlot(null, xAxisLabel + name, "Count", null, histogram);
+        File f = new File(filePath + suf);
+        plotter.storePlotPDF(f.getAbsolutePath(), histogramPlot);
+        if (storeAlsoPNG) {
+            plotter.storePlotPNG(f.getAbsolutePath(), histogramPlot);
+        }
+        return histogram;
     }
 
 }
