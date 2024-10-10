@@ -220,9 +220,15 @@ public abstract class AbstractPlotter {
         if (!path.endsWith(".png")) {
             path += ".png";
         }
+        File file = new File(path);
+        File parentFile = file.getParentFile();
+        String name = file.getName();
+        file = new File(parentFile, "png");
+        file.mkdirs();
+        file = new File(file, name);
         try {
             LOG.log(Level.INFO, "Storing plot to {0}", path);
-            ChartUtils.saveChartAsPNG(new File(path), plot, width, height);
+            ChartUtils.saveChartAsPNG(file, plot, width, height);
         } catch (IOException ex) {
             Logger.getLogger(ToyExample.class.getName()).log(Level.SEVERE, null, ex);
         }

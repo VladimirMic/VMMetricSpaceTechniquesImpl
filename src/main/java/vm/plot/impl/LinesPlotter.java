@@ -35,7 +35,7 @@ import vm.plot.AbstractPlotter;
  *
  * @author au734419
  */
-public class XYLinesPlotter extends AbstractPlotter {
+public class LinesPlotter extends AbstractPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data) {
@@ -165,7 +165,7 @@ public class XYLinesPlotter extends AbstractPlotter {
         if (barRenderer != null) {
             barRenderer.setDrawBarOutline(true); // border of the columns
             int barCount = traces[0].getItemCount();
-            Logger.getLogger(XYLinesPlotter.class.getName()).log(Level.INFO, "Creating bars-plot with X axis named {0} and {1} bars", new Object[]{xAxisLabel, barCount});
+            Logger.getLogger(LinesPlotter.class.getName()).log(Level.INFO, "Creating bars-plot with X axis named {0} and {1} bars", new Object[]{xAxisLabel, barCount});
             barRenderer.setMargin(0);
             barRenderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
             barRenderer.setBarPainter(new MyBarRendererTMP(0, 0, 0));

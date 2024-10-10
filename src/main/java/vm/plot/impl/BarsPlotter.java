@@ -18,7 +18,7 @@ import vm.math.Tools;
  *
  * @author au734419
  */
-public class XYBarsPlotter extends XYLinesPlotter {
+public class BarsPlotter extends LinesPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
@@ -50,14 +50,16 @@ public class XYBarsPlotter extends XYLinesPlotter {
 
     public static SortedMap<Float, Float> createHistogramOfValuesWithPlot(List<Float> values, boolean absoluteValues, boolean logYScale, String xAxisLabel, String filePath, boolean storeAlsoPNG) {
         String suf = logYScale ? "_log" : "";
-        XYBarsPlotter plotter = new XYBarsPlotter();
+        BarsPlotter plotter = new BarsPlotter();
         plotter.setLogY(logYScale);
         plotter.setIncludeZeroForXAxis(false);
         SortedMap<Float, Float> histogram = Tools.createHistogramOfValues(values, absoluteValues);
         float step = vm.math.Tools.getStepOfAlreadyMadeHistogram(histogram);
-        String name = ", bar width: " + step;
-        JFreeChart histogramPlot = plotter.createHistogramPlot(null, xAxisLabel + name, "Count", null, histogram);
+        String xAxisName = ", bar width: " + step;
+        String yAxisName = absoluteValues ? "Count" : "Relative count";
+        JFreeChart histogramPlot = plotter.createHistogramPlot(null, xAxisLabel + xAxisName, yAxisName, null, histogram);
         File f = new File(filePath + suf);
+        f.getParentFile().mkdirs();
         plotter.storePlotPDF(f.getAbsolutePath(), histogramPlot);
         if (storeAlsoPNG) {
             plotter.storePlotPNG(f.getAbsolutePath(), histogramPlot);
