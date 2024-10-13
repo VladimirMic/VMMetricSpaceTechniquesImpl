@@ -5,8 +5,13 @@
 package vm.plot.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
@@ -48,12 +53,25 @@ public class BarsPlotter extends LinesPlotter {
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, mainTitle, colours, xTracesValues, yTracesValues);
     }
 
-    public static SortedMap<Float, Float> createHistogramOfValuesWithPlot(List<Float> values, boolean absoluteValues, boolean logYScale, String xAxisLabel, String filePath, boolean storeAlsoPNG) {
+    public static SortedMap<Float, Float> createHistogramOfValuesWithPlot(List<Float> values, boolean absoluteValues, boolean logYScale, String xAxisLabel, String filePath, boolean storeAlsoPNG, boolean printLogMinMax) {
         String suf = logYScale ? "_log" : "";
         BarsPlotter plotter = new BarsPlotter();
         plotter.setLogY(logYScale);
         plotter.setIncludeZeroForXAxis(false);
-        SortedMap<Float, Float> histogram = Tools.createHistogramOfValues(values, absoluteValues);
+        PrintStream err = System.err;
+        if (printLogMinMax) {
+            try {
+                File folder = new File(filePath);
+                folder = folder.getParentFile();
+                folder = new File(folder, "log");
+                folder.mkdirs();
+                System.setErr(new PrintStream(new FileOutputStream(new File(folder, "log.csv"), true)));
+                System.err.print(xAxisLabel + ";");
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(BarsPlotter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        SortedMap<Float, Float> histogram = Tools.createHistogramOfValues(values, absoluteValues, printLogMinMax);
         float step = vm.math.Tools.getStepOfAlreadyMadeHistogram(histogram);
         String xAxisName = ", bar width: " + step;
         String yAxisName = absoluteValues ? "Count" : "Relative count";
@@ -64,6 +82,7 @@ public class BarsPlotter extends LinesPlotter {
         if (storeAlsoPNG) {
             plotter.storePlotPNG(f.getAbsolutePath(), histogramPlot);
         }
+        System.setErr(err);
         return histogram;
     }
 
