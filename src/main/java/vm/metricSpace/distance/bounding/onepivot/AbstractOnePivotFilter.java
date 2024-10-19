@@ -18,7 +18,9 @@ public abstract class AbstractOnePivotFilter extends BoundsOnDistanceEstimation 
 
     @Override
     public float lowerBound(Object... args) {
-        return lowerBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), (int) args[2]);
+        float o1 = (float) args[0];
+        float o2 = (float) args[1];
+        return lowerBound(o1, o2, (int) args[2]);
     }
 
     @Override

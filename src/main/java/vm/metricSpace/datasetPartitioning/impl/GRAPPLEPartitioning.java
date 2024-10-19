@@ -4,6 +4,7 @@
  */
 package vm.metricSpace.datasetPartitioning.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,8 +22,9 @@ import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedP
 /**
  *
  * @author Vlada
+ * @param <T>
  */
-public class GRAPPLEPartitioning extends VoronoiPartitioning {
+public class GRAPPLEPartitioning<T> extends VoronoiPartitioning<T> {
 
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     public static final Logger LOG = Logger.getLogger(GRAPPLEPartitioning.class.getName());
@@ -39,7 +41,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
         return new ProcessBatch(batch, metricSpace, latch, pivotLengths, objectsLengths);
     }
 
-    private class ProcessBatch extends AbstractDatasetPartitioning.BatchProcessor {
+    private class ProcessBatch extends AbstractDatasetPartitioning<T>.BatchProcessor {
 
         public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
             super(batch, metricSpace, latch, pivotLengths, objectsLengths);
@@ -53,7 +55,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
             Map<String, Float> interPivotDists = new HashMap<>();
             for (int i = 0; dataObjects.hasNext(); i++) {
                 Object o = dataObjects.next();
-                Object oData = metricSpace.getDataOfMetricObject(o);
+                T oData = metricSpace.getDataOfMetricObject(o);
                 Comparable oID = metricSpace.getIDOfMetricObject(o);
 
                 float minCosAlpha = Float.MAX_VALUE;
@@ -109,7 +111,7 @@ public class GRAPPLEPartitioning extends VoronoiPartitioning {
                 oMetadata.setDataForUB(dp1ForUB, dp2ForUB, dp1p2ForUB, coefP1P2ForUB, p1IdxForUB, p2IdxForUB);
                 String key = p1IdxForUB + "-" + p2IdxForUB;
                 if (!ret.containsKey(key)) {
-                    ret.put(key, new TreeSet<>());
+                    ret.put(key, new ArrayList<>());
                 }
                 ret.get(key).add(oMetadata);
                 double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));

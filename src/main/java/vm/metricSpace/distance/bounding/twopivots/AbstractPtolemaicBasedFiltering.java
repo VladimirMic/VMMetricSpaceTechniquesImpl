@@ -26,12 +26,12 @@ public abstract class AbstractPtolemaicBasedFiltering extends BoundsOnDistanceEs
 
     @Override
     public float lowerBound(Object... args) {
-        return lowerBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), Float.parseFloat(args[2].toString()), Float.parseFloat(args[3].toString()));
-    }
+        return lowerBound((float) args[0], (float) args[1], (float) args[2], (float)args[3]);
+}
 
     @Override
     public float upperBound(Object... args) {
-        return upperBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), Float.parseFloat(args[2].toString()), Float.parseFloat(args[3].toString()));
+        return upperBound((float) args[0], (float) args[1], (float) args[2], (float)args[3]);
     }
 
 }

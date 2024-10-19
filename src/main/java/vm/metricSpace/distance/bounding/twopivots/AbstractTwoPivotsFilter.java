@@ -18,12 +18,12 @@ public abstract class AbstractTwoPivotsFilter extends BoundsOnDistanceEstimation
 
     @Override
     public float lowerBound(Object... args) {
-        return lowerBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), Float.parseFloat(args[2].toString()), Float.parseFloat(args[3].toString()), Float.parseFloat(args[4].toString()), (int) args[5], (int) args[6], (Float) args[7]);
+        return lowerBound((float) args[0], (float) args[1], (float) args[2], (float)args[3], (float)args[4], (int) args[5], (int) args[6], (Float) args[7]);
     }
 
     @Override
     public float upperBound(Object... args) {
-        return upperBound(Float.parseFloat(args[0].toString()), Float.parseFloat(args[1].toString()), Float.parseFloat(args[2].toString()), Float.parseFloat(args[3].toString()), Float.parseFloat(args[4].toString()), (int) args[5], (int) args[6], (Float) args[7]);
+        return upperBound((float) args[0], (float) args[1], (float) args[2], (float)args[3], (float)args[4], (int) args[5], (int) args[6], (Float) args[7]);
     }
 
 }

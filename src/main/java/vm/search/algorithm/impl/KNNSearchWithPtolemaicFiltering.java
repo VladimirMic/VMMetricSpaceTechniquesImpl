@@ -79,7 +79,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
         float[][] qpDistMultipliedByCoefForPivots = qpMultipliedByCoefCached.get(qId);
         if (qpDistMultipliedByCoefForPivots == null) {
-            qpDistMultipliedByCoefForPivots = computeqpDistMultipliedByCoefForPivots(qData);
+            qpDistMultipliedByCoefForPivots = computeqpDistMultipliedByCoefForPivots(qData, pivotsData, df, filter);
             qpMultipliedByCoefCached.put(qId, qpDistMultipliedByCoefForPivots);
         }
         int[] pivotArrays = qPivotArraysCached.get(qId);
@@ -182,7 +182,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return new Map[]{lbCheckedForQ};
     }
 
-    protected float[][] computeqpDistMultipliedByCoefForPivots(T qData) {
+    public static <T> float[][] computeqpDistMultipliedByCoefForPivots(T qData, List<T> pivotsData, DistanceFunctionInterface<T> df, AbstractPtolemaicBasedFiltering filter) {
         float[][] ret = new float[pivotsData.size()][pivotsData.size()];
         for (int i = 0; i < pivotsData.size(); i++) {
             T pData = pivotsData.get(i);
