@@ -33,8 +33,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
 
     protected final DistanceFunctionInterface df;
-    protected final Map<Comparable, T> pivots;
-    protected final List<Object> pivotsList;
+    protected final List<Object> pivots;
     protected final BoundsOnDistanceEstimation filter;
     protected final float[][] pivotPivotDists;
     protected AtomicLong lbChecked;
@@ -47,8 +46,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
     public VoronoiPartitioning(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, BoundsOnDistanceEstimation filter) {
         super(metricSpace);
         this.df = df;
-        this.pivots = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
-        this.pivotsList = pivots;
+        this.pivots = pivots;
         this.filter = filter;
         lbChecked = new AtomicLong();
         if (filter != null) {
@@ -71,7 +69,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
         long size = 0;
         Map<Comparable, Float> lengthOfPivotVectors = null;
         if (df instanceof CosineDistance) {
-            lengthOfPivotVectors = ToolsMetricDomain.getVectorsLength(pivotsList, metricSpace);
+            lengthOfPivotVectors = ToolsMetricDomain.getVectorsLength(pivots, metricSpace);
         }
         lastTimeOfPartitioning = System.currentTimeMillis();
         while (dataObjects.hasNext()) {
@@ -104,13 +102,13 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                 lastTimeOfPartitioning = System.currentTimeMillis() - lastTimeOfPartitioning;
                 LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects in {1} ms", new Object[]{size, lastTimeOfPartitioning});
             } catch (InterruptedException ex) {
-                Logger.getLogger(VoronoiPartitioning.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
         threadPool.shutdown();
         if (storage != null) {
-            String suf = filter == null ? "" : "_" + filter.getTechFullName();
-            storage.store(ret, datasetName + suf, pivotCountUsedInTheFileName);
+            String suf = filter == null ? "" : filter.getTechFullName();
+            storage.store(ret, datasetName, suf, pivotCountUsedInTheFileName);
         }
         return ret;
     }
@@ -150,13 +148,13 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                 Comparable oID = metricSpace.getIDOfMetricObject(o);
                 Comparable pivotWithMinDist = null;
                 Float oLength = objectsLengths.get(oID);
-                Iterator<Map.Entry<Comparable, T>> it = pivots.entrySet().iterator();
                 float radius = Float.MAX_VALUE;
-                for (int pCounter = 0; it.hasNext(); pCounter++) {
-                    Map.Entry<Comparable, T> pivot = it.next();
-                    Comparable pivotID = pivot.getKey();
+                for (int pCounter = 0; pCounter < pivots.size(); pCounter++) {
+                    Object pivot = pivots.get(pCounter);
+                    Comparable pivotID = metricSpace.getIDOfMetricObject(pivot);
+                    T pData = metricSpace.getDataOfMetricObject(pivot);
                     Float pLength = pivotLengths.get(pivotID);
-                    float dist = getDistIfSmallerThan(radius, oData, pivot.getValue(), oLength, pLength, opDists, pCounter);
+                    float dist = getDistIfSmallerThan(radius, oData, pData, oLength, pLength, opDists, pCounter);
                     opDists[pCounter] = dist;
                     if (dist > 0 && dist < radius) {
                         radius = dist;
@@ -200,7 +198,20 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                             }
                         }
                     }
-                } else if ((filter instanceof AbstractPtolemaicBasedFiltering || filter instanceof AbstractTwoPivotsFilter) && pCounter > 1) {
+                } else if (filter instanceof AbstractPtolemaicBasedFiltering && pCounter > 1) {
+                    // notation with respect to search:
+                    // here the o is q in the search
+                    // here the p0 is p1 in the search
+                    // here the p1 is p2 in the search
+                    // here the p[pCount] is o in the search
+                    // here d(o, p0)        is d(q, p1)   
+                    // here d(o, p1)        is d(q, p2)   
+                    // here d(p0, p[pCount]) is d(p1, o)   
+                    // here d(p1, p[pCount]) is d(p2, o)   
+                    // here d(p0, p1) is d(p1, p2)   
+                    // here d(o, p[pCount]) is d(q, o)   
+
+                } else if (filter instanceof AbstractTwoPivotsFilter && pCounter > 1) {
                     // notation with respect to search:
                     // here the o is q in the search
                     // here the p0 is p1 in the search
