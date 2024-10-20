@@ -20,8 +20,8 @@ import vm.metricSpace.distance.impl.CosineDistance;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.metricSpace.distance.bounding.BoundsOnDistanceEstimation;
 import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
-import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.metricSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
+import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFilteringForVoronoiPartitioning;
 
 /**
  *
@@ -176,83 +176,122 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
         }
 
         protected float getDistIfSmallerThan(float radius, T oData, T pData, Float oLength, Float pLength, float[] opDists, int pCounter) {
-            float lb;
+            boolean canBeFilteredOut = false;
             if (filter != null) {
                 if (filter instanceof AbstractOnePivotFilter && pCounter > 0) {
-                    // One pivot filter
-                    // notation with respect to search:
-                    // here the o is q in the search
-                    // here the p0 is p in the search
-                    // here the p[pCount] is o in the search
-                    // here d(o, p0)        is d(q, p)   
-                    // here d(p0, p[pCount]) is d(p, o)   
-                    // here d(o, p[pCount]) is d(q, o)   
-                    for (int p0 = 0; p0 < pCounter; p0++) {
-                        if (opDists[p0] >= 0) {
-                            float distQP = opDists[p0];
-                            float distPO = pivotPivotDists[p0][pCounter];
-                            lb = filter.lowerBound(distQP, distPO, p0);
+                    canBeFilteredOut = evaluateOnePivotFilter(pCounter, opDists, radius);
+                } else if (filter instanceof PtolemaicFilteringForVoronoiPartitioning && pCounter > 1) {
+                    canBeFilteredOut = evaluatePtolemaicFilter(pCounter, opDists, radius);
+                } else if (filter instanceof AbstractTwoPivotsFilter && pCounter > 1) {
+                    canBeFilteredOut = evaluateTwoPivotFilter(pCounter, opDists, radius);
+                }
+            }
+            if (canBeFilteredOut) {
+                return -1000;
+            }
+            dcOfPartitioning++;
+            return df.getDistance(oData, pData, oLength, pLength);
+        }
+
+        // One pivot filter
+        // notation with respect to search:
+        // here the o is q in the search
+        // here the p0 is p in the search
+        // here the p[pCount] is o in the search
+        // here d(o, p0)        is d(q, p)   
+        // here d(p0, p[pCount]) is d(p, o)   
+        // here d(o, p[pCount]) is d(q, o)   
+        private boolean evaluateOnePivotFilter(int pCounter, float[] opDists, float radius) {
+            for (int p0 = 0; p0 < pCounter; p0++) {
+                if (opDists[p0] >= 0) {
+                    float distQP = opDists[p0];
+                    float distPO = pivotPivotDists[p0][pCounter];
+                    float lb = filter.lowerBound(distQP, distPO, p0);
+                    lbChecked.incrementAndGet();
+                    if (lb > radius) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // notation with respect to search:
+        // here the o is q in the search
+        // here the p0 is p1 in the search
+        // here the p1 is p2 in the search
+        // here the p[pCount] is o in the search
+        // here d(o, p0)        is d(q, p1)   
+        // here d(o, p1)        is d(q, p2)   
+        // here d(p0, p[pCount]) is d(p1, o)   
+        // here d(p1, p[pCount]) is d(p2, o)   
+        // here d(p0, p1) is d(p1, p2)   
+        // here d(o, p[pCount]) is d(q, o)   
+        private boolean evaluateTwoPivotFilter(int pCounter, float[] opDists, float radius) {
+            int counter = 0;
+            for (int p0 = 0; p0 < pCounter - 1; p0++) {
+                if (opDists[p0] >= 0) {
+                    float distP1Q = opDists[p0];
+                    float distP1O = pivotPivotDists[p0][pCounter];
+                    for (int p1 = p0 + 1; p1 < pCounter; p1++) {
+                        counter++;
+                        if (counter == maxCounterOfLB) {
+                            dcOfPartitioning++;
+                            return false;
+                        }
+                        if (opDists[p1] >= 0) {
+                            float distP1P2 = pivotPivotDists[p0][p1];
+                            float distP2O = pivotPivotDists[p1][pCounter];
+                            float distP2Q = opDists[p1];
+                            //distP1P2, distP2O, distP1Q, distP1O, distP2Q,
+                            //int p1Idx, int p2Idx, Float range
+                            float lb = filter.lowerBound(distP1P2, distP2O, distP1Q, distP1O, distP2Q, -1, -1, radius);
                             lbChecked.incrementAndGet();
                             if (lb > radius) {
-                                return -10000;
-                            }
-                        }
-                    }
-                } else if (filter instanceof AbstractPtolemaicBasedFiltering && pCounter > 1) {
-                    // notation with respect to search:
-                    // here the o is q in the search
-                    // here the p0 is p1 in the search
-                    // here the p1 is p2 in the search
-                    // here the p[pCount] is o in the search
-                    // here d(o, p0)        is d(q, p1)   
-                    // here d(o, p1)        is d(q, p2)   
-                    // here d(p0, p[pCount]) is d(p1, o)   
-                    // here d(p1, p[pCount]) is d(p2, o)   
-                    // here d(p0, p1) is d(p1, p2)   
-                    // here d(o, p[pCount]) is d(q, o)   
-
-                } else if (filter instanceof AbstractTwoPivotsFilter && pCounter > 1) {
-                    // notation with respect to search:
-                    // here the o is q in the search
-                    // here the p0 is p1 in the search
-                    // here the p1 is p2 in the search
-                    // here the p[pCount] is o in the search
-                    // here d(o, p0)        is d(q, p1)   
-                    // here d(o, p1)        is d(q, p2)   
-                    // here d(p0, p[pCount]) is d(p1, o)   
-                    // here d(p1, p[pCount]) is d(p2, o)   
-                    // here d(p0, p1) is d(p1, p2)   
-                    // here d(o, p[pCount]) is d(q, o)   
-                    int counter = 0;
-                    for (int p0 = 0; p0 < pCounter - 1; p0++) {
-                        if (opDists[p0] >= 0) {
-                            float distP1Q = opDists[p0];
-                            float distP1O = pivotPivotDists[p0][pCounter];
-                            for (int p1 = p0 + 1; p1 < pCounter; p1++) {
-                                counter++;
-                                if (counter == maxCounterOfLB) {
-                                    dcOfPartitioning++;
-                                    return df.getDistance(oData, pData, oLength, pLength);
-                                }
-                                if (opDists[p1] >= 0) {
-                                    float distP1P2 = pivotPivotDists[p0][p1];
-                                    float distP2O = pivotPivotDists[p1][pCounter];
-                                    float distP2Q = opDists[p1];
-                                    //distP1P2, distP2O, distP1Q, distP1O, distP2Q,
-                                    //int p1Idx, int p2Idx, Float range
-                                    lb = filter.lowerBound(distP1P2, distP2O, distP1Q, distP1O, distP2Q, -1, -1, radius);
-                                    lbChecked.incrementAndGet();
-                                    if (lb > radius) {
-                                        return -10000;
-                                    }
-                                }
+                                return true;
                             }
                         }
                     }
                 }
             }
-            dcOfPartitioning++;
-            return df.getDistance(oData, pData, oLength, pLength);
+            return false;
+        }
+
+        // notation with respect to search:
+        // here the o is q in the search
+        // here the p0 is p1 in the search
+        // here the p1 is p2 in the search
+        // here the p[pCount] is o in the search
+        // here d(o, p0)        is d(q, p1)   
+        // here d(o, p1)        is d(q, p2)   
+        // here d(p0, p[pCount]) is d(p1, o)   
+        // here d(p1, p[pCount]) is d(p2, o)   
+        // here d(p0, p1) is d(p1, p2)   
+        // here d(o, p[pCount]) is d(q, o)   
+        private boolean evaluatePtolemaicFilter(int pCounter, float[] opDists, float radius) {
+            PtolemaicFilteringForVoronoiPartitioning filterCast = (PtolemaicFilteringForVoronoiPartitioning) filter;
+            int counter = 0;
+            for (int p0 = 0; p0 < pCounter - 1; p0++) {
+                if (opDists[p0] >= 0) {
+                    float distP1Q = opDists[p0];
+                    for (int p1 = p0 + 1; p1 < pCounter; p1++) {
+                        counter++;
+                        if (counter == maxCounterOfLB) {
+                            dcOfPartitioning++;
+                            return false;
+                        }
+                        if (opDists[p1] >= 0) {
+                            float distP2Q = opDists[p1];
+                            float lb = filterCast.lowerBound(distP1Q, distP2Q, p0,p1, pCounter);
+                            lbChecked.incrementAndGet();
+                            if (lb > radius) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }

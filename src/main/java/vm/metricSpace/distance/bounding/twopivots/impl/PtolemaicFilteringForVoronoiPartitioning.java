@@ -22,12 +22,15 @@ public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFilter
         for (int pCurr = 0; pCurr < pivotsData.size(); pCurr++) {
             T pCurrData = pivotsData.get(pCurr);
             for (int i = 0; i < pivotsData.size(); i++) {
-                float[] row = coefsPivotPivot[i];
                 T piData = pivotsData.get(i);
+                float dPCurrPi = df.getDistance(pCurrData, piData);
+                if (dPCurrPi == 0) {
+                    continue;
+                }
+                float[] row = coefsPivotPivot[i];
                 for (int j = 0; j < pivotsData.size(); j++) {
-                    float dPCurrPi = df.getDistance(pCurrData, piData);
                     float dPiPjInv = row[j];
-                    dPCurrPiOverdPiPj[pCurr][i][j] = dPCurrPi * dPiPjInv;
+                    dPCurrPiOverdPiPj[pCurr][i][j] = dPiPjInv * dPCurrPi;
                 }
             }
         }

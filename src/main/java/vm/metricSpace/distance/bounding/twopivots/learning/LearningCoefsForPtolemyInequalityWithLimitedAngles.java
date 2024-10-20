@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
                                 fourObjectsData[1] = metricSpace.getDataOfMetricObject(fourObjects[1]);
                                 float[] extremes = learnForPivots(fourObjectsData);
                                 partialResults[finalP1].put(fourObjectsIDs[0] + "-" + fourObjectsIDs[1], extremes);
-                                LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{fourObjectsIDs[0] + "-" + fourObjectsIDs[1], extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
+//                                LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{fourObjectsIDs[0] + "-" + fourObjectsIDs[1], extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                             }
                             LOG.log(Level.INFO, "Evaluated coefs for all pivot pairs with the starting pivot {0}", new Object[]{finalP1});
                         }
@@ -87,7 +88,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
 //                        LOG.log(Level.INFO, "Evaluated coefs for pivot pairs {0} with the starting pivot {6}. Results: {1}; {2}; {3}; {4}. Notice first two numbers multiplied by {5} for a sake of numerical precision.", new Object[]{pivotPairsID, extremes[0], extremes[1], extremes[2], extremes[3], CONSTANT_FOR_PRECISION, finalP1});
                     }
                     latch.countDown();
-                    LOG.log(Level.INFO, "Remains {0} primary pivots to check. Results size: {1}", new Object[]{latch.getCount(), results.size()});
+                    LOG.log(Level.INFO, "Remains {0} primary pivots to check", new Object[]{latch.getCount()});
                 });
             }
             latch.await();
@@ -102,6 +103,21 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
         return results;
     }
 
+    private final ConcurrentHashMap<T, Map<T, Float>> cache = new ConcurrentHashMap<>();
+
+    private float getDistWithCaching(T o1, T o2) {
+        if (!cache.containsKey(o1)) {
+            cache.put(o1, new ConcurrentHashMap<>());
+        }
+        Map<T, Float> map = cache.get(o1);
+        if (map.containsKey(o2)) {
+            return map.get(o2);
+        }
+        float ret = df.getDistance(o1, o2);
+        map.put(o2, ret);
+        return ret;
+    }
+
     private float[] learnForPivots(T[] fourObjectsData) {
         float[] extremes = new float[4]; // minSum, maxSum, minDiff, maxDiff
         extremes[0] = Float.MAX_VALUE;
@@ -114,10 +130,14 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
             fourObjectsData[2] = o2Data;
             fourObjectsData[3] = o3Data;
             sixDists[2] = (float) dataPairsForSmallestDists.get(i + 2);
-            sixDists[3] = df.getDistance(fourObjectsData[3], fourObjectsData[0]);
-            sixDists[4] = df.getDistance(fourObjectsData[0], fourObjectsData[2]);
-            sixDists[5] = df.getDistance(fourObjectsData[1], fourObjectsData[3]);
-            sixDists[1] = df.getDistance(fourObjectsData[1], fourObjectsData[2]);
+            sixDists[3] = getDistWithCaching(fourObjectsData[0], fourObjectsData[3]);
+            sixDists[4] = getDistWithCaching(fourObjectsData[0], fourObjectsData[2]);
+            sixDists[5] = getDistWithCaching(fourObjectsData[1], fourObjectsData[3]);
+            sixDists[1] = getDistWithCaching(fourObjectsData[1], fourObjectsData[2]);
+//            sixDists[3] = df.getDistance(fourObjectsData[0], fourObjectsData[3]);
+//            sixDists[4] = df.getDistance(fourObjectsData[0], fourObjectsData[2]);
+//            sixDists[5] = df.getDistance(fourObjectsData[1], fourObjectsData[3]);
+//            sixDists[1] = df.getDistance(fourObjectsData[1], fourObjectsData[2]);
 
             if (sixDists == null || Tools.isZeroInArray(sixDists)) {
                 continue;
