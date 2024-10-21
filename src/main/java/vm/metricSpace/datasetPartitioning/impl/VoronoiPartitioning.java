@@ -21,7 +21,8 @@ import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.metricSpace.distance.bounding.BoundsOnDistanceEstimation;
 import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
 import vm.metricSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
-import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFilteringForVoronoiPartitioning;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFilteringForVoronoiPartitioning;
+import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFilterForVoronoiPartitioning;
 
 /**
  *
@@ -38,6 +39,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
     protected final float[][] pivotPivotDists;
     protected AtomicLong lbChecked;
     private final long maxCounterOfLB;
+    private final int[] pivotPermutation;
 
     public VoronoiPartitioning(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots) {
         this(metricSpace, df, pivots, null);
@@ -55,6 +57,11 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
             pivotPivotDists = null;
         }
         maxCounterOfLB = pivots.size() / 2;
+        if (filter instanceof PtolemaicFilterForVoronoiPartitioning) {
+            pivotPermutation = ((PtolemaicFilterForVoronoiPartitioning) filter).pivotsOrderForLB();
+        } else {
+            pivotPermutation = DataDependentPtolemaicFilteringForVoronoiPartitioning.getTrivialPivotOrder(pivots.size());
+        }
     }
 
     @Override
@@ -100,7 +107,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                     }
                 }
                 lastTimeOfPartitioning = System.currentTimeMillis() - lastTimeOfPartitioning;
-                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects in {1} ms", new Object[]{size, lastTimeOfPartitioning});
+                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects in {1} ms. Total dc: {2}", new Object[]{size, lastTimeOfPartitioning, dcOfPartitioning.get()});
             } catch (InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
@@ -142,14 +149,15 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
             long t = -System.currentTimeMillis();
             Iterator dataObjects = batch.iterator();
             float[] opDists = new float[pivots.size()];
-            for (int i = 1; dataObjects.hasNext(); i++) {
+            for (int oCounter = 1; dataObjects.hasNext(); oCounter++) {
                 Object o = dataObjects.next();
                 T oData = metricSpace.getDataOfMetricObject(o);
                 Comparable oID = metricSpace.getIDOfMetricObject(o);
                 Comparable pivotWithMinDist = null;
                 Float oLength = objectsLengths.get(oID);
                 float radius = Float.MAX_VALUE;
-                for (int pCounter = 0; pCounter < pivots.size(); pCounter++) {
+                for (int pCounterIdx = 0; pCounterIdx < pivots.size(); pCounterIdx++) {
+                    int pCounter = pivotPermutation[pCounterIdx];
                     Object pivot = pivots.get(pCounter);
                     Comparable pivotID = metricSpace.getIDOfMetricObject(pivot);
                     T pData = metricSpace.getDataOfMetricObject(pivot);
@@ -166,8 +174,8 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                 }
                 List<Comparable> list = (List<Comparable>) ret.get(pivotWithMinDist);
                 list.add(oID);
-                if (i % 10000 == 0) {
-                    LOG.log(Level.INFO, "Processed {0} objects with {1} dc and {2} lb", new Object[]{i, dcOfPartitioning, lbChecked.get()});
+                if (oCounter % 10000 == 0) {
+                    LOG.log(Level.INFO, "Processed {0} objects with {1} dc and {2} lb", new Object[]{oCounter, dcOfPartitioning.get(), lbChecked.get()});
                 }
             }
             latch.countDown();
@@ -180,7 +188,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
             if (filter != null) {
                 if (filter instanceof AbstractOnePivotFilter && pCounter > 0) {
                     canBeFilteredOut = evaluateOnePivotFilter(pCounter, opDists, radius);
-                } else if (filter instanceof PtolemaicFilteringForVoronoiPartitioning && pCounter > 1) {
+                } else if (filter instanceof PtolemaicFilterForVoronoiPartitioning && pCounter > 1) {
                     canBeFilteredOut = evaluatePtolemaicFilter(pCounter, opDists, radius);
                 } else if (filter instanceof AbstractTwoPivotsFilter && pCounter > 1) {
                     canBeFilteredOut = evaluateTwoPivotFilter(pCounter, opDists, radius);
@@ -189,7 +197,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
             if (canBeFilteredOut) {
                 return -1000;
             }
-            dcOfPartitioning++;
+            dcOfPartitioning.incrementAndGet();
             return df.getDistance(oData, pData, oLength, pLength);
         }
 
@@ -234,12 +242,11 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                     float distP1Q = opDists[p0];
                     float distP1O = pivotPivotDists[p0][pCounter];
                     for (int p1 = p0 + 1; p1 < pCounter; p1++) {
-                        counter++;
-                        if (counter == maxCounterOfLB) {
-                            dcOfPartitioning++;
-                            return false;
-                        }
                         if (opDists[p1] >= 0) {
+                            counter++;
+                            if (counter == maxCounterOfLB) {
+                                return false;
+                            }
                             float distP1P2 = pivotPivotDists[p0][p1];
                             float distP2O = pivotPivotDists[p1][pCounter];
                             float distP2Q = opDists[p1];
@@ -269,20 +276,21 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
         // here d(p0, p1) is d(p1, p2)   
         // here d(o, p[pCount]) is d(q, o)   
         private boolean evaluatePtolemaicFilter(int pCounter, float[] opDists, float radius) {
-            PtolemaicFilteringForVoronoiPartitioning filterCast = (PtolemaicFilteringForVoronoiPartitioning) filter;
+            PtolemaicFilterForVoronoiPartitioning filterCast = (PtolemaicFilterForVoronoiPartitioning) filter;
             int counter = 0;
-            for (int p0 = 0; p0 < pCounter - 1; p0++) {
+            for (int p0idx = 0; p0idx < pCounter - 1; p0idx++) {
+                int p0 = pivotPermutation[p0idx];
                 if (opDists[p0] >= 0) {
                     float distP1Q = opDists[p0];
-                    for (int p1 = p0 + 1; p1 < pCounter; p1++) {
-                        counter++;
-                        if (counter == maxCounterOfLB) {
-                            dcOfPartitioning++;
-                            return false;
-                        }
+                    for (int p1idx = p0idx + 1; p1idx < pCounter; p1idx++) {
+                        int p1 = pivotPermutation[p1idx];
                         if (opDists[p1] >= 0) {
+                            counter++;
+                            if (counter == maxCounterOfLB) {
+                                return false;
+                            }
                             float distP2Q = opDists[p1];
-                            float lb = filterCast.lowerBound(distP1Q, distP2Q, p0,p1, pCounter);
+                            float lb = filterCast.lowerBound(distP1Q, distP2Q, p0, p1, pCounter);
                             lbChecked.incrementAndGet();
                             if (lb > radius) {
                                 return true;

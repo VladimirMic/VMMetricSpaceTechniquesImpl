@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 import vm.metricSpace.AbstractMetricSpace;
 
 /**
@@ -25,7 +26,7 @@ public abstract class AbstractDatasetPartitioning<T> {
     public static final Integer BATCH_SIZE = 1000000;
     protected final AbstractMetricSpace<T> metricSpace;
     protected long lastTimeOfPartitioning = 0;
-    protected long dcOfPartitioning = 0;
+    protected AtomicLong dcOfPartitioning = new AtomicLong();
 
     public AbstractDatasetPartitioning(AbstractMetricSpace<T> metricSpace) {
         this.metricSpace = metricSpace;
@@ -42,7 +43,7 @@ public abstract class AbstractDatasetPartitioning<T> {
     }
 
     public long getDcOfPartitioning() {
-        return dcOfPartitioning;
+        return dcOfPartitioning.get();
     }
 
     public abstract class BatchProcessor implements Runnable {

@@ -18,7 +18,7 @@ import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
@@ -41,11 +41,11 @@ public class LearningPivotPairsForPtolemyInequalityWithLimitedAngles<T> {
     private final List<Object> pivots;
     private final List<Object> sampleObjects;
     private final List<Object> sampleQueries;
-    private final DataDependentGeneralisedPtolemaicFiltering filter;
+    private final DataDependentPtolemaicFiltering filter;
     private final PivotPairsStoreInterface<T> storage;
     private final String datasetName;
 
-    public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentGeneralisedPtolemaicFiltering filter, String datasetName, PivotPairsStoreInterface storage) {
+    public LearningPivotPairsForPtolemyInequalityWithLimitedAngles(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, List<Object> sampleObjectsAndQueries, int objectsSampleCount, int queriesSampleCount, int numberOfSmallestDistsUsedForLearning, DataDependentPtolemaicFiltering filter, String datasetName, PivotPairsStoreInterface storage) {
         this.metricSpace = metricSpace;
         this.df = df;
         this.pivots = pivots;

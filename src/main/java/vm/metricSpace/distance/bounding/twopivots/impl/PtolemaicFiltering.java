@@ -12,7 +12,7 @@ import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFilterin
 public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
 
     protected final float[][] coefsPivotPivot;
-    protected final boolean queryDynamicPivotPairs;
+    private final boolean queryDynamicPivotPairs;
 
     public PtolemaicFiltering(String resultNamePrefix, List<T> pivotsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
         super(resultNamePrefix);
@@ -54,7 +54,7 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
         return coefsPivotPivot[p1Idx][p2Idx];
     }
 
-    public boolean getQueryDynamicPivotPairs() {
+    public boolean isQueryDynamicPivotPairs() {
         return queryDynamicPivotPairs;
     }
 

@@ -4,15 +4,18 @@
  */
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import vm.metricSpace.distance.DistanceFunctionInterface;
+import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFilteringForVoronoiPartitioning.getTrivialPivotOrder;
 
 /**
  *
  * @author Vlada
  * @param <T>
  */
-public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFiltering<T> {
+public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFiltering<T> implements PtolemaicFilterForVoronoiPartitioning {
 
     private final float[][][] dPCurrPiOverdPiPj;
 
@@ -38,7 +41,11 @@ public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFilter
 
     @Override
     public String getTechName() {
-        return "ptolemaios_for_voronoi_partitioning";
+        String ret = "ptolemaios_for_voronoi_partitioning";
+        if (!isQueryDynamicPivotPairs()) {
+            ret += "_random_pivots";
+        }
+        return ret;
     }
 
     @Override
@@ -51,10 +58,12 @@ public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFilter
         return upperBound((float) args[0], (float) args[1], (int) args[2], (int) args[3], (int) args[4]);
     }
 
+    @Override
     public float lowerBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur) {
         return Math.abs(distOPi * dPCurrPiOverdPiPj[pCur][jIdx][iIdx] - distOPj * dPCurrPiOverdPiPj[pCur][iIdx][jIdx]);
     }
 
+    @Override
     public float upperBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur) {
         return distOPi * dPCurrPiOverdPiPj[pCur][jIdx][iIdx] + distOPj * dPCurrPiOverdPiPj[pCur][iIdx][jIdx];
     }
@@ -67,5 +76,20 @@ public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFilter
     @Override
     public float upperBound(float distP2O, float distP1QMultipliedByCoef, float distP1O, float distP2QMultipliedByCoef) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int[] pivotsOrderForLB() {
+        if (isQueryDynamicPivotPairs()) {
+            throw new UnsupportedOperationException();
+//            int[] ret = new int[dPCurrPiOverdPiPj.length];
+//            Set<Integer> remain = new HashSet<>();
+//            for (int i = 0; i < ret.length; i++) {
+//                remain.add(i);
+//            }
+//            ret = addExtremePivot(ret, remain);
+//            return ret;
+        }
+        return getTrivialPivotOrder(dPCurrPiOverdPiPj.length);
     }
 }

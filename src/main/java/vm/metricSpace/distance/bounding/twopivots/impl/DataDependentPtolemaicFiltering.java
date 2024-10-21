@@ -6,14 +6,20 @@ import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFilterin
  *
  * @author xmic
  */
-public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemaicBasedFiltering {
+public class DataDependentPtolemaicFiltering extends AbstractPtolemaicBasedFiltering {
 
-    private final float[][][] coefsPivotPivot;
     public static final Integer CONSTANT_FOR_PRECISION = 1024 * 8;
+    protected float[][][] coefsPivotPivot;
+    private final boolean queryDynamicPivotPairs;
 
-    public DataDependentGeneralisedPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot) {
+    public DataDependentPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot) {
+        this(namePrefix, coefsPivotPivot, true);
+    }
+
+    public DataDependentPtolemaicFiltering(String namePrefix, float[][][] coefsPivotPivot, boolean queryDynamicPivotPairs) {
         super(namePrefix);
         this.coefsPivotPivot = coefsPivotPivot;
+        this.queryDynamicPivotPairs = queryDynamicPivotPairs;
     }
 
     @Override
@@ -28,7 +34,7 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
 
     @Override
     protected String getTechName() {
-        return "data-dependent_generalised_ptolemaic_filtering";
+        return "data-dependent_ptolemaic_filtering";
     }
 
     @Override
@@ -39,6 +45,10 @@ public class DataDependentGeneralisedPtolemaicFiltering extends AbstractPtolemai
     @Override
     public float getCoefPivotPivotForUB(int p1Idx, int p2Idx) {
         return coefsPivotPivot[p1Idx][p2Idx][1];
+    }
+
+    public boolean isQueryDynamicPivotPairs() {
+        return queryDynamicPivotPairs;
     }
 
 }

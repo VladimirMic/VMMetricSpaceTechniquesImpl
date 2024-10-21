@@ -48,7 +48,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.filter = ptolemaicFilter;
         if (ptolemaicFilter instanceof PtolemaicFiltering) {
             PtolemaicFiltering cast = (PtolemaicFiltering) ptolemaicFilter;
-            query_dynamic_pivots = cast.getQueryDynamicPivotPairs();
+            query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
         }
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
