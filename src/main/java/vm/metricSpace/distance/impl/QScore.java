@@ -25,7 +25,7 @@ public class QScore extends DistanceFunctionInterface<String> {
     }
 
     public static void setRootFolder(String root) {
-        ProteinNativeQScoreDistance.init(root);
+        ProteinNativeQScoreDistance.initDistance(root);
     }
 
     @Override
@@ -49,11 +49,12 @@ public class QScore extends DistanceFunctionInterface<String> {
          *
          * @param gesamtLibraryPath according to gesamt
          */
-        public static void initDistance() {
+        public static void initDistance(String archiveDirectory) {
             try {
                 System.loadLibrary("ProteinDistance");
                 // parameter 0.6 is inherent parametr in C library that was examined to speed-up distance evaluation
                 // while well approximating the geometric similarity of protein structures
+                init(archiveDirectory);
             } catch (java.lang.UnsatisfiedLinkError | Exception ex) {
                 LOG.log(Level.WARNING, "Initialization of the distance function not successfull.", ex);
             }
