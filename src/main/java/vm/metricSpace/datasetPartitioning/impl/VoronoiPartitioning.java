@@ -241,12 +241,12 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
                 if (opDists[p0] >= 0) {
                     float distP1Q = opDists[p0];
                     float distP1O = pivotPivotDists[p0][pCounter];
+                    counter++;
+                    if (counter == maxCounterOfLB) {
+                        return false;
+                    }
                     for (int p1 = p0 + 1; p1 < pCounter; p1++) {
                         if (opDists[p1] >= 0) {
-                            counter++;
-                            if (counter == maxCounterOfLB) {
-                                return false;
-                            }
                             float distP1P2 = pivotPivotDists[p0][p1];
                             float distP2O = pivotPivotDists[p1][pCounter];
                             float distP2Q = opDists[p1];
@@ -279,16 +279,16 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
             PtolemaicFilterForVoronoiPartitioning filterCast = (PtolemaicFilterForVoronoiPartitioning) filter;
             int counter = 0;
             for (int p0idx = 0; p0idx < pCounter - 1; p0idx++) {
+                counter++;
+                if (counter == maxCounterOfLB) {
+                    return false;
+                }
                 int p0 = pivotPermutation[p0idx];
                 if (opDists[p0] >= 0) {
                     float distP1Q = opDists[p0];
                     for (int p1idx = p0idx + 1; p1idx < pCounter; p1idx++) {
                         int p1 = pivotPermutation[p1idx];
                         if (opDists[p1] >= 0) {
-                            counter++;
-                            if (counter == maxCounterOfLB) {
-                                return false;
-                            }
                             float distP2Q = opDists[p1];
                             float lb = filterCast.lowerBound(distP1Q, distP2Q, p0, p1, pCounter);
                             lbChecked.incrementAndGet();
