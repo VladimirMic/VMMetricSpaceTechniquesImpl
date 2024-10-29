@@ -45,6 +45,7 @@ public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
         this(metricSpace, df, pivots, null);
     }
 
+    @Deprecated
     public VoronoiPartitioning(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots, BoundsOnDistanceEstimation filter) {
         super(metricSpace);
         this.df = df;

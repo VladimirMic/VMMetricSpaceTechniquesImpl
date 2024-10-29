@@ -30,7 +30,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractMetricSpace<T> metricSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
         pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
         this.df = df;
-        datasetPartitioning = voronoiPartitioningStorage.load(datasetName, pivotCountUsedForVoronoiLearning);
+        datasetPartitioning = voronoiPartitioningStorage.loadAsTreeSets(datasetName, pivotCountUsedForVoronoiLearning);
     }
 
     public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {

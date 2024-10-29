@@ -4,9 +4,7 @@
  */
 package vm.metricSpace.distance.bounding.twopivots.impl;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFilteringForVoronoiPartitioning.getTrivialPivotOrder;
 
@@ -15,6 +13,7 @@ import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtole
  * @author Vlada
  * @param <T>
  */
+@Deprecated
 public class PtolemaicFilteringForVoronoiPartitioning<T> extends PtolemaicFiltering<T> implements PtolemaicFilterForVoronoiPartitioning {
 
     private final float[][][] dPCurrPiOverdPiPj;

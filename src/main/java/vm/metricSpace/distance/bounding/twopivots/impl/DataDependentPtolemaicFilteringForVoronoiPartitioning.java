@@ -16,6 +16,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * @author Vlada
  * @param <T>
  */
+@Deprecated
 public class DataDependentPtolemaicFilteringForVoronoiPartitioning<T> extends DataDependentPtolemaicFiltering implements PtolemaicFilterForVoronoiPartitioning {
 
     private final float[][][][] dPCurrPiOverdPiPj;

@@ -34,7 +34,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     private final GroundTruthEvaluator bruteForceAlg;
 
     protected final AbstractPtolemaicBasedFiltering filter;
-    private final List<T> pivotsData;
+    protected final List<T> pivotsData;
     protected final float[][] poDists;
     protected final Map<Comparable, Integer> rowHeaders;
     protected final DistanceFunctionInterface<T> df;
