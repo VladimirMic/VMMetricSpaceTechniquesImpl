@@ -24,7 +24,7 @@ import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFil
  * @author Vlada
  * @param <T>
  */
-public class GRAPPLEPartitioning<T> extends VoronoiPartitioning<T> {
+public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> {
 
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     public static final Logger LOG = Logger.getLogger(GRAPPLEPartitioning.class.getName());

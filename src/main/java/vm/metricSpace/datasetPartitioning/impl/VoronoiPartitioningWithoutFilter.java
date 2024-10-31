@@ -23,14 +23,14 @@ import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
  * @author Vlada
  * @param <T>
  */
-public class VoronoiPartitioning<T> extends AbstractDatasetPartitioning<T> {
+public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitioning<T> {
 
-    public static final Logger LOG = Logger.getLogger(VoronoiPartitioning.class.getName());
+    public static final Logger LOG = Logger.getLogger(VoronoiPartitioningWithoutFilter.class.getName());
 
     protected final DistanceFunctionInterface df;
     protected final List<Object> pivots;
 
-    public VoronoiPartitioning(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots) {
+    public VoronoiPartitioningWithoutFilter(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots) {
         super(metricSpace);
         this.df = df;
         this.pivots = pivots;
