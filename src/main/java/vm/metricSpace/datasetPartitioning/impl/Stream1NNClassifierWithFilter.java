@@ -1,8 +1,6 @@
 package vm.metricSpace.datasetPartitioning.impl;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
@@ -21,11 +19,13 @@ public class Stream1NNClassifierWithFilter<T> extends VoronoiPartitioningWithout
 
     protected final BoundsOnDistanceEstimation filter;
     protected final int pivotCountForFilter;
+    protected final float[][] pivotPivotDists;
 
     public Stream1NNClassifierWithFilter(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, int pivotCountForFilter, List<Object> centroids, BoundsOnDistanceEstimation filter) {
         super(metricSpace, df, centroids);
         this.filter = filter;
         this.pivotCountForFilter = pivotCountForFilter;
+        pivotPivotDists = metricSpace.getDistanceMap(df, pivotsData, pivotsData, pivotCountForFilter, pivotsData.size());
     }
 
     @Override
@@ -34,7 +34,7 @@ public class Stream1NNClassifierWithFilter<T> extends VoronoiPartitioningWithout
         if (filter != null) {
             ret += filter.getTechFullName();
         }
-        return ret;
+        return ret + getParalelism() + "par";
     }
 
     @Override
@@ -46,19 +46,18 @@ public class Stream1NNClassifierWithFilter<T> extends VoronoiPartitioningWithout
     }
 
     @Override
-    public String getAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
+    public void setAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
         int ret = 0;
         for (AbstractPivotBasedPartitioningProcessor process : processes) {
             VoronoiPartitioningWithFilterProcessor cast = (VoronoiPartitioningWithFilterProcessor) process;
             ret += cast.getLbCheckedBatch();
         }
         lastAdditionalStats = Integer.toString(ret);
-        return lastAdditionalStats;
     }
 
     @Override
-    protected AbstractPivotBasedPartitioningProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, int classesCount, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
-        return new VoronoiPartitioningWithFilterProcessor(batch, metricSpace, df, latch, pivotsData, pivotLengths, objectsLengths, filter, pivotCountForFilter);
+    protected AbstractPivotBasedPartitioningProcessor getBatchProcesor(AbstractMetricSpace metricSpace, int classesCount, float[] pivotLengths) {
+        return new VoronoiPartitioningWithFilterProcessor(metricSpace, df, pivotsData, pivotPivotDists, pivotLengths, filter, pivotCountForFilter);
     }
 
 }

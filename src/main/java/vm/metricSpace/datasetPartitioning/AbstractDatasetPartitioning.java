@@ -31,7 +31,7 @@ public abstract class AbstractDatasetPartitioning<T> {
 
     public abstract String getName();
 
-    public abstract String getAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes);
+    public abstract void setAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes);
 
     public long getLastTimeOfPartitioning() {
         return lastTimeOfPartitioning;
@@ -43,6 +43,11 @@ public abstract class AbstractDatasetPartitioning<T> {
 
     public long getDcOfPartitioning() {
         return dcOfPartitioning;
+    }
+
+    protected int getParalelism() {
+//        return 1;
+        return vm.javatools.Tools.PARALELISATION;
     }
 
 }

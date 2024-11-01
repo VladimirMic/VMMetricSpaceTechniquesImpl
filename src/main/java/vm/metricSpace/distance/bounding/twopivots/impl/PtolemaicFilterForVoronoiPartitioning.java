@@ -10,9 +10,9 @@ package vm.metricSpace.distance.bounding.twopivots.impl;
  */
 public interface PtolemaicFilterForVoronoiPartitioning {
 
-    public float lowerBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur);
+    public float lowerBound(float distOPi, float distOPj, int pIdx, int pCur);
 
-    public float upperBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur);
+    public float upperBound(float distOPi, float distOPj, int pIdx, int pCur);
 
     public boolean isQueryDynamicPivotPairs();
 

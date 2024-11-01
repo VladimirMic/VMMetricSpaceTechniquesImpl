@@ -5,8 +5,6 @@
 package vm.metricSpace.datasetPartitioning.impl.batchProcessor;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
@@ -18,14 +16,11 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public class BruteForceVoronoiPartitioningProcessor<T> extends AbstractPivotBasedPartitioningProcessor<T> {
 
     public BruteForceVoronoiPartitioningProcessor(
-            List batch,
             AbstractMetricSpace<T> metricSpace,
             DistanceFunctionInterface df,
-            CountDownLatch latch,
             List<T> pivotData,
-            float[] pivotLengths,
-            Map<Comparable, Float> objectsLengths) {
-        super(batch, metricSpace, df, latch, pivotData, pivotData.size(), pivotLengths, objectsLengths);
+            float[] pivotLengths) {
+        super(metricSpace, df, pivotData, pivotData.size(), pivotLengths);
     }
 
     @Override

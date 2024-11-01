@@ -5,7 +5,6 @@
 package vm.metricSpace.datasetPartitioning.impl.batchProcessor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
+import static vm.metricSpace.datasetPartitioning.impl.batchProcessor.VoronoiPartitioningWithFilterProcessor.tCheck;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -24,23 +24,22 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
 
     public static final Logger LOG = Logger.getLogger(AbstractPivotBasedPartitioningProcessor.class.getName());
 
-    protected final List batch;
+    protected Iterator batch;
     protected final DistanceFunctionInterface df;
     protected final List<Comparable>[] ret;
     protected final AbstractMetricSpace<T> metricSpace;
     protected final List<T> pivotData;
 
     protected final float[] pivotLengths;
-    protected final Map<Comparable, Float> objectsLengths;
+    protected Map<Comparable, Float> objectsLengths;
     protected final int numberOfPivotsUsedInFiltering;
 
-    protected final CountDownLatch latch;
+    protected CountDownLatch latch;
 
     protected int lbCheckedBatch;
     protected int dcOfPartitioningBatch;
 
-    public AbstractPivotBasedPartitioningProcessor(List batch, AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, CountDownLatch latch, List<T> pivotData, int numberOfPivotsUsedInFiltering, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
-        this.batch = batch;
+    public AbstractPivotBasedPartitioningProcessor(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, List<T> pivotData, int numberOfPivotsUsedInFiltering, float[] pivotLengths) {
         this.df = df;
         this.pivotData = pivotData;
         this.numberOfPivotsUsedInFiltering = numberOfPivotsUsedInFiltering;
@@ -49,9 +48,7 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
             ret[i] = new ArrayList<>();
         }
         this.metricSpace = metricSpace;
-        this.latch = latch;
         this.pivotLengths = pivotLengths;
-        this.objectsLengths = objectsLengths == null ? new HashMap<>() : objectsLengths;
         dcOfPartitioningBatch = 0;
         lbCheckedBatch = 0;
     }
@@ -59,15 +56,11 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
     @Override
     public void run() {
         long t = -System.currentTimeMillis();
-        Iterator dataObjects = batch.iterator();
-        for (int oCounter = 1; dataObjects.hasNext(); oCounter++) {
-            Object o = dataObjects.next();
+        for (int oCounter = 1; batch.hasNext(); oCounter++) {
+            Object o = batch.next();
             T oData = metricSpace.getDataOfMetricObject(o);
             Comparable oID = metricSpace.getIDOfMetricObject(o);
-            Float oLength = objectsLengths.get(oID);
-            if (oID.equals("0000042502")) {
-                String s = "";
-            }
+            Float oLength = objectsLengths == null ? null : objectsLengths.get(oID);
             int pivotWithMinDist = 0;
             // compute dists to pivots, get closest pivot and its distance
             float[] opDists = new float[numberOfPivotsUsedInFiltering];
@@ -81,7 +74,7 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
                 }
             }
             dcOfPartitioningBatch += numberOfPivotsUsedInFiltering;
-
+            long t1 = -System.currentTimeMillis();
             for (; pIdx < pivotData.size(); pIdx++) {
                 T pData = pivotData.get(pIdx);
                 Float pLength = pivotLengths == null ? null : pivotLengths[pIdx];
@@ -91,6 +84,8 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
                     pivotWithMinDist = pIdx;
                 }
             }
+            t1 += System.currentTimeMillis();
+            tCheck += t1;
             List<Comparable> list = ret[pivotWithMinDist];
             list.add(oID);
             if (oCounter % 10000 == 0) {
@@ -99,7 +94,6 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
         }
         latch.countDown();
         t += System.currentTimeMillis();
-
         LOG.log(Level.INFO, "Batch finished in {0} ms after {1} dc and {2} LBs", new Object[]{t, dcOfPartitioningBatch, lbCheckedBatch});
     }
 
@@ -115,6 +109,26 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
 
     public int getDcOfPartitioningBatch() {
         return dcOfPartitioningBatch;
+    }
+
+    public void setBatch(Iterator batch) {
+        this.batch = batch;
+    }
+
+    public void setObjectsLengths(Map<Comparable, Float> objectsLengths) {
+        this.objectsLengths = objectsLengths;
+    }
+
+    public void setLatch(CountDownLatch latch) {
+        this.latch = latch;
+    }
+
+    public void resetDCBatch() {
+        dcOfPartitioningBatch = 0;
+    }
+
+    public void resetLBBatch() {
+        lbCheckedBatch = 0;
     }
 
 }

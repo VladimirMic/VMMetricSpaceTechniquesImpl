@@ -5,9 +5,7 @@
 package vm.metricSpace.datasetPartitioning.impl.batchProcessor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.BoundsOnDistanceEstimation;
@@ -25,33 +23,46 @@ public class VoronoiPartitioningWithFilterProcessor<T> extends AbstractPivotBase
     private final BoundsOnDistanceEstimation filter;
     private final int maxLBCount;
     protected final float[][] pivotPivotDists;
+    private final short filterType;
 
-    public VoronoiPartitioningWithFilterProcessor(List batch, AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, CountDownLatch latch, List<T> pivotData, float[] pivotLengths, Map<Comparable, Float> objectsLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering) {
-        this(batch, metricSpace, df, latch, pivotData, pivotLengths, objectsLengths, filter, numberOfPivotsUsedInFiltering, numberOfPivotsUsedInFiltering);
+    public VoronoiPartitioningWithFilterProcessor(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering) {
+        this(metricSpace, df, pivotData, pivotPivotDists, pivotLengths, filter, numberOfPivotsUsedInFiltering, numberOfPivotsUsedInFiltering);
     }
 
-    public VoronoiPartitioningWithFilterProcessor(List batch, AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, CountDownLatch latch, List<T> pivotData, float[] pivotLengths, Map<Comparable, Float> objectsLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering, int maxLBCount) {
-        super(batch, metricSpace, df, latch, pivotData, numberOfPivotsUsedInFiltering, pivotLengths, objectsLengths);
+    public VoronoiPartitioningWithFilterProcessor(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering, int maxLBCount) {
+        super(metricSpace, df, pivotData, numberOfPivotsUsedInFiltering, pivotLengths);
         this.filter = filter;
         this.maxLBCount = maxLBCount;
-        if (filter != null) {
-            pivotPivotDists = metricSpace.getDistanceMap(df, pivotData, pivotData, numberOfPivotsUsedInFiltering, pivotData.size());
+        this.pivotPivotDists = pivotPivotDists;
+        if (filter == null) {
+            filterType = 0;
+        } else if (filter instanceof TriangleInequality) {
+            filterType = 1;
+        } else if (filter instanceof PtolemaicFilterForVoronoiPartitioning) {
+            filterType = 2;
+        } else if (filter instanceof AbstractTwoPivotsFilter) {
+            filterType = 3;
         } else {
-            pivotPivotDists = null;
+            throw new RuntimeException("What a filter??");
         }
     }
+
+    public static long tCheck = 0;
 
     @Override
     protected float getDistIfSmallerThan(float radius, T oData, T pData, Float oLength, Float pLength, float[] opDists, int pCounter) {
         boolean canBeFilteredOut = false;
-        if (filter != null) {
-            if (filter instanceof TriangleInequality) {
+        switch (filterType) {
+            case 1:
                 canBeFilteredOut = evaluateOnePivotFilter(pCounter, opDists, radius);
-            } else if (filter instanceof PtolemaicFilterForVoronoiPartitioning) {
+                break;
+            case 2:
                 canBeFilteredOut = evaluatePtolemaicFilter(pCounter, opDists, radius);
-            } else if (filter instanceof AbstractTwoPivotsFilter) {
+                break;
+
+            case 3:
                 canBeFilteredOut = evaluateTwoPivotFilter(pCounter, opDists, radius);
-            }
+                break;
         }
         if (canBeFilteredOut) {
             return -1000;
@@ -136,13 +147,17 @@ public class VoronoiPartitioningWithFilterProcessor<T> extends AbstractPivotBase
             int p1Idx = pivotPermutation[pIdx + 1];
             float distP1Q = opDists[p0Idx];
             float distP2Q = opDists[p1Idx];
-            float lb = filterCast.lowerBound(distP1Q, distP2Q, p0Idx, p1Idx, pCounter);
+            float lb = filterCast.lowerBound(distP1Q, distP2Q, pIdx, pCounter);
             lbCheckedBatch++;
             if (lb > radius) {
                 return true;
             }
         }
         return false;
+    }
+
+    protected Object[] getAdditionalParamsForFilter() {
+        return null;
     }
 
 }

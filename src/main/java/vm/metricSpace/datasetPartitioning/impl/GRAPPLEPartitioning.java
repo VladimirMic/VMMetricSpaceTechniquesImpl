@@ -4,18 +4,14 @@
  */
 package vm.metricSpace.datasetPartitioning.impl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.datasetPartitioning.AbstractDatasetPartitioning;
 import vm.metricSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
@@ -39,18 +35,17 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
 
     private class ProcessBatch extends AbstractPivotBasedPartitioningProcessor<T> {
 
-        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, CountDownLatch latch, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
-            super(batch, metricSpace, df, latch,pivotsData, pivots.size(), pivotLengths, objectsLengths);
+        public ProcessBatch(AbstractMetricSpace metricSpace, DistanceFunctionInterface df, float[] pivotLengths) {
+            super(metricSpace, df, pivotsData, pivots.size(), pivotLengths);
         }
 
         @Override
         @SuppressWarnings("null")
         public void run() {
             long t = -System.currentTimeMillis();
-            Iterator dataObjects = batch.iterator();
             Map<String, Float> interPivotDists = new HashMap<>();
-            for (int i = 0; dataObjects.hasNext(); i++) {
-                Object o = dataObjects.next();
+            for (int i = 0; batch.hasNext(); i++) {
+                Object o = batch.next();
                 T oData = metricSpace.getDataOfMetricObject(o);
                 Comparable oID = metricSpace.getIDOfMetricObject(o);
 

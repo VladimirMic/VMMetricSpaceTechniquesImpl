@@ -19,6 +19,7 @@ import vm.metricSpace.distance.impl.CosineDistance;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.metricSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
 import vm.metricSpace.datasetPartitioning.impl.batchProcessor.BruteForceVoronoiPartitioningProcessor;
+import vm.metricSpace.datasetPartitioning.impl.batchProcessor.VoronoiPartitioningWithFilterProcessor;
 
 /**
  *
@@ -53,26 +54,34 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
     public Map<Comparable, Collection<Comparable>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
         int pivotCountUsedInTheFileName = (Integer) params[0];
         Map<Comparable, Collection<Comparable>> ret = new HashMap<>();
-//        int parallelism = vm.javatools.Tools.PARALELISATION;
-        int parallelism = 1;
+        int parallelism = getParalelism();
 
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(parallelism);
         int batchCounter = 0;
         long size = 0;
-        lastTimeOfPartitioning = System.currentTimeMillis();
+        lastTimeOfPartitioning = -System.currentTimeMillis();
+        AbstractPivotBasedPartitioningProcessor[] processes = new AbstractPivotBasedPartitioningProcessor[parallelism];
+
+        for (int j = 0; j < parallelism; j++) {
+            processes[j] = getBatchProcesor(metricSpace, pivots.size(), lengthOfPivotVectors);
+        }
         while (dataObjects.hasNext()) {
             try {
                 CountDownLatch latch = new CountDownLatch(parallelism);
-                AbstractPivotBasedPartitioningProcessor[] processes = new AbstractPivotBasedPartitioningProcessor[parallelism];
                 for (int j = 0; j < parallelism; j++) {
                     batchCounter++;
+                    lastTimeOfPartitioning += System.currentTimeMillis();
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
+                    lastTimeOfPartitioning -= System.currentTimeMillis();
                     size += batch.size();
-                    Map<Comparable, Float> lengthOfBatchVectors = null;
                     if (df instanceof CosineDistance) {
-                        lengthOfBatchVectors = ToolsMetricDomain.getVectorsLength(batch, metricSpace);
+                        Map<Comparable, Float> lengthOfBatchVectors = ToolsMetricDomain.getVectorsLength(batch, metricSpace);
+                        processes[j].setObjectsLengths(lengthOfBatchVectors);
                     }
-                    processes[j] = getBatchProcesor(batch, metricSpace, latch, pivots.size(), lengthOfPivotVectors, lengthOfBatchVectors);
+                    processes[j].setBatch(batch.iterator());
+                    processes[j].setLatch(latch);
+                    processes[j].resetDCBatch();
+                    processes[j].resetLBBatch();
                     threadPool.execute(processes[j]);
                 }
                 latch.await();
@@ -89,13 +98,14 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
                         ret.get(key).addAll(cell);
                     }
                 }
-                lastTimeOfPartitioning = System.currentTimeMillis() - lastTimeOfPartitioning;
-                getAdditionalStats(processes);
-                LOG.log(Level.INFO, "kNN classification done for {0} objects in {1} ms. Total dc: {2}, total LBs: {3}", new Object[]{size, lastTimeOfPartitioning, dcOfPartitioning});
+                LOG.log(Level.INFO, "kNN classification done for {0} objects. Total dc: {1}", new Object[]{size, dcOfPartitioning});
             } catch (InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
+        setAdditionalStats(processes);
+        lastTimeOfPartitioning += System.currentTimeMillis();
+        System.out.println("XXXXX " + VoronoiPartitioningWithFilterProcessor.tCheck + ", " + lastTimeOfPartitioning + ", " + ((float) VoronoiPartitioningWithFilterProcessor.tCheck / lastTimeOfPartitioning));
         threadPool.shutdown();
         if (storage != null) {
             storage.store(ret, datasetName, getSuffixForOutputFileName(), pivotCountUsedInTheFileName);
@@ -103,13 +113,13 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
         return ret;
     }
 
-    protected AbstractPivotBasedPartitioningProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, int classesCount, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
-        return new BruteForceVoronoiPartitioningProcessor(batch, metricSpace, df, latch, pivotsData, pivotLengths, objectsLengths);
+    protected AbstractPivotBasedPartitioningProcessor getBatchProcesor(AbstractMetricSpace metricSpace, int classesCount, float[] pivotLengths) {
+        return new BruteForceVoronoiPartitioningProcessor(metricSpace, df, pivotsData, pivotLengths);
     }
 
     @Override
     public String getName() {
-        return "Voronoi_partitioning";
+        return "Voronoi_partitioning_" + getParalelism() + "par";
     }
 
     protected String getSuffixForOutputFileName() {
@@ -117,8 +127,8 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
     }
 
     @Override
-    public String getAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
-        return "";
+    public void setAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
+        lastAdditionalStats = "";
     }
 
 }

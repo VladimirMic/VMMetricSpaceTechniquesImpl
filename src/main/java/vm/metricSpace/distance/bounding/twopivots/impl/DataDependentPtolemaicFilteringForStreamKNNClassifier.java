@@ -6,7 +6,7 @@ package vm.metricSpace.distance.bounding.twopivots.impl;
 
 import java.util.List;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.search.algorithm.impl.KNNSearchWithPtolemaicFiltering;
+import static vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFilteringForStreamKNNClassifier.transformToCentroidPermutationAndLBCoefsArrays;
 
 /**
  *
@@ -15,22 +15,25 @@ import vm.search.algorithm.impl.KNNSearchWithPtolemaicFiltering;
  */
 public class DataDependentPtolemaicFilteringForStreamKNNClassifier<T> extends DataDependentPtolemaicFiltering implements PtolemaicFilterForVoronoiPartitioning {
 
-    private final float[][][] dPCurrPiOverdPiPj;
+    private final int[][] pivotPairsForCentroids;
+    private final float[][] coefsForLB;
+
     private final int pivotCount;
 
-    public DataDependentPtolemaicFilteringForStreamKNNClassifier(String namePrefix, float[][][] coefsPivotPivot, List<T> pivotsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
+    public DataDependentPtolemaicFilteringForStreamKNNClassifier(String namePrefix, float[][][] coefsPivotPivot, List<T> centroidsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
         super(namePrefix, coefsPivotPivot, queryDynamicPivotPairs);
-        pivotCount = pivotsData.size();
-        dPCurrPiOverdPiPj = new float[pivotsData.size()][pivotCount][pivotCount];
-        for (int pCurr = 0; pCurr < pivotsData.size(); pCurr++) {
-            T pCurrData = pivotsData.get(pCurr);
-            for (int i = 0; i < pivotsData.size(); i++) {
-                T piData = pivotsData.get(i);
+        pivotCount = coefsPivotPivot.length;
+        int centroidCount = centroidsData.size();
+        float[][][] dPCurrPiOverdPiPj = new float[centroidCount][pivotCount][pivotCount];
+        for (int pCurr = 0; pCurr < centroidCount; pCurr++) {
+            T pCurrData = centroidsData.get(pCurr);
+            for (int i = 0; i < pivotCount; i++) {
+                T piData = centroidsData.get(i);
                 float dPCurrPi = df.getDistance(pCurrData, piData);
                 if (dPCurrPi == 0) {
                     continue;
                 }
-                for (int j = 0; j < pivotsData.size(); j++) {
+                for (int j = 0; j < pivotCount; j++) {
                     float coefLB = getCoefPivotPivotForLB(i, j);
                     dPCurrPiOverdPiPj[pCurr][i][j] = coefLB * dPCurrPi;
                 }
@@ -38,25 +41,29 @@ public class DataDependentPtolemaicFilteringForStreamKNNClassifier<T> extends Da
         }
         super.coefsPivotPivot = null;
         System.gc();
+        boolean randomPivot = !isQueryDynamicPivotPairs();
+        coefsForLB = new float[centroidCount][pivotCount * 2];
+        pivotPairsForCentroids = new int[centroidCount][pivotCount * 2];
+        transformToCentroidPermutationAndLBCoefsArrays(dPCurrPiOverdPiPj, pivotPairsForCentroids, coefsForLB, randomPivot);
     }
 
     @Override
     public float lowerBound(Object... args) {
-        return lowerBound((float) args[0], (float) args[1], (int) args[2], (int) args[3], (int) args[4]);
+        return lowerBound((float) args[0], (float) args[1], (int) args[2], (int) args[3]);
     }
 
     @Override
     public float upperBound(Object... args) {
-        return upperBound((float) args[0], (float) args[1], (int) args[2], (int) args[3], (int) args[4]);
+        return upperBound((float) args[0], (float) args[1], (int) args[2], (int) args[3]);
     }
 
     @Override
-    public float lowerBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur) {
-        return Math.abs(distOPi * dPCurrPiOverdPiPj[pCur][jIdx][iIdx] - distOPj * dPCurrPiOverdPiPj[pCur][iIdx][jIdx]);
+    public float lowerBound(float distOPi, float distOPj, int pIdx, int pCur) {
+        return Math.abs(distOPi * coefsForLB[pCur][pIdx + 1] - distOPj * coefsForLB[pCur][pIdx]);
     }
 
     @Override
-    public float upperBound(float distOPi, float distOPj, int iIdx, int jIdx, int pCur) {
+    public float upperBound(float distOPi, float distOPj, int iIdx, int pCur) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -71,10 +78,6 @@ public class DataDependentPtolemaicFilteringForStreamKNNClassifier<T> extends Da
 
     @Override
     public int[] pivotsOrderForLB(int pCur) {
-        if (isQueryDynamicPivotPairs()) {
-            return KNNSearchWithPtolemaicFiltering.identifyExtremePivotPairs(dPCurrPiOverdPiPj[pCur], pivotCount);
-        }
-        return KNNSearchWithPtolemaicFiltering.identifyRandomPivotPairs(pivotCount);
+        return pivotPairsForCentroids[pCur];
     }
-
 }

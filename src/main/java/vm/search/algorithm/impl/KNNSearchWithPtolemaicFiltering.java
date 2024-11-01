@@ -231,6 +231,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                     a = value;
                 }
                 value = a / b;
+                if (value == 0) {
+                    continue;
+                }
                 if (sorted.size() < size) {
                     sorted.add(new AbstractMap.SimpleEntry<>(i * qpDistMultipliedByCoefForPivots.length + j, value));
                 } else {
