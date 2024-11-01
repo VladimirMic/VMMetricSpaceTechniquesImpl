@@ -16,5 +16,5 @@ public interface PtolemaicFilterForVoronoiPartitioning {
 
     public boolean isQueryDynamicPivotPairs();
 
-    public int[] pivotsOrderForLB();
+    public int[] pivotsOrderForLB(int pCur);
 }

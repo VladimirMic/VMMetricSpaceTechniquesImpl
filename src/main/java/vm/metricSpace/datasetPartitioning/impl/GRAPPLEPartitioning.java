@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.datasetPartitioning.AbstractDatasetPartitioning;
+import vm.metricSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
 
@@ -36,15 +37,10 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
         this.filter = filter;
     }
 
-    @Override
-    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
-        return new ProcessBatch(batch, metricSpace, latch, pivotLengths, objectsLengths);
-    }
+    private class ProcessBatch extends AbstractPivotBasedPartitioningProcessor<T> {
 
-    private class ProcessBatch extends AbstractDatasetPartitioning<T>.BatchProcessor {
-
-        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
-            super(batch, metricSpace, latch, pivotLengths, objectsLengths);
+        public ProcessBatch(List batch, AbstractMetricSpace metricSpace, DistanceFunctionInterface df, CountDownLatch latch, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
+            super(batch, metricSpace, df, latch,pivotsData, pivots.size(), pivotLengths, objectsLengths);
         }
 
         @Override
@@ -68,18 +64,16 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
                 Float oLength = objectsLengths.get(oID);
                 ObjectMetadata oMetadata = new ObjectMetadata(oID);
                 for (int p1Index = 0; p1Index < pivots.size() - 1; p1Index++) {
-                    Object p1 = pivots.get(p1Index);
-                    Comparable p1ID = metricSpace.getIDOfMetricObject(p1);
-                    Object p1Data = metricSpace.getDataOfMetricObject(p1);
-                    float distOP1 = df.getDistance(oData, p1Data, oLength, pivotLengths.get(p1ID));
+                    Comparable p1ID = pivotsIDs.get(p1Index);
+                    T p1Data = pivotsData.get(p1Index);
+                    float distOP1 = df.getDistance(oData, p1Data, oLength, pivotLengths[p1Index]);
                     for (int p2Index = p1Index + 1; p2Index < pivots.size(); p2Index++) {
-                        Object p2 = pivots.get(p2Index);
-                        Comparable p2ID = metricSpace.getIDOfMetricObject(p2);
-                        Object p2Data = metricSpace.getDataOfMetricObject(p2);
-                        float distOP2 = df.getDistance(oData, p2Data, oLength, pivotLengths.get(p2ID));
+                        Comparable p2ID = pivotsIDs.get(p2Index);
+                        T p2Data = pivotsData.get(p2Index);
+                        float distOP2 = df.getDistance(oData, p2Data, oLength, pivotLengths[p2Index]);
                         Float distP1P2 = interPivotDists.get(p1ID + "-" + p2ID);
                         if (distP1P2 == null) {
-                            distP1P2 = df.getDistance(p1Data, p2Data, pivotLengths.get(p1ID), pivotLengths.get(p2ID));
+                            distP1P2 = df.getDistance(p1Data, p2Data, pivotLengths[p1Index], pivotLengths[p2Index]);
                             interPivotDists.put(p1ID.toString() + "-" + p2ID.toString(), distP1P2);
                         }
                         // is this pivot pair best for the partitioning?
@@ -110,16 +104,22 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
                 float coefP1P2ForUB = filter.getCoefPivotPivotForLB(p1IdxForUB, p2IdxForUB);
                 oMetadata.setDataForUB(dp1ForUB, dp2ForUB, dp1p2ForUB, coefP1P2ForUB, p1IdxForUB, p2IdxForUB);
                 String key = p1IdxForUB + "-" + p2IdxForUB;
-                if (!ret.containsKey(key)) {
-                    ret.put(key, new ArrayList<>());
+                if (true) {
+                    throw new UnsupportedOperationException();
                 }
-                ret.get(key).add(oMetadata);
+//                ret.get(key).add(oMetadata); // resolve
+                ret[0].add(oMetadata); // resolve
                 double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
                 LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB});
             }
             latch.countDown();
             t += System.currentTimeMillis();
             LOG.log(Level.INFO, "Batch finished in {0} ms", t);
+        }
+
+        @Override
+        protected float getDistIfSmallerThan(float radius, T oData, T pData, Float oLength, Float pLength, float[] opDists, int pCounter) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     }
 

@@ -384,6 +384,23 @@ public class ToolsMetricDomain {
         return pd;
     }
 
+    public static float[] getVectorsLengthAsArray(List batch, AbstractMetricSpace metricSpace) {
+        float[] ret = new float[batch.size()];
+        for (int i = 0; i < batch.size(); i++) {
+            Object object = batch.get(i);
+            Comparable id = metricSpace.getIDOfMetricObject(object);
+            float length = 0;
+            float[] vector = (float[]) metricSpace.getDataOfMetricObject(object); // must be the space of floats
+            for (int j = 0; j < vector.length; j++) {
+                float f = vector[j];
+                length += f * f;
+            }
+            length = (float) Math.sqrt(length);
+            ret[i] = length;
+        }
+        return ret;
+    }
+
     public static Map<Comparable, Float> getVectorsLength(List batch, AbstractMetricSpace metricSpace) {
         Map<Comparable, Float> ret = new HashMap<>();
         for (Object object : batch) {

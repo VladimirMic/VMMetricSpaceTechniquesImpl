@@ -69,4 +69,17 @@ public abstract class AbstractMetricSpace<T> {
         return ret;
     }
 
+    public float[][] getDistanceMap(DistanceFunctionInterface<T> df, List<T> list1, List<T> list2, int list1ObjCount, int list2ObjCount) {
+        float[][] ret = new float[list1ObjCount][list2ObjCount];
+        for (int i = 0; i < list1ObjCount; i++) {
+            T o1Data = list1.get(i);
+            for (int j = 0; j < list2ObjCount; j++) {
+                T o2Data = list2.get(j);
+                float distance = df.getDistance(o1Data, o2Data);
+                ret[i][j] = distance;
+            }
+        }
+        return ret;
+    }
+
 }

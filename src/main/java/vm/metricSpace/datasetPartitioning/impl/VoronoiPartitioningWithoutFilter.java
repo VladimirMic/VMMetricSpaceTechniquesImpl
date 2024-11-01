@@ -17,6 +17,8 @@ import vm.metricSpace.datasetPartitioning.AbstractDatasetPartitioning;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.impl.CosineDistance;
 import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
+import vm.metricSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
+import vm.metricSpace.datasetPartitioning.impl.batchProcessor.BruteForceVoronoiPartitioningProcessor;
 
 /**
  *
@@ -29,32 +31,39 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
 
     protected final DistanceFunctionInterface df;
     protected final List<Object> pivots;
+    protected final List<T> pivotsData;
+    protected final List<Comparable> pivotsIDs;
+    protected final float[] lengthOfPivotVectors;
 
     public VoronoiPartitioningWithoutFilter(AbstractMetricSpace<T> metricSpace, DistanceFunctionInterface<T> df, List<Object> pivots) {
         super(metricSpace);
         this.df = df;
         this.pivots = pivots;
+        pivotsData = ToolsMetricDomain.getDataAsList(pivots.iterator(), metricSpace);
+        pivotsIDs = ToolsMetricDomain.getIDsAsList(pivots.iterator(), metricSpace);
+
+        if (df instanceof CosineDistance) {
+            lengthOfPivotVectors = ToolsMetricDomain.getVectorsLengthAsArray(pivots, metricSpace);
+        } else {
+            lengthOfPivotVectors = null;
+        }
     }
 
     @Override
     public Map<Comparable, Collection<Comparable>> partitionObjects(Iterator<Object> dataObjects, String datasetName, StorageDatasetPartitionsInterface storage, Object... params) {
         int pivotCountUsedInTheFileName = (Integer) params[0];
         Map<Comparable, Collection<Comparable>> ret = new HashMap<>();
-//        int parallelism = 1;
-        int parallelism = vm.javatools.Tools.PARALELISATION;
+//        int parallelism = vm.javatools.Tools.PARALELISATION;
+        int parallelism = 1;
 
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(parallelism);
         int batchCounter = 0;
         long size = 0;
-        Map<Comparable, Float> lengthOfPivotVectors = null;
-        if (df instanceof CosineDistance) {
-            lengthOfPivotVectors = ToolsMetricDomain.getVectorsLength(pivots, metricSpace);
-        }
         lastTimeOfPartitioning = System.currentTimeMillis();
         while (dataObjects.hasNext()) {
             try {
                 CountDownLatch latch = new CountDownLatch(parallelism);
-                AbstractDatasetPartitioning.BatchProcessor[] processes = new AbstractDatasetPartitioning.BatchProcessor[parallelism];
+                AbstractPivotBasedPartitioningProcessor[] processes = new AbstractPivotBasedPartitioningProcessor[parallelism];
                 for (int j = 0; j < parallelism; j++) {
                     batchCounter++;
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
@@ -63,36 +72,39 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
                     if (df instanceof CosineDistance) {
                         lengthOfBatchVectors = ToolsMetricDomain.getVectorsLength(batch, metricSpace);
                     }
-                    processes[j] = getBatchProcesor(batch, metricSpace, latch, lengthOfPivotVectors, lengthOfBatchVectors);
+                    processes[j] = getBatchProcesor(batch, metricSpace, latch, pivots.size(), lengthOfPivotVectors, lengthOfBatchVectors);
                     threadPool.execute(processes[j]);
                 }
                 latch.await();
                 for (int j = 0; j < parallelism; j++) {
-                    Map<Comparable, List<Comparable>> partial = processes[j].getRet();
-                    for (Map.Entry<Comparable, List<Comparable>> partialEntry : partial.entrySet()) {
-                        Comparable key = partialEntry.getKey();
+                    List[] partial = processes[j].getRet();
+                    dcOfPartitioning += processes[j].getDcOfPartitioningBatch();
+                    for (int i = 0; i < partial.length; i++) {
+                        List cell = partial[i];
+                        Comparable key = pivotsIDs.get(i);
                         if (!ret.containsKey(key)) {
                             List<Comparable> set = new ArrayList<>();
                             ret.put(key, set);
                         }
-                        ret.get(key).addAll(partialEntry.getValue());
+                        ret.get(key).addAll(cell);
                     }
                 }
                 lastTimeOfPartitioning = System.currentTimeMillis() - lastTimeOfPartitioning;
-                LOG.log(Level.INFO, "Voronoi partitioning done for {0} objects in {1} ms. Total dc: {2}", new Object[]{size, lastTimeOfPartitioning, dcOfPartitioning.get()});
+                getAdditionalStats(processes);
+                LOG.log(Level.INFO, "kNN classification done for {0} objects in {1} ms. Total dc: {2}, total LBs: {3}", new Object[]{size, lastTimeOfPartitioning, dcOfPartitioning});
             } catch (InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
         threadPool.shutdown();
         if (storage != null) {
-            storage.store(ret, datasetName, null, pivotCountUsedInTheFileName);
+            storage.store(ret, datasetName, getSuffixForOutputFileName(), pivotCountUsedInTheFileName);
         }
         return ret;
     }
 
-    protected AbstractDatasetPartitioning.BatchProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
-        return new ProcessBatch(batch, metricSpace, latch, pivotLengths, objectsLengths);
+    protected AbstractPivotBasedPartitioningProcessor getBatchProcesor(List batch, AbstractMetricSpace metricSpace, CountDownLatch latch, int classesCount, float[] pivotLengths, Map<Comparable, Float> objectsLengths) {
+        return new BruteForceVoronoiPartitioningProcessor(batch, metricSpace, df, latch, pivotsData, pivotLengths, objectsLengths);
     }
 
     @Override
@@ -100,54 +112,13 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
         return "Voronoi_partitioning";
     }
 
+    protected String getSuffixForOutputFileName() {
+        return "";
+    }
+
     @Override
-    public String getAdditionalStats() {
-        return null;
+    public String getAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
+        return "";
     }
 
-    private class ProcessBatch extends AbstractDatasetPartitioning<T>.BatchProcessor {
-
-        public ProcessBatch(List batch, AbstractMetricSpace<T> metricSpace, CountDownLatch latch, Map<Comparable, Float> pivotLengths, Map<Comparable, Float> objectsLengths) {
-            super(batch, metricSpace, latch, pivotLengths, objectsLengths);
-        }
-
-        @Override
-        public void run() {
-            long t = -System.currentTimeMillis();
-            Iterator dataObjects = batch.iterator();
-            float[] opDists = new float[pivots.size()];
-            for (int oCounter = 1; dataObjects.hasNext(); oCounter++) {
-                Object o = dataObjects.next();
-                T oData = metricSpace.getDataOfMetricObject(o);
-                Comparable oID = metricSpace.getIDOfMetricObject(o);
-                Comparable pivotWithMinDist = null;
-                Float oLength = objectsLengths.get(oID);
-                float radius = Float.MAX_VALUE;
-                for (int pCounterIdx = 0; pCounterIdx < pivots.size(); pCounterIdx++) {
-                    Object pivot = pivots.get(pCounterIdx);
-                    Comparable pivotID = metricSpace.getIDOfMetricObject(pivot);
-                    T pData = metricSpace.getDataOfMetricObject(pivot);
-                    Float pLength = pivotLengths.get(pivotID);
-                    float dist = df.getDistance(oData, pData, oLength, pLength);
-                    opDists[pCounterIdx] = dist;
-                    if (dist > 0 && dist < radius) {
-                        radius = dist;
-                        pivotWithMinDist = pivotID;
-                    }
-                }
-                if (!ret.containsKey(pivotWithMinDist)) {
-                    ret.put(pivotWithMinDist, new ArrayList<>());
-                }
-                List<Comparable> list = (List<Comparable>) ret.get(pivotWithMinDist);
-                list.add(oID);
-                if (oCounter % 10000 == 0) {
-                    LOG.log(Level.INFO, "Processed {0} objects with {1} dist comps", new Object[]{oCounter, dcOfPartitioning.get()});
-                }
-            }
-            latch.countDown();
-            t += System.currentTimeMillis();
-            LOG.log(Level.INFO, "Batch finished in {0} ms", t);
-        }
-
-    }
 }

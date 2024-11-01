@@ -6,7 +6,7 @@ package vm.metricSpace.distance.bounding.twopivots.impl;
 
 import java.util.List;
 import vm.metricSpace.distance.DistanceFunctionInterface;
-import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFilteringForStreamKNNClassifier.getTrivialPivotOrder;
+import vm.search.algorithm.impl.KNNSearchWithPtolemaicFiltering;
 
 /**
  *
@@ -16,22 +16,24 @@ import static vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtole
 public class PtolemaicFilteringForStreamKNNClassifier<T> extends PtolemaicFiltering<T> implements PtolemaicFilterForVoronoiPartitioning {
 
     private final float[][][] dPCurrPiOverdPiPj;
+    private final int pivotCount;
 
-    public PtolemaicFilteringForStreamKNNClassifier(String resultNamePrefix, List<T> pivotsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
+    public PtolemaicFilteringForStreamKNNClassifier(String resultNamePrefix, List<T> pivotsData, List<T> centroidsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
         super(resultNamePrefix, pivotsData, df, queryDynamicPivotPairs);
-        dPCurrPiOverdPiPj = new float[pivotsData.size()][pivotsData.size()][pivotsData.size()];
-        for (int pCurr = 0; pCurr < pivotsData.size(); pCurr++) {
-            T pCurrData = pivotsData.get(pCurr);
+        pivotCount = pivotsData.size();
+        dPCurrPiOverdPiPj = new float[centroidsData.size()][pivotCount][pivotCount];
+        for (int cIdx = 0; cIdx < centroidsData.size(); cIdx++) {
+            T centroidData = centroidsData.get(cIdx);
             for (int i = 0; i < pivotsData.size(); i++) {
                 T piData = pivotsData.get(i);
-                float dPCurrPi = df.getDistance(pCurrData, piData);
+                float dPCurrPi = df.getDistance(centroidData, piData);
                 if (dPCurrPi == 0) {
                     continue;
                 }
                 float[] row = coefsPivotPivot[i];
                 for (int j = 0; j < pivotsData.size(); j++) {
                     float dPiPjInv = row[j];
-                    dPCurrPiOverdPiPj[pCurr][i][j] = dPiPjInv * dPCurrPi;
+                    dPCurrPiOverdPiPj[cIdx][i][j] = dPiPjInv * dPCurrPi;
                 }
             }
         }
@@ -77,17 +79,10 @@ public class PtolemaicFilteringForStreamKNNClassifier<T> extends PtolemaicFilter
     }
 
     @Override
-    public int[] pivotsOrderForLB() {
+    public int[] pivotsOrderForLB(int pCur) {
         if (isQueryDynamicPivotPairs()) {
-            throw new UnsupportedOperationException();
-//            int[] ret = new int[dPCurrPiOverdPiPj.length];
-//            Set<Integer> remain = new HashSet<>();
-//            for (int i = 0; i < ret.length; i++) {
-//                remain.add(i);
-//            }
-//            ret = addExtremePivot(ret, remain);
-//            return ret;
+            return KNNSearchWithPtolemaicFiltering.identifyExtremePivotPairs(dPCurrPiOverdPiPj[pCur], pivotCount);
         }
-        return getTrivialPivotOrder(dPCurrPiOverdPiPj.length);
+        return KNNSearchWithPtolemaicFiltering.identifyRandomPivotPairs(pivotCount);
     }
 }

@@ -87,7 +87,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             if (query_dynamic_pivots) {
                 pivotArrays = identifyExtremePivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
             } else {
-                pivotArrays = identifyRandomPivotPairs(qpDistMultipliedByCoefForPivots, qpDistMultipliedByCoefForPivots.length);
+                pivotArrays = identifyRandomPivotPairs(qpDistMultipliedByCoefForPivots.length);
             }
             qPivotArraysCached.put(qId, pivotArrays);
         }
@@ -207,25 +207,24 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private static final Random rand = new Random();
 
-    private int[] identifyRandomPivotPairs(float[][] coefs, int size) {
+    public static int[] identifyRandomPivotPairs(int size) {
         int[] ret = new int[size * 2];
-        int pivotCount = coefs.length;
         for (int i = 0; i < size; i++) {
-            ret[2 * i] = rand.nextInt(pivotCount);
-            ret[2 * i + 1] = rand.nextInt(pivotCount);
+            ret[2 * i] = rand.nextInt(size);
+            ret[2 * i + 1] = rand.nextInt(size);
         }
         return ret;
     }
 
-    protected int[] identifyExtremePivotPairs(float[][] coefs, int size) {
+    public static int[] identifyExtremePivotPairs(float[][] qpDistMultipliedByCoefForPivots, int size) {
         TreeSet<Map.Entry<Integer, Float>> sorted = new TreeSet<>(new Tools.MapByFloatValueComparator<>());
         float a, b, value;
         float radius = Float.MAX_VALUE;
         int i, j, idx;
-        for (i = 0; i < coefs.length - 1; i++) {
-            for (j = i + 1; j < coefs.length; j++) {
-                a = coefs[i][j];
-                b = coefs[j][i];
+        for (i = 0; i < qpDistMultipliedByCoefForPivots.length - 1; i++) {
+            for (j = i + 1; j < qpDistMultipliedByCoefForPivots.length; j++) {
+                a = qpDistMultipliedByCoefForPivots[i][j];
+                b = qpDistMultipliedByCoefForPivots[j][i];
                 if (a > b) {
                     value = b;
                     b = a;
@@ -233,10 +232,10 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 }
                 value = a / b;
                 if (sorted.size() < size) {
-                    sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, value));
+                    sorted.add(new AbstractMap.SimpleEntry<>(i * qpDistMultipliedByCoefForPivots.length + j, value));
                 } else {
                     if (value < radius) {
-                        sorted.add(new AbstractMap.SimpleEntry<>(i * coefs.length + j, value));
+                        sorted.add(new AbstractMap.SimpleEntry<>(i * qpDistMultipliedByCoefForPivots.length + j, value));
                         sorted.remove(sorted.last());
                         radius = sorted.last().getValue();
                     }
@@ -249,9 +248,9 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         for (idx = 0; idx < ret.length; idx += 2) {
             Map.Entry<Integer, Float> entry = it.next();
             i = entry.getKey();
-            j = i % coefs.length;
+            j = i % qpDistMultipliedByCoefForPivots.length;
             i -= j;
-            i = i / coefs.length;
+            i = i / qpDistMultipliedByCoefForPivots.length;
             ret[idx] = i;
             ret[idx + 1] = j;
         }
