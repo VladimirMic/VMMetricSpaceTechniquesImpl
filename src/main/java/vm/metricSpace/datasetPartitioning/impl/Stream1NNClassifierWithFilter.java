@@ -47,12 +47,12 @@ public class Stream1NNClassifierWithFilter<T> extends VoronoiPartitioningWithout
 
     @Override
     public void setAdditionalStats(AbstractPivotBasedPartitioningProcessor[] processes) {
-        int ret = 0;
+        float ret = 0;
         for (AbstractPivotBasedPartitioningProcessor process : processes) {
             VoronoiPartitioningWithFilterProcessor cast = (VoronoiPartitioningWithFilterProcessor) process;
-            ret += cast.getLbCheckedBatch();
+            ret += cast.getLbCheckedBatchAvgC();
         }
-        lastAdditionalStats = Integer.toString(ret);
+        lastAdditionalStats = Float.toString(ret);
     }
 
     @Override

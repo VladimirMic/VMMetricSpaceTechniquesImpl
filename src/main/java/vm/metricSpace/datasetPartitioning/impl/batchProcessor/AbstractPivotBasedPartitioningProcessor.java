@@ -103,8 +103,8 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
         return ret;
     }
 
-    public int getLbCheckedBatch() {
-        return lbCheckedBatch;
+    public float getLbCheckedBatchAvgC() {
+        return lbCheckedBatch / ((float) pivotData.size());
     }
 
     public int getDcOfPartitioningBatch() {

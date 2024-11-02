@@ -46,6 +46,9 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
 
     public Map<Object, Float> execute() {
         TreeSet<Map.Entry<String, Float>> dists = storageOfSmallDists.loadPrecomputedDistances();
+        if (dists == null) {
+            return null;
+        }
         int lastIndex = dists.size();
         Map<Object, Float> ret = new HashMap<>();
         AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();

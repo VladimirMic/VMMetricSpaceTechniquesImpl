@@ -5,19 +5,28 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
+import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
 
 /**
  *
  * @author Vlada
+ * @param <T>
  */
-public abstract class AbstractMetricSpacesStorage {
+public abstract class AbstractMetricSpacesStorage<T> {
 
     private static final Logger LOG = Logger.getLogger(AbstractMetricSpacesStorage.class.getName());
+    protected final AbstractMetricSpace metricSpace;
+    protected final MetricObjectDataToStringInterface<T> dataSerializator;
 
     public static enum OBJECT_TYPE {
         DATASET_OBJECT,
         PIVOT_OBJECT,
         QUERY_OBJECT;
+    }
+
+    public AbstractMetricSpacesStorage(AbstractMetricSpace<T> metricSpace, MetricObjectDataToStringInterface<T> dataSerializator) {
+        this.metricSpace = metricSpace;
+        this.dataSerializator = dataSerializator;
     }
 
     /**
@@ -138,5 +147,10 @@ public abstract class AbstractMetricSpacesStorage {
         }
         LOG.log(Level.INFO, "Insert finished with {0} metric objects inserted", new Object[]{counter});
         return counter;
+
+    }
+
+    public AbstractMetricSpace getMetricSpace() {
+        return metricSpace;
     }
 }
