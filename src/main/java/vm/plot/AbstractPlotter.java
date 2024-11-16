@@ -34,7 +34,6 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
-import org.jfree.data.xy.XYSeries;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 import vm.javatools.SVGtoPDF;
@@ -151,7 +150,6 @@ public abstract class AbstractPlotter {
         return step;
     }
 
-
     private double getStep(float division) {
         int m = 0;
         int d = 0;
@@ -230,11 +228,20 @@ public abstract class AbstractPlotter {
             LOG.log(Level.INFO, "Storing plot to {0}", path);
             ChartUtils.saveChartAsPNG(file, plot, width, height);
         } catch (IOException ex) {
-            Logger.getLogger(ToyExample.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AbstractPlotter.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    private double xAxisUpperBound = Double.NaN;
+
+    public void setXAxisUpperBound(double value) {
+        xAxisUpperBound = value;
+    }
+
     protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
+        if (xAxisUpperBound != Float.NaN) {
+            xAxis.setUpperBound(xAxisUpperBound);
+        }
         Boolean includeZeroForXAxisLocal = includeZeroForXAxis;
         try {
             boolean coversZero = xAxis.getLowerBound() <= 0 && xAxis.getUpperBound() >= 0;

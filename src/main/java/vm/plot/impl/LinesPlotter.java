@@ -123,7 +123,7 @@ public class LinesPlotter extends AbstractPlotter {
         // x axis settings
         NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         setLabelsOfAxis(xAxis);
-        xAxis.setUpperMargin(0.15);
+        xAxis.setUpperMargin(0.1);
         setTicksOfXNumericAxis(xAxis);
 
         // y axis settings
