@@ -232,14 +232,14 @@ public abstract class AbstractPlotter {
         }
     }
 
-    private double xAxisUpperBound = Double.NaN;
+    private Double xAxisUpperBound = Double.NaN;
 
     public void setXAxisUpperBound(double value) {
         xAxisUpperBound = value;
     }
 
     protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
-        if (xAxisUpperBound != Float.NaN) {
+        if (!xAxisUpperBound.equals(Double.NaN)) {
             xAxis.setUpperBound(xAxisUpperBound);
         }
         Boolean includeZeroForXAxisLocal = includeZeroForXAxis;
