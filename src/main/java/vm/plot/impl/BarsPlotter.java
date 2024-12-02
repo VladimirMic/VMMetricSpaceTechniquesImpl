@@ -17,7 +17,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import vm.datatools.DataTypeConvertor;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 
 /**
  *
@@ -72,7 +72,7 @@ public class BarsPlotter extends LinesPlotter {
             }
         }
         SortedMap<Float, Float> histogram = Tools.createHistogramOfValues(values, absoluteValues, printLogMinMax);
-        float step = vm.math.Tools.getStepOfAlreadyMadeHistogram(histogram);
+        float step = vm.mathtools.Tools.getStepOfAlreadyMadeHistogram(histogram);
         String xAxisName = ", bar width: " + step;
         String yAxisName = absoluteValues ? "Count" : "Relative count";
         JFreeChart histogramPlot = plotter.createHistogramPlot(null, xAxisLabel + xAxisName, yAxisName, null, histogram);

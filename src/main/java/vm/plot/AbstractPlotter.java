@@ -37,7 +37,7 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 import vm.javatools.SVGtoPDF;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 
 /**
  *

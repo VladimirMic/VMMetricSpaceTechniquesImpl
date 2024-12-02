@@ -2,7 +2,7 @@ package vm.metricSpace.distance.bounding.nopivot.learning;
 
 import java.awt.geom.Point2D;
 import java.util.List;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 
 /**
  *

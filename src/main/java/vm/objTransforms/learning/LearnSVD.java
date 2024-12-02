@@ -48,7 +48,7 @@ public class LearnSVD {
     public void execute() {
         float[][] floatMatrix = ToolsMetricDomain.transformMetricObjectsToVectorMatrix(metricSpace, sampleObjects);
         float[] meansOverColumns = getMeanValuesOfColumns(floatMatrix);
-        double[][] normedMatrix = vm.math.Tools.subtractColumnsMeansFromMatrix(floatMatrix, meansOverColumns);
+        double[][] normedMatrix = vm.mathtools.Tools.subtractColumnsMeansFromMatrix(floatMatrix, meansOverColumns);
 
         RealMatrix realMatrix = new Array2DRowRealMatrix(normedMatrix);
         LOG.log(Level.INFO, "Start evaluation of singular value decomposition. Sample set is of size {0}, vectors are of length: {1}", new Object[]{sampleObjects.size(), meansOverColumns.length});

@@ -138,7 +138,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     public List<AbstractMap.SimpleEntry<Comparable, Integer>>[] evaluateHammingDistancesInParallel(long[] qSketch, List candSetIDs) {
         try {
             float batchSize = candSetIDs.size() / (float) PARALELISATION + 0.5f;
-            batchSize = vm.math.Tools.round(batchSize, 1f, false);
+            batchSize = vm.mathtools.Tools.round(batchSize, 1f, false);
 
             CountDownLatch latch = new CountDownLatch(PARALELISATION);
             Iterator it = candSetIDs.iterator();

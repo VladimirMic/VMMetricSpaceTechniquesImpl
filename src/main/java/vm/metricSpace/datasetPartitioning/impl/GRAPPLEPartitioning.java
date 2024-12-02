@@ -104,7 +104,7 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
                 }
 //                ret.get(key).add(oMetadata); // resolve
                 ret[0].add(oMetadata); // resolve
-                double angleDeg = vm.math.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
+                double angleDeg = vm.mathtools.Tools.radToDeg(Math.acos(minCosAlpha / (2 * dp1ForUB * dp2ForUB)));
                 LOG.log(Level.INFO, "oID {0} assigned to {1}. Partitioning: angle {2}, dP1P2: {3}, dP1: {4}, dP1: {5}", new Object[]{oID.toString(), key, angleDeg, dp1p2ForUB, dp1ForUB, dp2ForUB});
             }
             latch.countDown();

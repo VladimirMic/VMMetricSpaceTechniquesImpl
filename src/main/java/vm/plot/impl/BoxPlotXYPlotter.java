@@ -28,7 +28,7 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
         }
         Float[] groupNumbers = DataTypeConvertor.objectsToObjectFloats(groupsNames);
-        float xStep = (float) vm.math.Tools.gcd(groupNumbers);
+        float xStep = (float) vm.mathtools.Tools.gcd(groupNumbers);
         for (int traceID = 0; traceID < values.length; traceID++) {
             List<Float>[] valuesForGroups = values[traceID];
             if (groupsNames.length != valuesForGroups.length) {

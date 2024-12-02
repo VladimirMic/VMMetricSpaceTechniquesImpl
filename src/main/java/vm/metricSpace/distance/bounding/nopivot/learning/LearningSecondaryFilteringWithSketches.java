@@ -12,7 +12,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.DistanceFunctionInterface;

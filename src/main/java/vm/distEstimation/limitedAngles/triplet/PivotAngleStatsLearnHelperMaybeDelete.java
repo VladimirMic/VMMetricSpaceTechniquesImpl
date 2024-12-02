@@ -12,7 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 
 /**
  *

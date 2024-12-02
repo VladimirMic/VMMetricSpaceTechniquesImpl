@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
@@ -65,7 +65,7 @@ public class ToolsMetricDomain {
      */
     public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
         float[] distances = dataset.evaluateSampleOfRandomDistances(objCount, distCount, idsOfRandomPairs);
-        vm.math.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
+        vm.mathtools.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
         return createDistanceDensityPlot(distances);
     }
 
@@ -77,7 +77,7 @@ public class ToolsMetricDomain {
      * @return
      */
     public static SortedMap<Float, Float> createDistanceDensityPlot(float[] distances) {
-        return vm.math.Tools.createHistogramOfValues(distances);
+        return vm.mathtools.Tools.createHistogramOfValues(distances);
 //        int distCount = distances.length;
 //        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
 //        basicInterval = Tools.computeBasicXIntervalForHistogram(distances);
