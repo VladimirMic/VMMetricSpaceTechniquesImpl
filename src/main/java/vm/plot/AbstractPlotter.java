@@ -28,6 +28,7 @@ import org.jfree.chart.axis.Axis;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickMarkPosition;
 import org.jfree.chart.axis.DateTickUnit;
 import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
@@ -278,8 +279,9 @@ public abstract class AbstractPlotter {
     private void setTicksForDateAxis(DateAxis xAxis) {
         DateFormat df = getDateFormat();
         xAxis.setDateFormatOverride(df);
-        xAxis.setVerticalTickLabels(true);
-        xAxis.setTickUnit(new DateTickUnit(DateTickUnitType.HOUR, 12, df));
+        xAxis.setVerticalTickLabels(false);
+        xAxis.setTickMarkPosition(DateTickMarkPosition.START);
+        xAxis.setTickUnit(new DateTickUnit(DateTickUnitType.DAY, 1, df));
     }
 
     private void setTicksForNumberAxis(NumberAxis xAxis, Boolean includeZeroForXAxisLocal) {
