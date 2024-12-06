@@ -9,7 +9,9 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Paint;
 import java.awt.geom.AffineTransform;
+import java.text.DateFormat;
 import java.util.AbstractMap;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
@@ -19,6 +21,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -36,6 +39,18 @@ import vm.plot.AbstractPlotter;
  * @author au734419
  */
 public class LinesPlotter extends AbstractPlotter {
+
+    private final boolean linesVisible;
+    private boolean isTimeSeries;
+    protected DateFormat dateFormat = null;
+
+    public LinesPlotter() {
+        this(true);
+    }
+
+    public LinesPlotter(boolean linesVisible) {
+        this.linesVisible = linesVisible;
+    }
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object... data) {
@@ -58,8 +73,19 @@ public class LinesPlotter extends AbstractPlotter {
         float[][] tracesXValues;
         if (data[2] instanceof float[][]) {
             tracesXValues = (float[][]) data[2];
+            isTimeSeries = false;
+        } else if (data[2] instanceof Date[][]) {
+            long[][] tmp = DataTypeConvertor.datesArrayToLongs((Date[][]) data[2]);
+            tracesXValues = DataTypeConvertor.longsArrayToFloats(tmp);
+            isTimeSeries = true;
+        } else if (data[2] instanceof Date[]) {
+            long[] tmp = DataTypeConvertor.datesArrayToLongs((Date[]) data[2]);
+            float[] tmp2 = DataTypeConvertor.longsArrayToFloats(tmp);
+            tracesXValues = DataTypeConvertor.objectToSingularArray(tmp2);
+            isTimeSeries = true;
         } else {
             tracesXValues = (float[][]) DataTypeConvertor.objectToSingularArray(data[2]);
+            isTimeSeries = false;
         }
         float[][] tracesYValues;
         if (data[3] instanceof float[][]) {
@@ -70,13 +96,22 @@ public class LinesPlotter extends AbstractPlotter {
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, tracesXValues, tracesYValues);
     }
 
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, COLOUR_NAMES traceColour, float[] tracesXValues, float[] tracesYValues) {
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, null, traceColour, tracesXValues, tracesYValues);
+    }
+
+    protected JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
         XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);
         XYSeriesCollection dataset = new XYSeriesCollection();
         for (XYSeries trace : traces) {
             dataset.addSeries(trace);
         }
-        JFreeChart chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
+        JFreeChart chart;
+        if (isTimeSeries) {
+            chart = ChartFactory.createTimeSeriesChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
+        } else {
+            chart = ChartFactory.createXYLineChart(mainTitle, xAxisLabel, yAxisLabel, dataset);
+        }
         if (logY) {
             setMinAndMaxYValues(tracesYValues);
         }
@@ -121,10 +156,10 @@ public class LinesPlotter extends AbstractPlotter {
         setChartColor(chart, plot);
 
         // x axis settings
-        NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
-        setLabelsOfAxis(xAxis);
-        xAxis.setUpperMargin(0.1);
+        ValueAxis xAxis = plot.getDomainAxis();
         setTicksOfXNumericAxis(xAxis);
+        xAxis.setUpperMargin(0.1);
+        setLabelsOfAxis(xAxis);
 
         // y axis settings
         if (logY) {
@@ -172,6 +207,9 @@ public class LinesPlotter extends AbstractPlotter {
         }
         for (int i = 0; i < traces.length; i++) {
             if (lineAndShapeRenderer != null) {
+                if (!linesVisible) {
+                    lineAndShapeRenderer.setSeriesLinesVisible(i, false);
+                }
                 lineAndShapeRenderer.setSeriesShapesVisible(i, true);
             }
             Color darkColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
@@ -213,6 +251,11 @@ public class LinesPlotter extends AbstractPlotter {
             }
         }
         return true;
+    }
+
+    @Override
+    protected DateFormat getDateFormat() {
+        return dateFormat;
     }
 
 }

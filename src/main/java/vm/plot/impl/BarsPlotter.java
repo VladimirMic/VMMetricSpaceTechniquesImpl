@@ -25,6 +25,10 @@ import vm.mathtools.Tools;
  */
 public class BarsPlotter extends LinesPlotter {
 
+    public BarsPlotter() {
+        super(true);
+    }
+
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, Object[] tracesNames, COLOUR_NAMES[] tracesColours, float[][] tracesXValues, float[][] tracesYValues) {
         XYSeries[] traces = transformCoordinatesIntoTraces(tracesNames, tracesXValues, tracesYValues);

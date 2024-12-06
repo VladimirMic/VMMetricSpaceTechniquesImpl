@@ -12,10 +12,12 @@ import java.awt.Stroke;
 import java.io.File;
 import java.io.IOException;
 import java.text.CompactNumberFormat;
+import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,9 +27,13 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.Axis;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.TickUnits;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.XYPlot;
@@ -238,7 +244,7 @@ public abstract class AbstractPlotter {
         xAxisUpperBound = value;
     }
 
-    protected void setTicksOfXNumericAxis(NumberAxis xAxis) {
+    protected void setTicksOfXNumericAxis(ValueAxis xAxis) {
         if (!xAxisUpperBound.equals(Double.NaN)) {
             xAxis.setUpperBound(xAxisUpperBound);
         }
@@ -257,10 +263,28 @@ public abstract class AbstractPlotter {
         } catch (Throwable e) {
             includeZeroForXAxisLocal = true;
         }
+        if (xAxis instanceof NumberAxis) {
+            setTicksForNumberAxis((NumberAxis) xAxis, includeZeroForXAxisLocal);
+        }
+        if (xAxis instanceof DateAxis) {
+            setTicksForDateAxis((DateAxis) xAxis);
+        }
+    }
+
+    protected DateFormat getDateFormat() {
+        return null;
+    }
+
+    private void setTicksForDateAxis(DateAxis xAxis) {
+        DateFormat df = getDateFormat();
+        xAxis.setDateFormatOverride(df);
+        xAxis.setVerticalTickLabels(true);
+        xAxis.setTickUnit(new DateTickUnit(DateTickUnitType.HOUR, 12, df));
+    }
+
+    private void setTicksForNumberAxis(NumberAxis xAxis, Boolean includeZeroForXAxisLocal) {
         xAxis.setAutoRangeIncludesZero(includeZeroForXAxisLocal);
-
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
-
         Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC, false);
         if (xStep >= 120) {
             NumberFormat nfBig = new CompactNumberFormat(
@@ -275,6 +299,7 @@ public abstract class AbstractPlotter {
             }
         }
         xAxis.setNumberFormatOverride(nf);
+
         double ubShown = calculateHighestVisibleTickValue(xAxis);
         double lb = xAxis.getLowerBound();
         int maxTickLength = getMaxTickLabelLength(lb, ubShown, xStep, nf);
