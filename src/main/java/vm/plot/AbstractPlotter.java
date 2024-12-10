@@ -17,7 +17,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -390,7 +389,7 @@ public abstract class AbstractPlotter {
     protected void setLabelsOfAxis(Axis axis) {
         axis.setTickLabelFont(FONT_AXIS_MARKERS);
         axis.setLabelFont(FONT_AXIS_TITLE);
-        axis.setAxisLineVisible(false);
+        axis.setAxisLineVisible(false); // doubles lines next to axes
     }
 
     protected void setLegendFont(LegendTitle legend) {
