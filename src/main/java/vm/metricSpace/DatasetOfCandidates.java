@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
@@ -154,7 +155,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
         Iterator<Map.Entry<Comparable, Comparable[]>> it = mapOfTrainingQueriesToCandidates.entrySet().iterator();
         while (ret.size() < objCount && it.hasNext()) {
             Comparable[] objs = it.next().getValue();
-            ret.addAll(Tools.arrayToList(objs));
+            ret.addAll(DataTypeConvertor.arrayToList(objs));
         }
         ret = ret.subList(0, objCount);
         return ret;

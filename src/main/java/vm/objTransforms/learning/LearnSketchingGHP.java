@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
@@ -78,7 +79,7 @@ public class LearnSketchingGHP {
             String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
             int[] lowCorrelatedBits = selectLowCorrelatedBits(sketchLength, columnWiseSketches, sketchesCorrelations);
             sketchingTechnique.preserveJustGivenBits(lowCorrelatedBits);
-            storage.storePivotPairs(resultName, metricSpace, Tools.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
+            storage.storePivotPairs(resultName, metricSpace, DataTypeConvertor.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
             sketchingTechnique = new SketchingGHP(df, metricSpace, pivotsBalancedBackup, false, true);
         }
     }

@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
@@ -56,7 +57,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     @Override
     public final void setPivotPairsFromStorage(PivotPairsStoreInterface storage, String pivotPairsFileName) {
         List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(pivotPairsFileName);
-        Map<Comparable, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, Tools.arrayToList(pivots));
+        Map<Comparable, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, DataTypeConvertor.arrayToList(pivots));
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];
         for (int i = 0; i < pivotPairsIDs.size(); i++) {
             String[] pivotPairIDs = pivotPairsIDs.get(i);
