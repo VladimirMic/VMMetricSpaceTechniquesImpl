@@ -42,7 +42,6 @@ public class LinesPlotter extends AbstractPlotter {
 
     private final boolean linesVisible;
     private boolean isTimeSeries;
-    protected DateFormat dateFormat = null;
 
     public LinesPlotter() {
         this(true);
@@ -252,10 +251,4 @@ public class LinesPlotter extends AbstractPlotter {
         }
         return true;
     }
-
-    @Override
-    protected DateFormat getDateFormat() {
-        return dateFormat;
-    }
-
 }

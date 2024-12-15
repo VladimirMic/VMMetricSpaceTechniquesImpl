@@ -119,8 +119,13 @@ public abstract class AbstractPlotter {
 
     protected boolean logY = false;
     protected boolean enforceInvolvingZeroToYAxis = false;
+    protected boolean verticalXLabels = false;
 
     private Boolean includeZeroForXAxis = null;
+
+    protected DateFormat dateFormat = null;
+    protected DateTickUnitType timeTickType = null;
+    protected Integer timeUnitInterval = null;
 
     public void setIncludeZeroForXAxis(Boolean includeZeroForXAxis) {
         this.includeZeroForXAxis = includeZeroForXAxis;
@@ -128,6 +133,10 @@ public abstract class AbstractPlotter {
 
     public void setLogY(boolean logY) {
         this.logY = logY;
+    }
+
+    public void setVerticalXLabels(boolean verticalXLabels) {
+        this.verticalXLabels = verticalXLabels;
     }
 
     public void setEnforceInvolvingZeroToYAxis(boolean enforceInvolvingZeroToYAxis) {
@@ -271,16 +280,12 @@ public abstract class AbstractPlotter {
         }
     }
 
-    protected DateFormat getDateFormat() {
-        return null;
-    }
-
     private void setTicksForDateAxis(DateAxis xAxis) {
-        DateFormat df = getDateFormat();
-        xAxis.setDateFormatOverride(df);
+        xAxis.setDateFormatOverride(dateFormat);
         xAxis.setVerticalTickLabels(false);
         xAxis.setTickMarkPosition(DateTickMarkPosition.START);
-        xAxis.setTickUnit(new DateTickUnit(DateTickUnitType.DAY, 1, df));
+        xAxis.setTickUnit(new DateTickUnit(timeTickType, timeUnitInterval, dateFormat));
+        xAxis.setVerticalTickLabels(verticalXLabels);
     }
 
     private void setTicksForNumberAxis(NumberAxis xAxis, Boolean includeZeroForXAxisLocal) {
