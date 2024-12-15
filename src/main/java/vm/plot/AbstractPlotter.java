@@ -372,7 +372,7 @@ public abstract class AbstractPlotter {
         if (label.equals("frr") || label.equals("false reject rate")) {
             yAxis.setUpperBound(1 - minRecall);
         }
-        yAxis.setAutoRangeIncludesZero(true);
+//        yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER, forceIntegers);
         if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = new CompactNumberFormat(
