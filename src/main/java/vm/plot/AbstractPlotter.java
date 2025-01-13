@@ -201,6 +201,14 @@ public abstract class AbstractPlotter {
         return ret;
     }
 
+    public void storePlotPDF(File file, JFreeChart plot) {
+        storePlotPDF(file.getAbsolutePath(), plot);
+    }
+
+    public void storePlotPNG(File file, JFreeChart plot) {
+        storePlotPNG(file.getAbsolutePath(), plot);
+    }
+
     public void storePlotPDF(String path, JFreeChart plot) {
         storePlotPDF(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
     }
@@ -227,6 +235,14 @@ public abstract class AbstractPlotter {
 
     public void storePlotPNG(String path, JFreeChart plot) {
         storePlotPNG(path, plot, IMPLICIT_WIDTH, IMPLICIT_HEIGHT);
+    }
+
+    public void storePlotPNG(File file, JFreeChart plot, int width, int height) {
+        storePlotPNG(file.getAbsolutePath(), plot, width, height);
+    }
+
+    public void storePlotPDF(File file, JFreeChart plot, int width, int height) {
+        storePlotPDF(file.getAbsolutePath(), plot, width, height);
     }
 
     public void storePlotPNG(String path, JFreeChart plot, int width, int height) {

@@ -15,9 +15,9 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+import vm.datatools.DataTypeConvertor;
 import vm.plot.AbstractPlotter;
 import static vm.plot.AbstractPlotter.COLOURS;
 import static vm.plot.AbstractPlotter.getColor;
@@ -35,6 +35,14 @@ public class BoxPlotPlotter extends AbstractPlotter {
         Object[] groupsNames = (Object[]) data[2];
         List<Float>[][] values = (List<Float>[][]) data[3];
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, groupsNames, values);
+    }
+
+    // never tested - check!
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, COLOUR_NAMES traceColour, Object[] groupsNames, List<Float>[] values) {
+        String[] tracesNames = DataTypeConvertor.objectToSingularArray(traceName);
+        COLOUR_NAMES[] tracesColours = DataTypeConvertor.objectToSingularArray(traceColour);
+        List<Float>[][] valuesArray = DataTypeConvertor.objectToSingularArray(values);
+        return createPlot(mainTitle, xAxisLabel, yAxisLabel, tracesNames, tracesColours, groupsNames, valuesArray);
     }
 
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames, List<Float>[][] values) {
