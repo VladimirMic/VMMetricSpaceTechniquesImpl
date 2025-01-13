@@ -40,14 +40,17 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
             String keyString;
             for (int groupId = 0; groupId < valuesForGroups.length; groupId++) {
                 List<Float> valuesForGroupAndTrace = valuesForGroups[groupId];
-                Float groupName = xValues == null ? groupId : Float.valueOf(groupNumbers[groupId].toString());
+                Float groupName = Float.valueOf(groupNumbers[groupId].toString());
                 while (previousKey != null && groupName > previousKey + xStep) {
                     previousKey += xStep;
                     iValue = Tools.parseInteger(previousKey);
                     keyString = iValue == null ? previousKey.toString() : iValue.toString();
-                    dataset.add(new ArrayList(), tracesNames[traceID], keyString);
+                    ArrayList<Float> arrayList = new ArrayList();
+                    arrayList.add(Float.NaN);
+                    dataset.add(arrayList, tracesNames[traceID], keyString);
                     previousKey += xStep;
                 }
+                // check if it is an integer (if float than ok
                 iValue = Tools.parseInteger(groupName);
                 keyString = iValue == null ? groupName.toString() : iValue.toString();
                 if (valuesForGroupAndTrace != null) {
