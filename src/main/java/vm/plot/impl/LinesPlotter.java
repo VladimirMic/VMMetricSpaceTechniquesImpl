@@ -213,7 +213,7 @@ public class LinesPlotter extends AbstractPlotter {
             }
             Color darkColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
             Color lightColor = tracesColours == null ? LIGHT_COLOURS[i % LIGHT_COLOURS.length] : getColor(tracesColours[i], true);
-            if (traces.length == 1 && barRenderer == null) {
+            if (traces.length == 1 && barRenderer == null && tracesColours == null) {
                 darkColor = BOX_BLACK;
                 lightColor = LIGHT_BOX_BLACK;
             }
