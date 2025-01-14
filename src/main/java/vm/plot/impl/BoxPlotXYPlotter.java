@@ -7,7 +7,6 @@ package vm.plot.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -43,12 +42,10 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                 Float groupName = Float.valueOf(groupNumbers[groupId].toString());
                 while (previousKey != null && groupName > previousKey + xStep) {
                     previousKey += xStep;
-                    iValue = Tools.parseInteger(previousKey);
-                    keyString = iValue == null ? previousKey.toString() : iValue.toString();
-                    ArrayList<Float> arrayList = new ArrayList();
-                    arrayList.add(Float.NaN);
-                    dataset.add(arrayList, tracesNames[traceID], keyString);
-                    previousKey += xStep;
+//                    iValue = Tools.parseInteger(previousKey);
+//                    keyString = iValue == null ? previousKey.toString() : iValue.toString();
+//                    dataset.add(new ArrayList(), tracesNames[traceID], keyString);
+//                    previousKey += xStep;
                 }
                 // check if it is an integer (if float than ok
                 iValue = Tools.parseInteger(groupName);
