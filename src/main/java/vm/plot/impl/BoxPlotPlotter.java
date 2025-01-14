@@ -7,6 +7,7 @@ package vm.plot.impl;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
@@ -109,12 +110,6 @@ public class BoxPlotPlotter extends AbstractPlotter {
         // chart colours
         setChartColor(chart, plot);
 
-        //legend        
-        setLegendFont(chart.getLegend());
-        if (tracesNames.length == 1) {
-//            chart.removeLegend();
-        }
-
         // y axis settings
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         setLabelsOfAxis(yAxis);
@@ -135,6 +130,15 @@ public class BoxPlotPlotter extends AbstractPlotter {
             xAxis.setTickMarksVisible(false);
         }
         setSpacingOfCategoriesAndTraces(plot, renderer, xAxis, tracesNames.length, groupsNames.length);
+        //legend        
+        setLegendFont(chart.getLegend());
+        if (tracesNames.length == 1 && (tracesNames[0] == null
+                || tracesNames[0].isBlank()
+                || tracesNames[0].equals(chart.getTitle().getText())
+                || tracesNames[0].equals(yAxis.getLabel())
+                || tracesNames[0].equals(xAxis.getLabel()))) {
+            chart.removeLegend();
+        }
 
         // set traces strokes
         for (int i = 0; i < tracesNames.length; i++) {
@@ -164,4 +168,11 @@ public class BoxPlotPlotter extends AbstractPlotter {
         return "BoxPlotCat";
     }
 
+    public static class DummyBoxAndWhiskerItem extends BoxAndWhiskerItem {
+
+        public DummyBoxAndWhiskerItem() {
+            super(null, null, null, null, null, null, null, null, Collections.EMPTY_LIST);
+        }
+
+    }
 }

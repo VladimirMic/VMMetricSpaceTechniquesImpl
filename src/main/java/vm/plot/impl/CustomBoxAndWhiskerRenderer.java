@@ -98,6 +98,8 @@ public class CustomBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         Number yMin = bawDataset.getMinRegularValue(row, column);
         Shape box = null;
         Paint outlinePaint = getItemOutlinePaint(row, column);
+        Number meanValue = bawDataset.getMeanValue(row, column);
+
         if (yQ1 != null && yQ3 != null && yMax != null && yMin != null) {
 
             double yyQ1 = rangeAxis.valueToJava2D(yQ1.doubleValue(), dataArea, location);
