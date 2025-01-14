@@ -4,12 +4,13 @@
  */
 package vm.plot.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
@@ -20,6 +21,16 @@ import static vm.plot.AbstractPlotter.LOG;
  * @author au734419
  */
 public class BoxPlotXYPlotter extends BoxPlotPlotter {
+
+    protected final boolean isHorizontal;
+
+    protected BoxPlotXYPlotter(boolean isHorizontal) {
+        this.isHorizontal = isHorizontal;
+    }
+
+    public BoxPlotXYPlotter() {
+        this(false);
+    }
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] xValues, List<Float>[][] values) {
@@ -42,10 +53,6 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                 Float groupName = Float.valueOf(groupNumbers[groupId].toString());
                 while (previousKey != null && groupName > previousKey + xStep) {
                     previousKey += xStep;
-//                    iValue = Tools.parseInteger(previousKey);
-//                    keyString = iValue == null ? previousKey.toString() : iValue.toString();
-//                    dataset.add(new ArrayList(), tracesNames[traceID], keyString);
-//                    previousKey += xStep;
                 }
                 // check if it is an integer (if float than ok
                 iValue = Tools.parseInteger(groupName);
@@ -62,13 +69,12 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
         return setAppearence(chart, tracesNames, tracesColours, xValues);
     }
 
-    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, COLOUR_NAMES traceColour, Map<Float, List<Float>> values) {
-        Object[] xValues = values.keySet().toArray();
-        // transform map to array
+    public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, COLOUR_NAMES traceColour, Map<Float, List<Float>> xToYValues) {
+        Object[] xValues = xToYValues.keySet().toArray();
         List<Float>[] retArray = new List[xValues.length];
         for (int i = 0; i < xValues.length; i++) {
             Float key = (Float) xValues[i];
-            retArray[i] = values.get(key);
+            retArray[i] = xToYValues.get(key);
 
         }
         return createPlot(mainTitle, xAxisLabel, yAxisLabel, traceName, traceColour, xValues, retArray);
@@ -77,6 +83,16 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
     @Override
     public String getSimpleName() {
         return "BoxPlotNumerical";
+    }
+
+    @Override
+    protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames) {
+        if (isHorizontal) {
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            plot.setOrientation(PlotOrientation.HORIZONTAL);
+        }
+        return super.setAppearence(chart, tracesNames, tracesColours, groupsNames);
+
     }
 
 }

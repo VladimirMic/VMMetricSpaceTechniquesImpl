@@ -182,8 +182,8 @@ public class CustomBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
                     yyOutlier = rangeAxis.valueToJava2D(outlier, dataArea, location);
                     outliers.add(new Outlier(xx + state.getBarWidth() / 2.0, yyOutlier, oRadius));
                 }
-                Collections.sort(outliers);
             }
+            Collections.sort(outliers);
 
             // Process outliers. Each outlier is either added to the
             // appropriate outlier list or a new outlier list is made // clustering
