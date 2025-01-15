@@ -374,6 +374,8 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             }
         }
 
+        double aRadius = state.getBarWidth() / 4;
+
         // draw outliers...
         double maxAxisValue = rangeAxis.valueToJava2D(rangeAxis.getUpperBound(), dataArea, location) + aRadius;
         double minAxisValue = rangeAxis.valueToJava2D(rangeAxis.getLowerBound(), dataArea, location) - aRadius;
