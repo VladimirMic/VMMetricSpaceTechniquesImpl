@@ -181,8 +181,6 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         java.util.List outliers = new ArrayList();
         OutlierListCollection outlierListCollection = new OutlierListCollection();
 
-        // From outlier array sort out which are outliers and put these into a
-        // list If there are any farouts, set the flag on the
         // OutlierListCollection
         List yOutliers = bawDataset.getOutliers(row, column);
         if (yOutliers != null) {
@@ -395,8 +393,6 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         java.util.List outliers = new ArrayList();
         OutlierListCollection outlierListCollection = new OutlierListCollection();
 
-        // From outlier array sort out which are outliers and put these into a
-        // list If there are any farouts, set the flag on the
         // OutlierListCollection
         List xOutliers = bawDataset.getOutliers(row, column);
         if (xOutliers != null) {
