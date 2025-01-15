@@ -35,7 +35,6 @@ import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
  */
 public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
 
-    public static final Boolean DRAW_FAROUTS_AS_OUTLIERS = true;
     public static Integer GAP_TRACES = 28;
     public static Integer GAP_GROUPS = 28;
     public static Integer Y_WIDTH = 160;
@@ -191,7 +190,7 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             Number maxRegular = bawDataset.getMaxRegularValue(row, column);
             for (int i = 0; i < yOutliers.size(); i++) {
                 double outlier = ((Number) yOutliers.get(i)).doubleValue();
-                if (DRAW_FAROUTS_AS_OUTLIERS || outlier > maxRegular.doubleValue() || outlier < minRegular.doubleValue()) {
+                if (outlier > maxRegular.doubleValue() || outlier < minRegular.doubleValue()) {
                     double yyOutlier = rangeAxis.valueToJava2D(outlier, dataArea, location);
                     outliers.add(new Outlier(xx + state.getBarWidth() / 2.0, yyOutlier, oRadius));
                 }
@@ -207,11 +206,11 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             }
 
             // draw farout indicators
-            if (!DRAW_FAROUTS_AS_OUTLIERS && outlierListCollection.isHighFarOut()) {
+            if (outlierListCollection.isHighFarOut()) {
                 drawHighFarOut(aRadius / 2.0, g2, xx + state.getBarWidth() / 2.0, maxAxisValue);
             }
 
-            if (!DRAW_FAROUTS_AS_OUTLIERS && outlierListCollection.isLowFarOut()) {
+            if (outlierListCollection.isLowFarOut()) {
                 drawLowFarOut(aRadius / 2.0, g2, xx + state.getBarWidth() / 2.0, minAxisValue);
             }
         }
@@ -405,7 +404,7 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             Number maxRegular = bawDataset.getMaxRegularValue(row, column);
             for (int i = 0; i < xOutliers.size(); i++) {
                 double outlier = ((Number) xOutliers.get(i)).doubleValue();
-                if (DRAW_FAROUTS_AS_OUTLIERS || outlier > maxRegular.doubleValue() || outlier < minRegular.doubleValue()) {
+                if (outlier > maxRegular.doubleValue() || outlier < minRegular.doubleValue()) {
                     double xxOutlier = rangeAxis.valueToJava2D(outlier, dataArea, location);
                     outliers.add(new Outlier(yy + state.getBarWidth() / 2.0, xxOutlier, oRadius));
                 }
@@ -421,11 +420,11 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             }
 
             // draw farout indicators
-            if (!DRAW_FAROUTS_AS_OUTLIERS && outlierListCollection.isHighFarOut()) {
+            if (outlierListCollection.isHighFarOut()) {
                 drawHighFarOut(aRadius / 2.0, g2, yy + state.getBarWidth() / 2.0, maxAxisValue);
             }
 
-            if (!DRAW_FAROUTS_AS_OUTLIERS && outlierListCollection.isLowFarOut()) {
+            if (outlierListCollection.isLowFarOut()) {
                 drawLowFarOut(aRadius / 2.0, g2, yy + state.getBarWidth() / 2.0, minAxisValue);
             }
         }
