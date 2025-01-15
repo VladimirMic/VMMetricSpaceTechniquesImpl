@@ -145,13 +145,13 @@ public class BoxPlotPlotter extends AbstractPlotter {
             renderer.setSeriesStroke(i, new BasicStroke(SERIES_STROKE));
             Color darkColor = tracesColours == null ? COLOURS[i % COLOURS.length] : getColor(tracesColours[i], false);
             Color lightColor = tracesColours == null ? LIGHT_COLOURS[i % LIGHT_COLOURS.length] : getColor(tracesColours[i], true);
-            if (tracesNames.length > 1) {
-                renderer.setSeriesPaint(i, lightColor);
-                renderer.setSeriesOutlinePaint(i, darkColor);
-            } else {
-                renderer.setSeriesPaint(i, LIGHT_BOX_BLACK);
-                renderer.setSeriesOutlinePaint(i, BOX_BLACK);
-            }
+//            if (tracesNames.length > 1) {
+            renderer.setSeriesPaint(i, lightColor);
+            renderer.setSeriesOutlinePaint(i, darkColor);
+//            } else {
+//                renderer.setSeriesPaint(i, LIGHT_BOX_BLACK);
+//                renderer.setSeriesOutlinePaint(i, BOX_BLACK);
+//            }
             renderer.setSeriesOutlineStroke(i, new BasicStroke(3));
             renderer.setSeriesStroke(i, new BasicStroke(3));
         }
