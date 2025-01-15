@@ -16,9 +16,12 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.datatools.DataTypeConvertor;
+import vm.mathtools.Tools;
 import vm.plot.AbstractPlotter;
 import static vm.plot.AbstractPlotter.COLOURS;
 import static vm.plot.AbstractPlotter.getColor;
@@ -112,11 +115,30 @@ public class BoxPlotPlotter extends AbstractPlotter {
 
         // y axis settings
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
+        DefaultBoxAndWhiskerCategoryDataset dataset = (DefaultBoxAndWhiskerCategoryDataset) plot.getDataset();
+        Range rangeBounds = dataset.getRangeBounds(true);
+        double axisBound = yAxis.getUpperBound();
+        double dataBound = rangeBounds.getUpperBound();
+        if (axisBound < dataBound) {
+            yAxis.setUpperBound(dataBound);
+            double fixedAutoRange = yAxis.getFixedAutoRange();
+        }
+        axisBound = yAxis.getLowerBound();
+        dataBound = rangeBounds.getLowerBound();
+        if (axisBound > dataBound) {
+            yAxis.setLowerBound(dataBound);
+        }
+        double range = yAxis.getUpperBound() - yAxis.getLowerBound();
+        axisBound = yAxis.getUpperBound() + yAxis.getUpperMargin() * range;
+        yAxis.setUpperBound(axisBound);
+        axisBound = yAxis.getLowerBound() - yAxis.getLowerMargin() * range;
+        yAxis.setLowerBound(axisBound);
         setLabelsOfAxis(yAxis);
         setTicksOfYNumericAxis(yAxis, false); // todo integers
 
         BoxAndWhiskerRenderer renderer = new MyBoxAndWhiskerRenderer();
-
+        renderer.setMaxOutlierVisible(true);
+        renderer.setMinOutlierVisible(true);
         // x axis settings
         CategoryAxis xAxis = plot.getDomainAxis();
         setLabelsOfAxis(xAxis);

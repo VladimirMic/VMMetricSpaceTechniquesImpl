@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import vm.mathtools.Tools;
 

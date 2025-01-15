@@ -193,7 +193,6 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
                 }
             }
             Collections.sort(outliers);
-
             // Process outliers. Each outlier is either added to the
             // appropriate outlier list or a new outlier list is made // clustering
             for (Iterator iterator = outliers.iterator(); iterator.hasNext();) {
