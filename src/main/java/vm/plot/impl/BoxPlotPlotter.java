@@ -99,8 +99,8 @@ public class BoxPlotPlotter extends AbstractPlotter {
         storePlotPNG(path, plot, width, IMPLICIT_HEIGHT);
     }
 
-    private int lastTracesCount;
-    private int lastGroupCount;
+    protected int lastTracesCount;
+    protected int lastGroupCount;
 
     protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames) {
         lastTracesCount = tracesNames.length;

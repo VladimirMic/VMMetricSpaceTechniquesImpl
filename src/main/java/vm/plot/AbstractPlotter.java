@@ -221,6 +221,7 @@ public abstract class AbstractPlotter {
         Rectangle r = new Rectangle(0, 0, width, height);
         plot.draw(g2, r);
         File f = new File(path);
+        f.getParentFile().mkdirs();
         try {
             LOG.log(Level.INFO, "Storing plot {0}", f);
             SVGUtils.writeToSVG(f, g2.getSVGElement());
@@ -375,10 +376,6 @@ public abstract class AbstractPlotter {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
             yAxis.setNumberFormatOverride(nf);
             yAxis.setUpperBound(1);
-//            TickUnits tickUnits = new TickUnits();
-//            NumberTickUnit xTickUnitNumber = new NumberTickUnit(0.05d);
-//            tickUnits.add(xTickUnitNumber);
-//            yAxis.setStandardTickUnits(tickUnits);
             if (!enforceInvolvingZeroToYAxis) {
                 yAxis.setLowerBound(minRecall);
             }
@@ -388,7 +385,6 @@ public abstract class AbstractPlotter {
         if (label.equals("frr") || label.equals("false reject rate")) {
             yAxis.setUpperBound(1 - minRecall);
         }
-//        yAxis.setAutoRangeIncludesZero(true);
         double yStep = setAxisUnits(null, yAxis, Y_TICKS_IMPLICIT_NUMBER, forceIntegers);
         if (yAxis.getUpperBound() >= 1000) {
             NumberFormat nfBig = new CompactNumberFormat(

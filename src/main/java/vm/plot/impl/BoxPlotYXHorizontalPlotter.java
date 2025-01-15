@@ -24,6 +24,17 @@ public class BoxPlotYXHorizontalPlotter extends BoxPlotXYPlotter {
     }
 
     @Override
+    protected int getNumberOrderOfShownXLabel(int numberOfXLabels) {
+        int preserveEachTh = 1;
+        int countShown = numberOfXLabels;
+        while (countShown > Y_TICKS_IMPLICIT_NUMBER) {
+            preserveEachTh++;
+            countShown = (int) Math.ceil(numberOfXLabels / ((float) preserveEachTh));
+        }
+        return preserveEachTh;
+    }
+
+    @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, COLOUR_NAMES traceColour, Map<Float, List<Float>> yToXListsValies) {
         return super.createPlot(mainTitle, xAxisLabel, yAxisLabel, traceName, traceColour, yToXListsValies);
     }

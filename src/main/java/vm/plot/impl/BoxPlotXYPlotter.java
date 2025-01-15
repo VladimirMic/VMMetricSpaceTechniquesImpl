@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
@@ -32,11 +34,13 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
 
     @Override
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] xValues, List<Float>[][] values) {
+        // notice that DefaultBoxAndWhiskerXYDataset contains a single only one series in the dataset. For that reason, implemented as category dataset with fixed step
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
         if (tracesNames.length != values.length) {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
         }
         Float[] groupNumbers = DataTypeConvertor.objectsToObjectFloats(xValues);
+        int numberOrderOfShownXLabel = getNumberOrderOfShownXLabel(groupNumbers.length);
         float xStep = (float) vm.mathtools.Tools.gcd(groupNumbers);
         for (int traceID = 0; traceID < values.length; traceID++) {
             List<Float>[] valuesForGroups = values[traceID];
@@ -53,18 +57,31 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                     previousKey += xStep;
                     iValue = Tools.parseInteger(previousKey);
                     keyString = iValue == null ? previousKey.toString() : iValue.toString();
-                    dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), tracesNames[traceID], keyString);
+                    if (groupId % numberOrderOfShownXLabel == 0) {
+                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), tracesNames[traceID], keyString);
+                    } else {
+                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), "", keyString);
+                    }
                 }
                 // check if it is an integer (if float than ok
                 iValue = Tools.parseInteger(groupName);
                 keyString = iValue == null ? groupName.toString() : iValue.toString();
                 if (valuesForGroupAndTrace != null) {
-                    dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
+                    if (groupId % numberOrderOfShownXLabel == 0) {
+                        dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
+                    } else {
+                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), "", keyString);
+                    }
                 }
                 previousKey = Float.valueOf(groupNumbers[groupId].toString());// othewise damages the floating point numbers
             }
         }
-        JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
+        JFreeChart chart;
+        if (isHorizontal) {
+            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, yAxisLabel, xAxisLabel, dataset, true);
+        } else {
+            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
+        }
         return setAppearence(chart, tracesNames, tracesColours, xValues);
     }
 
@@ -89,9 +106,35 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
         if (isHorizontal) {
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
             plot.setOrientation(PlotOrientation.HORIZONTAL);
+            plot.setRangeAxisLocation(AxisLocation.TOP_OR_RIGHT);
         }
         return super.setAppearence(chart, tracesNames, tracesColours, groupsNames);
+    }
 
+    @Override
+    public void storePlotPDF(String path, JFreeChart plot) {
+        int width;
+        if (isHorizontal) {
+            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastGroupCount, lastTracesCount);
+        } else {
+            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
+        }
+        storePlotPDF(path, plot, width, IMPLICIT_HEIGHT);
+    }
+
+    @Override
+    public void storePlotPNG(String path, JFreeChart plot) {
+        int width;
+        if (isHorizontal) {
+            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastGroupCount, lastTracesCount);
+        } else {
+            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
+        }
+        storePlotPNG(path, plot, width, IMPLICIT_HEIGHT);
+    }
+
+    protected int getNumberOrderOfShownXLabel(int numberOfXLabels) {
+        return 1;
     }
 
 }
