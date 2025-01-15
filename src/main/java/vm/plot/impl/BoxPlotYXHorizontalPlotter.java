@@ -4,10 +4,14 @@
  */
 package vm.plot.impl;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.NumberAxis;
+import vm.mathtools.Tools;
 
 /**
  *
@@ -43,6 +47,21 @@ public class BoxPlotYXHorizontalPlotter extends BoxPlotXYPlotter {
     @Override
     protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, Object[] groupsNames, int tracesPerGroup) {
         // this is correct
+    }
+
+    @Override
+    protected void setRotationOfYAxisNumbersFont(NumberAxis axis, double step, NumberFormat nf) {
+        int maxLength = 0;
+        Double lowerBound = axis.getLowerBound();
+        double upperBound = axis.getUpperBound();
+        float curr = Tools.round(lowerBound.floatValue(), Float.parseFloat(Double.toString(step)), false);
+        while (curr < upperBound) {
+            maxLength = Math.max(maxLength, nf.format(curr).length());
+            curr += step;
+        }
+        if (maxLength >= 3) {
+            axis.setVerticalTickLabels(true);
+        }
     }
 
 }

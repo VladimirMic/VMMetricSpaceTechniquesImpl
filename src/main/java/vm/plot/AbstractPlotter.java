@@ -306,10 +306,15 @@ public abstract class AbstractPlotter {
         xAxis.setVerticalTickLabels(verticalXLabels);
     }
 
+    protected void setRotationOfYAxisNumbersFont(NumberAxis axis, double step, NumberFormat nf) {
+        // intentional
+    }
+
     private void setTicksForNumberAxis(NumberAxis xAxis, Boolean includeZeroForXAxisLocal) {
         xAxis.setAutoRangeIncludesZero(includeZeroForXAxisLocal);
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
         Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC, false);
+        setRotationOfYAxisNumbersFont(xAxis, xStep, nf);
         if (xStep >= 120) {
             NumberFormat nfBig = new CompactNumberFormat(
                     "#,##0.##",
