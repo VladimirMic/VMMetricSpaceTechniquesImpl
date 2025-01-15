@@ -314,7 +314,6 @@ public abstract class AbstractPlotter {
         xAxis.setAutoRangeIncludesZero(includeZeroForXAxisLocal);
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
         Double xStep = setAxisUnits(null, xAxis, X_TICKS_IMPLICIT_NUMBER_FOR_SHORT_DESC, false);
-        setRotationOfYAxisNumbersFont(xAxis, xStep, nf);
         if (xStep >= 120) {
             NumberFormat nfBig = new CompactNumberFormat(
                     "#,##0.##",
@@ -407,6 +406,7 @@ public abstract class AbstractPlotter {
             NumberFormat nf = NumberFormat.getInstance(Locale.US);
             yAxis.setNumberFormatOverride(nf);
         }
+        setRotationOfYAxisNumbersFont(yAxis, yStep, yAxis.getNumberFormatOverride());
     }
 
     protected void setLabelsOfAxis(Axis axis) {
