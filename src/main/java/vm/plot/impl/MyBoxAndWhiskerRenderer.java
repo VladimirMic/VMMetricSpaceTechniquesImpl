@@ -57,7 +57,6 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
 //    public void setMaxnDisplayedCategoryValue(Float maxnDisplayedCategoryValue) {
 //        this.maxnDisplayedCategoryValue = maxnDisplayedCategoryValue;
 //    }
-
     private Double outlierRadius;
 
     public Double getOutlierRadius() {
@@ -291,13 +290,9 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
 
     @Override
     public void drawHorizontalItem(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis, ValueAxis rangeAxis, CategoryDataset dataset, int row, int column) {
-        BoxAndWhiskerCategoryDataset bawDataset
-                = (BoxAndWhiskerCategoryDataset) dataset;
-
-        double categoryEnd = domainAxis.getCategoryEnd(column,
-                getColumnCount(), dataArea, plot.getDomainAxisEdge());
-        double categoryStart = domainAxis.getCategoryStart(column,
-                getColumnCount(), dataArea, plot.getDomainAxisEdge());
+        BoxAndWhiskerCategoryDataset bawDataset = (BoxAndWhiskerCategoryDataset) dataset;
+        double categoryEnd = domainAxis.getCategoryEnd(column, getColumnCount(), dataArea, plot.getDomainAxisEdge());
+        double categoryStart = domainAxis.getCategoryStart(column, getColumnCount(), dataArea, plot.getDomainAxisEdge());
         double categoryWidth = Math.abs(categoryEnd - categoryStart);
 
         double yy = categoryStart;
