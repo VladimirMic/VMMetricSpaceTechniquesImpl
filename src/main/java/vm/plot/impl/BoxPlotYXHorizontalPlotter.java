@@ -7,6 +7,7 @@ package vm.plot.impl;
 import java.util.List;
 import java.util.Map;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
 
 /**
  *
@@ -38,4 +39,10 @@ public class BoxPlotYXHorizontalPlotter extends BoxPlotXYPlotter {
     public JFreeChart createPlot(String mainTitle, String xAxisLabel, String yAxisLabel, String traceName, COLOUR_NAMES traceColour, Map<Float, List<Float>> yToXListsValies) {
         return super.createPlot(mainTitle, xAxisLabel, yAxisLabel, traceName, traceColour, yToXListsValies);
     }
+
+    @Override
+    protected void setRotationOfXAxisCategoriesFont(CategoryAxis xAxis, Object[] groupsNames, int tracesPerGroup) {
+        // this is correct
+    }
+
 }

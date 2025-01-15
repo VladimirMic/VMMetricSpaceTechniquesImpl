@@ -11,6 +11,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import vm.datatools.DataTypeConvertor;
@@ -40,8 +41,10 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
             throw new IllegalArgumentException("Number of traces descriptions does not match the values" + tracesNames.length + ", " + values.length);
         }
         Float[] groupNumbers = DataTypeConvertor.objectsToObjectFloats(xValues);
-        int numberOrderOfShownXLabel = getNumberOrderOfShownXLabel(groupNumbers.length);
         float xStep = (float) vm.mathtools.Tools.gcd(groupNumbers);
+        if (Float.isNaN(xStep)) {
+            xStep = Float.MAX_VALUE;
+        }
         for (int traceID = 0; traceID < values.length; traceID++) {
             List<Float>[] valuesForGroups = values[traceID];
             if (xValues.length != valuesForGroups.length) {
@@ -57,28 +60,20 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
                     previousKey += xStep;
                     iValue = Tools.parseInteger(previousKey);
                     keyString = iValue == null ? previousKey.toString() : iValue.toString();
-                    if (groupId % numberOrderOfShownXLabel == 0) {
-                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), tracesNames[traceID], keyString);
-                    } else {
-                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), "", keyString);
-                    }
+                    dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), tracesNames[traceID], keyString);
                 }
                 // check if it is an integer (if float than ok
                 iValue = Tools.parseInteger(groupName);
                 keyString = iValue == null ? groupName.toString() : iValue.toString();
                 if (valuesForGroupAndTrace != null) {
-                    if (groupId % numberOrderOfShownXLabel == 0) {
-                        dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
-                    } else {
-                        dataset.add(new BoxPlotPlotter.DummyBoxAndWhiskerItem(), "", keyString);
-                    }
+                    dataset.add(valuesForGroupAndTrace, tracesNames[traceID], keyString);
                 }
                 previousKey = Float.valueOf(groupNumbers[groupId].toString());// othewise damages the floating point numbers
             }
         }
         JFreeChart chart;
         if (isHorizontal) {
-            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, yAxisLabel, xAxisLabel, dataset, true);
+            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, yAxisLabel, xAxisLabel + " (width: " + xStep + ")", dataset, true);
         } else {
             chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
         }
@@ -105,8 +100,11 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
     protected JFreeChart setAppearence(JFreeChart chart, String[] tracesNames, COLOUR_NAMES[] tracesColours, Object[] groupsNames) {
         if (isHorizontal) {
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            String label = plot.getDomainAxis().getLabel();
+            plot.setDomainAxis(new MyCategoryAxis(label, getNumberOrderOfShownXLabel(groupsNames.length)));
             plot.setOrientation(PlotOrientation.HORIZONTAL);
-            plot.setRangeAxisLocation(AxisLocation.TOP_OR_RIGHT);
+            plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+            plot.setDomainAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
         }
         return super.setAppearence(chart, tracesNames, tracesColours, groupsNames);
     }
@@ -115,7 +113,7 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
     public void storePlotPDF(String path, JFreeChart plot) {
         int width;
         if (isHorizontal) {
-            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastGroupCount, lastTracesCount);
+            width = IMPLICIT_WIDTH;
         } else {
             width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
         }
@@ -126,7 +124,7 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
     public void storePlotPNG(String path, JFreeChart plot) {
         int width;
         if (isHorizontal) {
-            width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastGroupCount, lastTracesCount);
+            width = IMPLICIT_WIDTH;
         } else {
             width = precomputeSuitableWidth(IMPLICIT_HEIGHT, lastTracesCount, lastGroupCount);
         }

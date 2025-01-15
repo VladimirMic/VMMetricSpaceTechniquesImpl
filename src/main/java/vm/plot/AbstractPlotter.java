@@ -42,6 +42,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
+import vm.datatools.DataTypeConvertor;
 import vm.javatools.SVGtoPDF;
 import vm.mathtools.Tools;
 
@@ -457,6 +458,7 @@ public abstract class AbstractPlotter {
             while (currDouble > lb) {
                 currString = nfBig.format(currDouble);
                 double check = nfBig.parse(currString).doubleValue();
+                check = DataTypeConvertor.floatToPreciseDouble(Tools.round((float) check, step.floatValue(), false)); // problem with floats
                 if (currString.equals(prev) || check != currDouble) {
                     ok = false;
                     decimalsOfNext++;
