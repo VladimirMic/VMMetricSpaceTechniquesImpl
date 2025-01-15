@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Paint;
 import java.awt.geom.AffineTransform;
-import java.text.DateFormat;
 import java.util.AbstractMap;
 import java.util.Date;
 import java.util.Iterator;
@@ -190,7 +189,7 @@ public class LinesPlotter extends AbstractPlotter {
             lineAndShapeRenderer = (XYLineAndShapeRenderer) renderer;
         }
         if (renderer instanceof XYBarRenderer) {
-            barRenderer = new CustomBarRenderer();
+            barRenderer = new MyBarRenderer();
             plot.setRenderer(barRenderer);
             renderer = barRenderer;
         }
@@ -202,7 +201,7 @@ public class LinesPlotter extends AbstractPlotter {
             Logger.getLogger(LinesPlotter.class.getName()).log(Level.INFO, "Creating bars-plot with X axis named {0} and {1} bars", new Object[]{xAxisLabel, barCount});
             barRenderer.setMargin(0);
             barRenderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
-            barRenderer.setBarPainter(new MyBarRendererTMP(0, 0, 0));
+            barRenderer.setBarPainter(new MyBarPainter(0, 0, 0));
         }
         for (int i = 0; i < traces.length; i++) {
             if (lineAndShapeRenderer != null) {

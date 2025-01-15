@@ -115,7 +115,7 @@ public class BoxPlotPlotter extends AbstractPlotter {
         setLabelsOfAxis(yAxis);
         setTicksOfYNumericAxis(yAxis, false); // todo integers
 
-        BoxAndWhiskerRenderer renderer = new CustomBoxAndWhiskerRenderer();
+        BoxAndWhiskerRenderer renderer = new MyBoxAndWhiskerRenderer();
 
         // x axis settings
         CategoryAxis xAxis = plot.getDomainAxis();

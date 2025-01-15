@@ -52,81 +52,81 @@ public class MyCategoryAxis extends CategoryAxis implements Cloneable, Serializa
         this.eachTickToShow = eachTickToShow;
     }
 
-    @Override
-    public void drawTickMarks(Graphics2D g2, double cursor,
-            Rectangle2D dataArea, RectangleEdge edge, AxisState state) {
-
-        Plot p = getPlot();
-        if (p == null) {
-            return;
-        }
-        CategoryPlot plot = (CategoryPlot) p;
-        double il = getTickMarkInsideLength();
-        double ol = getTickMarkOutsideLength();
-        Line2D line = new Line2D.Double();
-        List<Comparable> categories = plot.getCategoriesForAxis(this);
-        g2.setPaint(getTickMarkPaint());
-        g2.setStroke(getTickMarkStroke());
-        Object saved = g2.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
-        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                RenderingHints.VALUE_STROKE_NORMALIZE);
-        int counter = 0;
-        boolean draw;
-        if (edge.equals(RectangleEdge.TOP)) {
-            for (Comparable key : categories) {
-                draw = counter % eachTickToShow == 0;
-                if (draw) {
-                    double x = getCategoryMiddle(key, categories, dataArea, edge);
-                    line.setLine(x, cursor, x, cursor + il);
-                    g2.draw(line);
-                    line.setLine(x, cursor, x, cursor - ol);
-                    g2.draw(line);
-                }
-                counter++;
-            }
-            state.cursorUp(ol);
-        } else if (edge.equals(RectangleEdge.BOTTOM)) {
-            for (Comparable key : categories) {
-                draw = counter % eachTickToShow == 0;
-                if (draw) {
-                    double x = getCategoryMiddle(key, categories, dataArea, edge);
-                    line.setLine(x, cursor, x, cursor - il);
-                    g2.draw(line);
-                    line.setLine(x, cursor, x, cursor + ol);
-                    g2.draw(line);
-                }
-                counter++;
-            }
-            state.cursorDown(ol);
-        } else if (edge.equals(RectangleEdge.LEFT)) {
-            for (Comparable key : categories) {
-                draw = counter % eachTickToShow == 0;
-                if (draw) {
-                    double y = getCategoryMiddle(key, categories, dataArea, edge);
-                    line.setLine(cursor, y, cursor + il, y);
-                    g2.draw(line);
-                    line.setLine(cursor, y, cursor - ol, y);
-                    g2.draw(line);
-                }
-                counter++;
-            }
-            state.cursorLeft(ol);
-        } else if (edge.equals(RectangleEdge.RIGHT)) {
-            for (Comparable key : categories) {
-                draw = counter % eachTickToShow == 0;
-                if (draw) {
-                    double y = getCategoryMiddle(key, categories, dataArea, edge);
-                    line.setLine(cursor, y, cursor - il, y);
-                    g2.draw(line);
-                    line.setLine(cursor, y, cursor + ol, y);
-                    g2.draw(line);
-                }
-                counter++;
-            }
-            state.cursorRight(ol);
-        }
-        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, saved);
-    }
+//    @Override
+//    public void drawTickMarks(Graphics2D g2, double cursor,
+//            Rectangle2D dataArea, RectangleEdge edge, AxisState state) {
+//
+//        Plot p = getPlot();
+//        if (p == null) {
+//            return;
+//        }
+//        CategoryPlot plot = (CategoryPlot) p;
+//        double il = getTickMarkInsideLength();
+//        double ol = getTickMarkOutsideLength();
+//        Line2D line = new Line2D.Double();
+//        List<Comparable> categories = plot.getCategoriesForAxis(this);
+//        g2.setPaint(getTickMarkPaint());
+//        g2.setStroke(getTickMarkStroke());
+//        Object saved = g2.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+//        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+//                RenderingHints.VALUE_STROKE_NORMALIZE);
+//        int counter = 0;
+//        boolean draw;
+//        if (edge.equals(RectangleEdge.TOP)) {
+//            for (Comparable key : categories) {
+//                draw = counter % eachTickToShow == 0;
+//                if (draw) {
+//                    double x = getCategoryMiddle(key, categories, dataArea, edge);
+//                    line.setLine(x, cursor, x, cursor + il);
+//                    g2.draw(line);
+//                    line.setLine(x, cursor, x, cursor - ol);
+//                    g2.draw(line);
+//                }
+//                counter++;
+//            }
+//            state.cursorUp(ol);
+//        } else if (edge.equals(RectangleEdge.BOTTOM)) {
+//            for (Comparable key : categories) {
+//                draw = counter % eachTickToShow == 0;
+//                if (draw) {
+//                    double x = getCategoryMiddle(key, categories, dataArea, edge);
+//                    line.setLine(x, cursor, x, cursor - il);
+//                    g2.draw(line);
+//                    line.setLine(x, cursor, x, cursor + ol);
+//                    g2.draw(line);
+//                }
+//                counter++;
+//            }
+//            state.cursorDown(ol);
+//        } else if (edge.equals(RectangleEdge.LEFT)) {
+//            for (Comparable key : categories) {
+//                draw = counter % eachTickToShow == 0;
+//                if (draw) {
+//                    double y = getCategoryMiddle(key, categories, dataArea, edge);
+//                    line.setLine(cursor, y, cursor + il, y);
+//                    g2.draw(line);
+//                    line.setLine(cursor, y, cursor - ol, y);
+//                    g2.draw(line);
+//                }
+//                counter++;
+//            }
+//            state.cursorLeft(ol);
+//        } else if (edge.equals(RectangleEdge.RIGHT)) {
+//            for (Comparable key : categories) {
+//                draw = counter % eachTickToShow == 0;
+//                if (draw) {
+//                    double y = getCategoryMiddle(key, categories, dataArea, edge);
+//                    line.setLine(cursor, y, cursor - il, y);
+//                    g2.draw(line);
+//                    line.setLine(cursor, y, cursor + ol, y);
+//                    g2.draw(line);
+//                }
+//                counter++;
+//            }
+//            state.cursorRight(ol);
+//        }
+//        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, saved);
+//    }
 
     @Override
     protected AxisState drawCategoryLabels(Graphics2D g2, Rectangle2D plotArea,

@@ -33,7 +33,7 @@ import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 /**
  *
  */
-public class CustomBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
+public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
 
     public static Integer GAP_TRACES = 28;
     public static Integer GAP_GROUPS = 28;
@@ -49,6 +49,7 @@ public class CustomBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         this.outlierRadius = outlierRadius;
     }
 
+    
     @Override
     public void drawVerticalItem(Graphics2D g2, CategoryItemRendererState state,
             Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,

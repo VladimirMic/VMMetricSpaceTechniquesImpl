@@ -73,7 +73,7 @@ public class BoxPlotXYPlotter extends BoxPlotPlotter {
         }
         JFreeChart chart;
         if (isHorizontal) {
-            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, yAxisLabel, xAxisLabel + " (width: " + xStep + ")", dataset, true);
+            chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, yAxisLabel + " (width: " + xStep + ")", xAxisLabel, dataset, true);
         } else {
             chart = ChartFactory.createBoxAndWhiskerChart(mainTitle, xAxisLabel, yAxisLabel, dataset, true);
         }

@@ -51,7 +51,7 @@ import org.jfree.chart.ui.RectangleEdge;
  * An implementation of the {@link XYBarPainter} interface that uses several
  * gradient fills to enrich the appearance of the bars.
  */
-public class MyBarRendererTMP implements XYBarPainter, Serializable {
+public class MyBarPainter implements XYBarPainter, Serializable {
 
     /**
      * The division point between the first and second gradient regions.
@@ -71,7 +71,7 @@ public class MyBarRendererTMP implements XYBarPainter, Serializable {
     /**
      * Creates a new instance.
      */
-    public MyBarRendererTMP() {
+    public MyBarPainter() {
         this(0.10, 0.20, 0.80);
     }
 
@@ -82,7 +82,7 @@ public class MyBarRendererTMP implements XYBarPainter, Serializable {
      * @param g2 the division between regions 2 and 3.
      * @param g3 the division between regions 3 and 4.
      */
-    public MyBarRendererTMP(double g1, double g2, double g3) {
+    public MyBarPainter(double g1, double g2, double g3) {
         this.g1 = g1;
         this.g2 = g2;
         this.g3 = g3;
@@ -336,10 +336,10 @@ public class MyBarRendererTMP implements XYBarPainter, Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof MyBarRendererTMP)) {
+        if (!(obj instanceof MyBarPainter)) {
             return false;
         }
-        MyBarRendererTMP that = (MyBarRendererTMP) obj;
+        MyBarPainter that = (MyBarPainter) obj;
         if (this.g1 != that.g1) {
             return false;
         }

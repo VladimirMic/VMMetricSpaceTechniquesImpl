@@ -30,7 +30,7 @@ import org.jfree.data.xy.XYSeriesCollection;
  * <br><br>
  * <img src="doc-files/XYBarRendererSample.png" alt="XYBarRendererSample.png">
  */
-public class CustomBarRenderer extends XYBarRenderer {
+public class MyBarRenderer extends XYBarRenderer {
 
     /**
      * Draws the visual representation of a single data item.
