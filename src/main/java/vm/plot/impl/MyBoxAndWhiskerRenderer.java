@@ -357,21 +357,11 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         // draw mean - SPECIAL AIMS REQUIREMENT...
         //////////////////////
         g2.setPaint(getArtifactPaint());
-        double aRadius = 0;  // average radius
         if (isMeanVisible()) {
             Number xMean = bawDataset.getMeanValue(row, column);
             if (xMean != null) {
                 double xxMean = rangeAxis.valueToJava2D(xMean.doubleValue(), dataArea, location);
-                aRadius = state.getBarWidth() / 4;
-                double xxAverage = rangeAxis.valueToJava2D(xMean.doubleValue(), dataArea, location);
-                // here we check that the average marker will in fact be
-                // visible before drawing it...
-                if ((xxMean > (dataArea.getMinX() - aRadius)) && (xxMean < (dataArea.getMaxX() + aRadius))) {
-//                    Ellipse2D.Double avgEllipse = new Ellipse2D.Double(xxMean - aRadius, yy + aRadius, aRadius * 2, aRadius * 2);
-//                    g2.fill(avgEllipse);
-//                    g2.draw(avgEllipse);
-                    g2.draw(new Line2D.Double(yy, xxAverage, yy + state.getBarWidth(), xxAverage));
-                }
+                g2.draw(new Line2D.Double(xxMean, yy, xxMean, yy + state.getBarWidth()));
             }
         }
 
@@ -402,7 +392,7 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
                 double outlier = ((Number) xOutliers.get(i)).doubleValue();
                 if (outlier > maxRegular.doubleValue() || outlier < minRegular.doubleValue()) {
                     double xxOutlier = rangeAxis.valueToJava2D(outlier, dataArea, location);
-                    outliers.add(new Outlier(yy + state.getBarWidth() / 2.0, xxOutlier, oRadius));
+                    outliers.add(new Outlier(xxOutlier, yy + state.getBarWidth() / 2.0, oRadius));
                 }
             }
             Collections.sort(outliers);
