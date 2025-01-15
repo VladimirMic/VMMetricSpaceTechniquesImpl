@@ -144,10 +144,9 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             g2.draw(box);
         }
 
+        // draw mean - SPECIAL AIMS REQUIREMENT...
         g2.setPaint(Color.BLACK);
         g2.setStroke(new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 3}, 0));
-
-        // draw mean - SPECIAL AIMS REQUIREMENT...
         if (isMeanVisible()) {
             Number yMean = bawDataset.getMeanValue(row, column);
             if (yMean != null) {
@@ -161,10 +160,10 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
             }
         }
 
-        g2.setPaint(outlinePaint);
-        g2.setStroke(getItemOutlineStroke(row, column));
 
         // draw median...
+        g2.setPaint(outlinePaint);
+        g2.setStroke(getItemOutlineStroke(row, column));
         if (isMedianVisible()) {
             Number yMedian = bawDataset.getMedianValue(row, column);
             if (yMedian != null) {
@@ -355,8 +354,8 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         }
 
         // draw mean - SPECIAL AIMS REQUIREMENT...
-        //////////////////////
-        g2.setPaint(getArtifactPaint());
+        g2.setPaint(Color.BLACK);
+        g2.setStroke(new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 3}, 0));
         if (isMeanVisible()) {
             Number xMean = bawDataset.getMeanValue(row, column);
             if (xMean != null) {
@@ -366,6 +365,9 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         }
 
         // draw median...
+        Paint outlinePaint = getItemOutlinePaint(row, column);
+        g2.setPaint(outlinePaint);
+        g2.setStroke(getItemOutlineStroke(row, column));
         if (isMedianVisible()) {
             Number xMedian = bawDataset.getMedianValue(row, column);
             if (xMedian != null) {
@@ -379,7 +381,6 @@ public class MyBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer {
         // draw outliers...
         double maxAxisValue = rangeAxis.valueToJava2D(rangeAxis.getUpperBound(), dataArea, location) + aRadius;
         double minAxisValue = rangeAxis.valueToJava2D(rangeAxis.getLowerBound(), dataArea, location) - aRadius;
-        Paint outlinePaint = getItemOutlinePaint(row, column);
         g2.setPaint(outlinePaint);
         double oRadius = outlierRadius == null ? state.getBarWidth() / 6 : outlierRadius;    // outlier radius
         java.util.List outliers = new ArrayList();
