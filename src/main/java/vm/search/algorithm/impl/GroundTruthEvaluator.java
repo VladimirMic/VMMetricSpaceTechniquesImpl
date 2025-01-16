@@ -64,12 +64,12 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        Object[] concatArrays = Tools.concatArrays(1, paramsToStoreWithGroundTruth);
+        Object[] concatArrays = Tools.addToArray(1, paramsToStoreWithGroundTruth);
         return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        Object[] concatArrays = Tools.concatArrays(vm.javatools.Tools.PARALELISATION, paramsToStoreWithGroundTruth);
+        Object[] concatArrays = Tools.addToArray(vm.javatools.Tools.PARALELISATION, paramsToStoreWithGroundTruth);
         return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
     }
 

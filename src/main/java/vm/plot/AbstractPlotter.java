@@ -341,7 +341,7 @@ public abstract class AbstractPlotter {
         for (Object groupName : groupsNames) {
             maxLength = Math.max(maxLength, groupName.toString().length());
         }
-        if (maxLength >= 4 * tracesPerGroup) {
+        if (maxLength >= 3 * tracesPerGroup) {
             xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
         }
     }
