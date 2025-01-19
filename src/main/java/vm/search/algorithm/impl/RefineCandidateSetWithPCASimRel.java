@@ -60,7 +60,7 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
     }
 
     private TreeSet<AbstractMap.SimpleEntry<Object, float[]>> initSortedMapOfPCAPrefixes() {
-        Tools.FloatVectorComparator floatVectorComparator = new Tools.FloatVectorComparator();
+        Tools.FloatArraySameLengthsComparator floatVectorComparator = new Tools.FloatArraySameLengthsComparator();
         Tools.MapByValueComparatorWithOwnValueComparator<float[]> comp = new Tools.MapByValueComparatorWithOwnValueComparator<>(floatVectorComparator);
         return new TreeSet<>(comp);
     }
