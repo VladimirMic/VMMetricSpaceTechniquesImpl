@@ -37,11 +37,13 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     public static final Float RATIO_OF_SMALLES_DISTS = 0.4f / 100f;
 
     private final Dataset origDataset;
+    private final String datasetNamePrefix;
     private final Map<Comparable, Comparable[]> mapOfQueriesToCandidates;
     private final Map<Comparable, Comparable[]> mapOfTrainingQueriesToCandidates;
     private final Map<Comparable, T> keyValueStorage;
 
     private int maxNumberOfCandidatesToReturn = Integer.MAX_VALUE;
+    private int candidatesProvided;
 
     public DatasetOfCandidates(Dataset origDataset, String newDatasetName, QueryNearestNeighboursStoreInterface resultsStorage, String resultFolderName, String directResultFileName, String trainingResultFolderName, String trainingDirectResultFileName) {
         super(
@@ -49,6 +51,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
                 new MetricSpaceWithDiskBasedMap(origDataset.getMetricSpace(), origDataset.getKeyValueStorage()),
                 origDataset.getMetricSpacesStorage()
         );
+        datasetNamePrefix = newDatasetName;
         this.origDataset = origDataset;
         this.keyValueStorage = origDataset.getKeyValueStorage();
         Map<Comparable, Comparable[]> map = getDiskBasedDatasetOfCandsMap(datasetName);
@@ -63,6 +66,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
         } else {
             mapOfQueriesToCandidates = map;
         }
+        defineCandidatesProvided(mapOfQueriesToCandidates);
         if (trainingResultFolderName != null && trainingDirectResultFileName != null) {
             String trainingStorageName = datasetName + "_training_data";
             map = getDiskBasedDatasetOfCandsMap(trainingStorageName);
@@ -85,6 +89,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 
     public void setMaxNumberOfCandidatesToReturn(int maxNumberOfCandidatesToReturn) {
         this.maxNumberOfCandidatesToReturn = maxNumberOfCandidatesToReturn;
+        datasetName = datasetNamePrefix + "_" + maxNumberOfCandidatesToReturn;
     }
 
     protected abstract Map<Comparable, Comparable[]> getDiskBasedDatasetOfCandsMap(String datasetName);
@@ -432,6 +437,32 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     @Override
     public int getRecommendedNumberOfPivotsForFiltering() {
         return -1;
+    }
+
+    private void defineCandidatesProvided(Map<Comparable, Comparable[]> mapOfQueriesToCandidates) {
+        Integer retCand = null;
+        for (Map.Entry<Comparable, Comparable[]> entry : mapOfQueriesToCandidates.entrySet()) {
+            Comparable[] val = entry.getValue();
+            if (retCand == null) {
+                retCand = val.length;
+            } else {
+                if (val.length != retCand) {
+                    candidatesProvided = -1;
+                    return;
+                }
+            }
+        }
+        if (retCand != null) {
+            candidatesProvided = retCand;
+        }
+    }
+
+    /**
+     *
+     * @return -1 if dynamic, or number of fixed
+     */
+    public int getCandidatesProvided() {
+        return candidatesProvided;
     }
 
 }
