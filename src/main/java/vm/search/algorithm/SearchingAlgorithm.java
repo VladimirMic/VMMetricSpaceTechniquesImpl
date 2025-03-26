@@ -130,6 +130,7 @@ public abstract class SearchingAlgorithm<T> {
         final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queryObjects.size()];
         final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
+            vm.javatools.Tools.sleepDuringTheNight();
             Comparable qID = metricSpace.getIDOfMetricObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
@@ -224,17 +225,8 @@ public abstract class SearchingAlgorithm<T> {
     public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
-        LOG.log(Level.INFO, "Warming up disk storage");
-        for (int i = 0; i < 20; i++) { // for the sake of disk caching
-            Object q = queryObjects.get(queryObjects.size() - 1 - i);
-            Comparable qID = metricSpace.getIDOfMetricObject(q);
-            Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            while (candsIt.hasNext()) {
-                Object cand = candsIt.next();
-                Object tmp = metricSpace.getDataOfMetricObject(cand);
-            }
-        }
         for (int i = 0; i < queryObjects.size(); i++) {
+            vm.javatools.Tools.sleepDuringTheNight();
             Object q = queryObjects.get(i);
             Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
