@@ -16,7 +16,7 @@ public abstract class BoundsOnDistanceEstimation {
 
     public abstract float upperBound(Object... args);
 
-    protected abstract String getTechName();
+    public abstract String getTechName();
 
     public String getTechFullName() {
         String ret = namePrefix;

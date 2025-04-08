@@ -33,7 +33,7 @@ public class DataDependentPtolemaicFiltering extends AbstractPtolemaicBasedFilte
     }
 
     @Override
-    protected String getTechName() {
+    public String getTechName() {
         return "data-dependent_ptolemaic_filtering";
     }
 

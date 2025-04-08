@@ -119,7 +119,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     }
 
     @Override
-    protected String getTechName() {
+    public String getTechName() {
         return "Secondary_filtering_with_sketches";
     }
 

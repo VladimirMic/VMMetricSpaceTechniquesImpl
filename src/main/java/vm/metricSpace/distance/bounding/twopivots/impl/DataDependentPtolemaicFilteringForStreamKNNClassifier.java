@@ -68,7 +68,7 @@ public class DataDependentPtolemaicFilteringForStreamKNNClassifier<T> extends Da
     }
 
     @Override
-    protected String getTechName() {
+    public String getTechName() {
         String ret = "data-dependent_ptolemaic_filtering";
         if (!isQueryDynamicPivotPairs()) {
             ret += "_random_pivots";

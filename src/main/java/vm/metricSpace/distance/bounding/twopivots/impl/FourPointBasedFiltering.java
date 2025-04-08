@@ -40,7 +40,7 @@ public class FourPointBasedFiltering extends AbstractTwoPivotsFilter {
     }
 
     @Override
-    protected String getTechName() {
+    public String getTechName() {
         return "FourPointBasedFiltering";
     }
 

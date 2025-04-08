@@ -27,7 +27,7 @@ public class TrivialIneffectiveBound extends AbstractOnePivotFilter {
     }
 
     @Override
-    protected String getTechName() {
+    public String getTechName() {
         return "Trivial_ineffective_bound";
     }
 
