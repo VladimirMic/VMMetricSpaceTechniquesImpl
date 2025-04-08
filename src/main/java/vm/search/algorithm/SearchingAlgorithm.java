@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -29,6 +30,7 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
+    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 10;
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
@@ -222,18 +224,53 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
+    public TreeSet<Map.Entry<Comparable, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> map = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, false, -1);
+        return map.get(-1);
+    }
+
+    /**
+     * Returns candidate set size mapped to the sorted sets (for each query) of
+     * nearest neighbours in a form of <Map.Entry<Object, Float>> of id and
+     * distance
+     *
+     * @param dataset
+     * @param queryObjects
+     * @param k
+     * @return
+     */
+    public Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k, boolean storePartialCandSetSizes, int candidatesProvided) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = initAnswerMapForCandSetSizes(candidatesProvided, queryObjects.size(), storePartialCandSetSizes);
         for (int i = 0; i < queryObjects.size(); i++) {
             vm.javatools.Tools.sleepDuringTheNight();
             Object q = queryObjects.get(i);
             Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            ret[i] = completeKnnSearch(metricSpace, q, k, candsIt);
-            long timeOfQuery = getTimeOfQuery(qID);
-            int dc = getDistCompsForQuery(qID);
-            LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
+            if (storePartialCandSetSizes) {
+                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = new TreeSet[queryObjects.size()];
+                //TODO
+            } else {
+                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(candidatesProvided);
+                TreeSet completeKnnSearch = completeKnnSearch(metricSpace, q, k, candsIt);
+                retForCandSetSize[i] = completeKnnSearch;
+                long timeOfQuery = getTimeOfQuery(qID);
+                int dc = getDistCompsForQuery(qID);
+                LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
+            }
+        }
+        return ret;
+    }
+
+    private Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> initAnswerMapForCandSetSizes(int candidatesProvided, int queriesCount, boolean storePartialCandSetSizes) {
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = new TreeMap<>();
+        if (storePartialCandSetSizes && candidatesProvided > 0) {
+            int batch = candidatesProvided / STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX;
+            for (int i = 1; i <= STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX; i++) {
+                ret.put(i * batch, new TreeSet[queriesCount]);
+            }
+        } else {
+            ret.put(candidatesProvided, new TreeSet[queriesCount]);
         }
         return ret;
     }
