@@ -41,7 +41,11 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
 
     @Override
     public String getTechName() {
-        return "ptolemaios";
+        String ret = "ptolemaios";
+        if (!queryDynamicPivotPairs) {
+            ret += "_randomPivots";
+        }
+        return ret;
     }
 
     @Override
