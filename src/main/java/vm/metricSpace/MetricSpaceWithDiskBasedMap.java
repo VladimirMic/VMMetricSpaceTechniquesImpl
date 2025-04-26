@@ -30,7 +30,7 @@ public class MetricSpaceWithDiskBasedMap<T> extends AbstractMetricSpace<T> {
     @Override
     public Comparable getIDOfMetricObject(Object o) {
         try {
-            return origMetricSpace.getIDOfMetricObject(o);
+            return origMetricSpace.getIDOfMetricObject(o); // because of pivots
         } catch (Exception e) {
         }
         return (Comparable) o;

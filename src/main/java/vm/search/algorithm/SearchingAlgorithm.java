@@ -69,6 +69,9 @@ public abstract class SearchingAlgorithm<T> {
     }
 
     public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
+        if (currAnswer == null) {
+            return Float.MAX_VALUE;
+        }
         int size = currAnswer.size();
         if (size < k) {
             return searchRadius;
@@ -237,27 +240,28 @@ public abstract class SearchingAlgorithm<T> {
      * @param dataset
      * @param queryObjects
      * @param k
+     * @param storePartialCandSetSizes
+     * @param candidatesProvided
      * @return
      */
     public Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k, boolean storePartialCandSetSizes, int candidatesProvided) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = initAnswerMapForCandSetSizes(candidatesProvided, queryObjects.size(), storePartialCandSetSizes);
+        int batchSize = storePartialCandSetSizes && candidatesProvided > 0 ? candidatesProvided / STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX : candidatesProvided;
         for (int i = 0; i < queryObjects.size(); i++) {
             vm.javatools.Tools.sleepDuringTheNight();
             Object q = queryObjects.get(i);
             Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            if (storePartialCandSetSizes) {
-                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = new TreeSet[queryObjects.size()];
-                //TODO
-            } else {
-                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(candidatesProvided);
-                TreeSet completeKnnSearch = completeKnnSearch(metricSpace, q, k, candsIt);
+            for (int batchCounter = 1; candsIt.hasNext(); batchCounter++) {
+                Iterator<Object> batchIt = Tools.getObjectsFromIterator(candsIt, batchSize).iterator();
+                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(batchCounter * batchSize);
+                TreeSet completeKnnSearch = completeKnnSearch(metricSpace, q, k, batchIt, retForCandSetSize[i]);
                 retForCandSetSize[i] = completeKnnSearch;
-                long timeOfQuery = getTimeOfQuery(qID);
-                int dc = getDistCompsForQuery(qID);
-                LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
             }
+            long timeOfQuery = getTimeOfQuery(qID);
+            int dc = getDistCompsForQuery(qID);
+            LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
         }
         return ret;
     }
