@@ -30,7 +30,7 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
-    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 10;
+    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 5;
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
@@ -256,9 +256,12 @@ public abstract class SearchingAlgorithm<T> {
             for (int batchCounter = 1; candsIt.hasNext(); batchCounter++) {
                 Iterator<Object> batchIt = Tools.getObjectsFromIterator(candsIt, batchSize).iterator();
                 TreeSet<Map.Entry<Comparable, Float>>[] prev = ret.get((batchCounter - 1) * batchSize);
-                TreeSet completeKnnSearch = completeKnnSearch(metricSpace, q, k, batchIt, prev[i]);
+                TreeSet<Map.Entry<Comparable, Float>> newAnswer = prev[i] == null ? null : new TreeSet<>(prev[i].comparator());
+                if (prev[i] != null) {
+                    newAnswer.addAll(prev[i]);
+                }
                 TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(batchCounter * batchSize);
-                retForCandSetSize[i] = completeKnnSearch;
+                retForCandSetSize[i] = completeKnnSearch(metricSpace, q, k, batchIt, newAnswer);
             }
             long timeOfQuery = getTimeOfQuery(qID);
             int dc = getDistCompsForQuery(qID);
