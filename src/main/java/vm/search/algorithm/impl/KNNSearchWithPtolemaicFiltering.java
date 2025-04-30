@@ -13,7 +13,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.DistanceFunctionInterface;
@@ -38,7 +37,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     protected final float[][] poDists;
     protected final Map<Comparable, Integer> rowHeaders;
     protected final DistanceFunctionInterface<T> df;
-    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
     protected final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<Object, int[]> qPivotArraysCached;
 
@@ -54,7 +52,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
-        this.lbCheckedForQ = new ConcurrentHashMap();
         this.qPivotArraysCached = new ConcurrentHashMap<>();
         this.bruteForceAlg = new GroundTruthEvaluator(df);
         this.objBeforeSeqScan = -1;
@@ -110,7 +107,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                     t += System.currentTimeMillis();
                     incTime(qId, t);
                     incDistsComps(qId, bruteForceAlg.getDistCompsForQuery(qId) + distComps);
-                    incLBChecked(qId, lbChecked);
+                    incAdditionalParam(qId, lbChecked, 0);
                     qSkip.add(qId.toString());
                     return ret;
                 }
@@ -147,7 +144,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         System.err.println(qId + ": " + t + " ms ");
         incTime(qId, t);
         incDistsComps(qId, distComps);
-        incLBChecked(qId, lbChecked);
+        incAdditionalParam(qId, lbChecked, 0);
         return ret;
     }
 
@@ -168,19 +165,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    protected void incLBChecked(Object qId, long lbChecked) {
-        AtomicLong ai = lbCheckedForQ.get(qId);
-        if (ai != null) {
-            ai.addAndGet(lbChecked);
-        } else {
-            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
-        }
-    }
-
-    @Override
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new Map[]{lbCheckedForQ};
-    }
 
     public static <T> float[][] computeqpDistMultipliedByCoefForPivots(T qData, List<T> pivotsData, DistanceFunctionInterface<T> df, AbstractPtolemaicBasedFiltering filter) {
         float[][] ret = new float[pivotsData.size()][pivotsData.size()];

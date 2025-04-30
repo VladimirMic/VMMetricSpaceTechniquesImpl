@@ -49,7 +49,7 @@ public class AlgorithmEvaluator {
         overallTime += System.currentTimeMillis();
 
         LOG.log(Level.INFO, "Storing statistics of queries");
-        statsStorage.storeStatsForQueries(alg.getDistCompsPerQueries(), alg.getTimesPerQueries(), alg.getAddditionalStats());
+        statsStorage.storeStatsForQueries(alg.getDistCompsPerQueries(), alg.getTimesPerQueries(), alg.getAdditionalStats());
         statsStorage.save();
 
         LOG.log(Level.INFO, "Storing results of queries");

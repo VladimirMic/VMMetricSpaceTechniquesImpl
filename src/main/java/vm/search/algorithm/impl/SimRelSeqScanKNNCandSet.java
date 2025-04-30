@@ -74,9 +74,9 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
         }
     }
 
-    public Long getSimRelEvalCounter() {
-        return simRelEvalCounter;
-    }
+//    public Long getSimRelEvalCounter() {
+//        return simRelEvalCounter;
+//    }
 
     public Object getSimRelStatsOfLastExecutedQuery() {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {

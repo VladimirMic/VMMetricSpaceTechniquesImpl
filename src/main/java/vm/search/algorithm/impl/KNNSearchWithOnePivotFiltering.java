@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
@@ -31,15 +29,12 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
 
-    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
-
     public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
-        this.lbCheckedForQ = new ConcurrentHashMap();
     }
 
     @Override
@@ -103,7 +98,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         t += System.currentTimeMillis();
         incTime(qId, t);
         incDistsComps(qId, distComps);
-        incLBChecked(qId, lbChecked);
+        incAdditionalParam(qId, lbChecked, 0);
         System.out.println(qId + ": " + t + " ms");
         return ret;
     }
@@ -116,20 +111,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public String getResultName() {
         return filter.getTechFullName();
-    }
-
-    private void incLBChecked(Object qId, long lbChecked) {
-        AtomicLong ai = lbCheckedForQ.get(qId);
-        if (ai != null) {
-            ai.addAndGet(lbChecked);
-        } else {
-            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
-        }
-    }
-
-    @Override
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new Map[]{lbCheckedForQ};
     }
 
 }

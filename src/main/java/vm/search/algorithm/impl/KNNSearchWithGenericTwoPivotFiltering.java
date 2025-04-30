@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
@@ -34,8 +32,6 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     private final int pivotsEndSmallDists;
     private final int pivotsEndBigDists;
 
-    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
-
     public KNNSearchWithGenericTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
@@ -43,7 +39,6 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         this.pivotPivotDists = pivotPivotDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
-        this.lbCheckedForQ = new ConcurrentHashMap();
         pivotsEndBigDists = 8;
         pivotsEndSmallDists = SORT_PIVOTS ? (pivotsData.size() / pivotsEndBigDists) : pivotsData.size() - 1;
     }
@@ -119,7 +114,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         t += System.currentTimeMillis();
         incTime(qId, t);
         incDistsComps(qId, distComps);
-        incLBChecked(qId, lbChecked);
+        incAdditionalParam(qId, lbChecked, 0);
         System.err.println(qId + ": " + t + " ms ");
         return ret;
     }
@@ -132,20 +127,6 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     @Override
     public String getResultName() {
         return filter.getTechFullName();
-    }
-
-    private void incLBChecked(Object qId, long lbChecked) {
-        AtomicLong ai = lbCheckedForQ.get(qId);
-        if (ai != null) {
-            ai.addAndGet(lbChecked);
-        } else {
-            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
-        }
-    }
-
-    @Override
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new Map[]{lbCheckedForQ};
     }
 
 }

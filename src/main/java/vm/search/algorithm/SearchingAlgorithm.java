@@ -3,7 +3,6 @@ package vm.search.algorithm;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +34,7 @@ public abstract class SearchingAlgorithm<T> {
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, AtomicLong> timesPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Comparable, List<AtomicLong>> additionalStatsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, float[]> qpDistsCached = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<Comparable, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
 
@@ -80,6 +80,20 @@ public abstract class SearchingAlgorithm<T> {
             currAnswer.remove(currAnswer.last());
         }
         return currAnswer.last().getValue();
+    }
+
+    protected void incAdditionalParam(Comparable qId, long byValue, int idx) {
+        List<AtomicLong> list = additionalStatsPerQueries.get(qId);
+        if (list == null) {
+            list = new ArrayList<>();
+            additionalStatsPerQueries.put(qId, list);
+        }
+        if (list.size() <= idx) {
+            for (int i = list.size() - 1; i < idx; i++) {
+                list.add(idx, new AtomicLong());
+            }
+        }
+        list.get(idx).addAndGet(byValue);
     }
 
     public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
@@ -261,7 +275,9 @@ public abstract class SearchingAlgorithm<T> {
                     newAnswer.addAll(prev[i]);
                 }
                 TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(batchCounter * batchSize);
-                retForCandSetSize[i] = completeKnnSearch(metricSpace, q, k, batchIt, newAnswer);
+                retForCandSetSize[i] = completeKnnSearch(metricSpace, q, k, batchIt, newAnswer, batchCounter * batchSize);
+                incAdditionalParam(qID, getTimeOfQuery(qID), 2 * batchCounter - 1);
+                incAdditionalParam(qID, getDistCompsForQuery(qID), 2 * batchCounter);
             }
             long timeOfQuery = getTimeOfQuery(qID);
             int dc = getDistCompsForQuery(qID);
@@ -327,8 +343,8 @@ public abstract class SearchingAlgorithm<T> {
         return timesPerQueries.get(qId).get();
     }
 
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new HashMap[0];
+    public Map<Comparable, List<AtomicLong>> getAdditionalStats() {
+        return Collections.unmodifiableMap(additionalStatsPerQueries);
     }
 
     public abstract String getResultName();
