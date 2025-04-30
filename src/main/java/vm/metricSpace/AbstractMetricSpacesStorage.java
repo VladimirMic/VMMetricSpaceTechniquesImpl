@@ -83,7 +83,7 @@ public abstract class AbstractMetricSpacesStorage<T> {
 
     public int reevaluatetNumberOfObjectsInDataset(String datasetName, Object... params) {
         Iterator<Object> metricObjects = getObjectsFromDataset(datasetName);
-        int ret = 0;
+        int ret;
         for (ret = 0; metricObjects.hasNext(); ret++) {
             metricObjects.next();
             if (ret % 100000 == 0) {

@@ -7,6 +7,7 @@ package vm.metricSpace;
 import java.util.Map;
 
 /**
+ * Currently used for vectors of random numbers
  *
  * @author Vlada
  * @param <T> type of data used to compute the distance
