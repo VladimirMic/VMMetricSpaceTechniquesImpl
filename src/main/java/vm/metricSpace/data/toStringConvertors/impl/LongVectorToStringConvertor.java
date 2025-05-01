@@ -6,7 +6,7 @@ import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
  *
  * @author Vlada
  */
-public class LongVectorConvertor implements MetricObjectDataToStringInterface<long[]> {
+public class LongVectorToStringConvertor implements MetricObjectDataToStringInterface<long[]> {
 
     @Override
     public long[] parseString(String dbString) {

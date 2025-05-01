@@ -12,6 +12,10 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
  * Petr Volny, Masaryk University, Brno, Czech Republic, volny.petr@gmail.com
  * Jakub Valcik, Masaryk University, Brno, Czech Republic, xvalcik@fi.muni.cz
  *
+ * E.g., motion represenation: List<float[][]> where the list is the motion
+ * (time series of multiple joints coordinates),
+ * float[timestamp-index][coordinates in 3D Euclid space]
+ *
  * @author Vladimir Mic
  */
 public class DTWOnFloatsArray extends DistanceFunctionInterface<List<float[][]>> {

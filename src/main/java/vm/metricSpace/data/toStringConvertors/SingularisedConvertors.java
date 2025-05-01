@@ -1,10 +1,11 @@
 package vm.metricSpace.data.toStringConvertors;
 
-import vm.metricSpace.data.toStringConvertors.impl.EmptyConvertor;
-import vm.metricSpace.data.toStringConvertors.impl.FloatMatrixConvertor;
-import vm.metricSpace.data.toStringConvertors.impl.FloatVectorConvertor;
-import vm.metricSpace.data.toStringConvertors.impl.MPEG7Convertor3;
-import vm.metricSpace.data.toStringConvertors.impl.LongVectorConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.AtrapaToStringConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.FloatMatrixToStringConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.FloatVectorToStringConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.MPEG7ToStringConvertor3;
+import vm.metricSpace.data.toStringConvertors.impl.LongVectorToStringConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.MocapToStringConvertor;
 
 /**
  *
@@ -12,9 +13,10 @@ import vm.metricSpace.data.toStringConvertors.impl.LongVectorConvertor;
  */
 public class SingularisedConvertors {
 
-    public static final FloatVectorConvertor FLOAT_VECTOR_SPACE = new FloatVectorConvertor();
-    public static final LongVectorConvertor LONG_VECTOR_SPACE = new LongVectorConvertor();
-    public static final FloatMatrixConvertor FLOAT_MATRIX_SPACE = new FloatMatrixConvertor();
-    public static final MPEG7Convertor3 MPEG7_SPACE = new MPEG7Convertor3();
-    public static final EmptyConvertor EMPTY_CONVERTOR = new EmptyConvertor();
+    public static final FloatVectorToStringConvertor FLOAT_VECTOR_SPACE = new FloatVectorToStringConvertor();
+    public static final LongVectorToStringConvertor LONG_VECTOR_SPACE = new LongVectorToStringConvertor();
+    public static final FloatMatrixToStringConvertor FLOAT_MATRIX_SPACE = new FloatMatrixToStringConvertor();
+    public static final MPEG7ToStringConvertor3 MPEG7_SPACE = new MPEG7ToStringConvertor3();
+    public static final MocapToStringConvertor MOCAP_SPACE = new MocapToStringConvertor();
+    public static final AtrapaToStringConvertor EMPTY_CONVERTOR = new AtrapaToStringConvertor();
 }

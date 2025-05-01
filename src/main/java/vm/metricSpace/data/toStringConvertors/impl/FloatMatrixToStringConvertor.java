@@ -7,7 +7,7 @@ import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
  *
  * @author Vlada
  */
-public class FloatMatrixConvertor implements MetricObjectDataToStringInterface<float[][]> {
+public class FloatMatrixToStringConvertor implements MetricObjectDataToStringInterface<float[][]> {
 
     private final String columnDelimiter = ",";
 

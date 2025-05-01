@@ -7,9 +7,9 @@ import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
  *
  * @author Vlada
  */
-public class BitSetConvertor implements MetricObjectDataToStringInterface<BitSet> {
+public class BitSetToStringConvertor implements MetricObjectDataToStringInterface<BitSet> {
 
-    private static final LongVectorConvertor LONGS_CONV = new LongVectorConvertor();
+    private static final LongVectorToStringConvertor LONGS_CONV = new LongVectorToStringConvertor();
 
     @Override
     public BitSet parseString(String dbString) {

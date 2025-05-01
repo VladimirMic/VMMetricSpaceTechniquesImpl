@@ -9,7 +9,7 @@ import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
  *
  * @author Vlada
  */
-public class MPEG7Convertor3 implements MetricObjectDataToStringInterface<Map<String, Object>> {
+public class MPEG7ToStringConvertor3 implements MetricObjectDataToStringInterface<Map<String, Object>> {
 
     @Override
     public Map<String, Object> parseString(String dbString) {

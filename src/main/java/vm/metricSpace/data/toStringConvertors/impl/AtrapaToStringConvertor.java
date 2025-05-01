@@ -11,7 +11,7 @@ import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
  *
  * @author xmic
  */
-public class EmptyConvertor implements MetricObjectDataToStringInterface {
+public class AtrapaToStringConvertor implements MetricObjectDataToStringInterface {
 
     @Override
     public Object parseString(String dbString) {
