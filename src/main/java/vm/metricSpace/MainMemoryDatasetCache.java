@@ -180,6 +180,16 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     public void deleteKeyValueStorage() {
     }
 
+    @Override
+    public boolean shouldStoreDistsToPivots() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldCreateKeyValueStorage() {
+        return false;
+    }
+
     private class VMMemoryMapForDataWithIntIDs implements Map<Comparable, T> {
 
         private final List<T> array;

@@ -58,4 +58,14 @@ public class SimpleDatasetImpl<T> extends Dataset<T> {
         return pivotsetName;
     }
 
+    @Override
+    public boolean shouldStoreDistsToPivots() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldCreateKeyValueStorage() {
+        return false;
+    }
+
 }

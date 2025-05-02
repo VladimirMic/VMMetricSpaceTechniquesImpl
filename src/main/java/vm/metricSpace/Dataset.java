@@ -232,6 +232,10 @@ public abstract class Dataset<T> {
      */
     public abstract int getRecommendedNumberOfPivotsForFiltering();
 
+    public abstract boolean shouldStoreDistsToPivots();
+
+    public abstract boolean shouldCreateKeyValueStorage();
+
     public static class StaticIteratorOfMetricObjectsMadeOfKeyValueMap<T> implements Iterator<Object> {
 
         protected final AbstractMetricSpace<T> metricSpace;
