@@ -11,6 +11,7 @@ import vm.metricSpace.ToolsMetricDomain;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
+import vm.metricSpace.distance.impl.DTWOnFloatsArray;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -78,10 +79,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                     lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     if (lowerBound > range) {
                         lbChecked += p + 1;
-                        T oData = metricSpace.getDataOfMetricObject(o);
-                        if (df.getDistance(qData, oData) > lowerBound) {
-                            String s = "Achtung";
-                        }
                         continue objectsLoop;
                     }
                 }
@@ -99,7 +96,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         incTime(qId, t);
         incDistsComps(qId, distComps);
         incAdditionalParam(qId, lbChecked, 0);
-        System.out.println(qId + ": " + t + " ms");
+        System.out.println(qId + ": " + t + " ms;" + distComps + " DC");
         return ret;
     }
 

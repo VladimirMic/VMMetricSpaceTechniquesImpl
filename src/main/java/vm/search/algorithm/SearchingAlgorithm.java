@@ -149,7 +149,6 @@ public abstract class SearchingAlgorithm<T> {
         final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queryObjects.size()];
         final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
-            vm.javatools.Tools.sleepDuringTheNight();
             Comparable qID = metricSpace.getIDOfMetricObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
             ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
@@ -185,6 +184,7 @@ public abstract class SearchingAlgorithm<T> {
                     final Object queryObject = queryObjects.get(i);
                     final TreeSet<Map.Entry<Comparable, Float>> answerToQuery = ret[i];
                     threadPool.execute(() -> {
+                        vm.javatools.Tools.sleepDuringTheNight();
                         TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();

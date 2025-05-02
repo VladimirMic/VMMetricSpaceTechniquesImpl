@@ -21,7 +21,7 @@ import vm.metricSpace.distance.DistanceFunctionInterface;
 public class DTWOnFloatsArray extends DistanceFunctionInterface<List<float[][]>> {
 
     private static final Logger LOG = Logger.getLogger(DTWOnFloatsArray.class.getName());
-    private long counter = 0;
+    public static long counter = 0;
 
     /**
      * Computes DTW distance between two sequences

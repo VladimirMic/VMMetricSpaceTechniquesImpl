@@ -441,6 +441,9 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 
     private void defineCandidatesProvided(Map<Comparable, Comparable[]> mapOfQueriesToCandidates) {
         Integer retCand = null;
+        if (mapOfQueriesToCandidates == null) {
+            return;
+        }
         for (Map.Entry<Comparable, Comparable[]> entry : mapOfQueriesToCandidates.entrySet()) {
             Comparable[] val = entry.getValue();
             if (retCand == null) {
