@@ -29,7 +29,7 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
-    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 1; // deprecated to use larger number. The memory overhead mitigates a positive influence of caching in case of large datasets
+    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 5; // deprecated to use larger number. The memory overhead mitigates a positive influence of caching in case of large datasets
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
