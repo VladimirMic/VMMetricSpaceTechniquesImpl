@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 import static vm.search.algorithm.SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne;
@@ -63,9 +64,16 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         range = Float.MAX_VALUE;
     }
 
-    public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        Object[] concatArrays = Tools.addToArray(1, paramsToStoreWithGroundTruth);
-        return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
+    public TreeSet<Entry<Comparable, Float>>[] evaluateIteratorSequentially(Dataset dataset) {
+        TreeSet<Map.Entry<Comparable, Float>>[] ret;
+        if (dataset instanceof DatasetOfCandidates) {
+            int precomputedDatasetSize = dataset.getPrecomputedDatasetSize();
+            Map<Integer, TreeSet<Entry<Comparable, Float>>[]> allWithSteps = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, true, precomputedDatasetSize);
+            ret= allWithSteps.get(precomputedDatasetSize);
+        } else {
+            ret = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k);
+        }
+        return ret;
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
