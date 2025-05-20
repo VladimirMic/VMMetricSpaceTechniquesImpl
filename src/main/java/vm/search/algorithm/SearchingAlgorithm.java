@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -31,6 +32,10 @@ public abstract class SearchingAlgorithm<T> {
     public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
     public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 5; // deprecated to use larger number. The memory overhead mitigates a positive influence of caching in case of large datasets
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
+
+    public static int getNumberOfRepetitionsDueToCaching(Dataset dataset) {
+        return dataset instanceof DatasetOfCandidates ? 1 : 2;
+    }
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, AtomicLong> timesPerQueries = new ConcurrentHashMap();

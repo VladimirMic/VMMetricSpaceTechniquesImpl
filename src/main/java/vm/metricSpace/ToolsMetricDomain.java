@@ -139,6 +139,19 @@ public class ToolsMetricDomain {
         return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator());
     }
 
+    private static final Map cache = new HashMap<>();
+
+    public static <T> Map<Comparable, T> getMetricObjectsAsIdDataMap(Dataset<T> dataset) {
+        if (cache.containsKey(dataset)) {
+            return (Map<Comparable, T>) cache.get(dataset);
+        }
+        AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
+        Iterator<Object> it = dataset.getMetricObjectsFromDataset(-1);
+        Map<Comparable, T> ret = getMetricObjectsAsIdDataMap(metricSpace, it);
+        cache.put(dataset, ret);
+        return ret;
+    }
+
     /**
      *
      * @param <T>
@@ -503,7 +516,7 @@ public class ToolsMetricDomain {
             keyValueStorage = dataset.getKeyValueStorage();
         }
         if (keyValueStorage == null) {
-            keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, dataset.getMetricObjectsFromDataset());
+            keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(dataset);
         }
         List<Object> ret = new ArrayList<>();
         for (Comparable id : setOfIDs) {

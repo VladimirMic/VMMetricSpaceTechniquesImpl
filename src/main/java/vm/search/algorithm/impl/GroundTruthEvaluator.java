@@ -65,13 +65,19 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     }
 
     public TreeSet<Entry<Comparable, Float>>[] evaluateIteratorSequentially(Dataset dataset) {
-        TreeSet<Map.Entry<Comparable, Float>>[] ret;
+        TreeSet<Map.Entry<Comparable, Float>>[] ret = null;
+        int repetitions = SearchingAlgorithm.getNumberOfRepetitionsDueToCaching(dataset);
         if (dataset instanceof DatasetOfCandidates) {
             int precomputedDatasetSize = dataset.getPrecomputedDatasetSize();
-            Map<Integer, TreeSet<Entry<Comparable, Float>>[]> allWithSteps = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, true, precomputedDatasetSize);
-            ret= allWithSteps.get(precomputedDatasetSize);
+            Map<Integer, TreeSet<Entry<Comparable, Float>>[]> allWithSteps = null;
+            for (int i = 0; i < repetitions; i++) {
+                allWithSteps = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, true, precomputedDatasetSize);
+            }
+            ret = allWithSteps.get(precomputedDatasetSize);
         } else {
-            ret = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k);
+            for (int i = 0; i < repetitions; i++) {
+                ret = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k);
+            }
         }
         return ret;
     }
