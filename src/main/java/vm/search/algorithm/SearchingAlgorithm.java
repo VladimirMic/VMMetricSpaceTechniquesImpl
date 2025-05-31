@@ -94,8 +94,8 @@ public abstract class SearchingAlgorithm<T> {
             additionalStatsPerQueries.put(qId, list);
         }
         if (list.size() <= idx) {
-            for (int i = list.size() - 1; i < idx; i++) {
-                list.add(idx, new AtomicLong());
+            for (int i = list.size(); i <= idx; i++) {
+                list.add(new AtomicLong());
             }
         }
         list.get(idx).addAndGet(byValue);
@@ -266,6 +266,9 @@ public abstract class SearchingAlgorithm<T> {
     public Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k, boolean storePartialCandSetSizes, int candidatesProvided) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
         int batchSize = storePartialCandSetSizes && candidatesProvided > 0 ? candidatesProvided / STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX : candidatesProvided;
+        if (batchSize < 0) {
+            batchSize = BATCH_SIZE;
+        }
         Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = initAnswerMapForCandSetSizes(candidatesProvided, queryObjects.size(), batchSize);
         for (int i = 0; i < queryObjects.size(); i++) {
             vm.javatools.Tools.sleepDuringTheNight();
@@ -274,12 +277,12 @@ public abstract class SearchingAlgorithm<T> {
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
             for (int batchCounter = 1; candsIt.hasNext(); batchCounter++) {
                 Iterator<Object> batchIt = Tools.getObjectsFromIterator(candsIt, batchSize).iterator();
-                TreeSet<Map.Entry<Comparable, Float>>[] prev = ret.get((batchCounter - 1) * batchSize);
-                TreeSet<Map.Entry<Comparable, Float>> newAnswer = prev[i] == null ? null : new TreeSet<>(prev[i].comparator());
-                if (prev[i] != null) {
+                TreeSet<Map.Entry<Comparable, Float>>[] prev = candidatesProvided < 0 ? ret.get(-1) : ret.get((batchCounter - 1) * batchSize);
+                TreeSet<Map.Entry<Comparable, Float>> newAnswer = prev == null || prev[i] == null ? null : new TreeSet<>(prev[i].comparator());
+                if (newAnswer != null) {
                     newAnswer.addAll(prev[i]);
                 }
-                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = ret.get(batchCounter * batchSize);
+                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = candidatesProvided < 0 ? ret.get(-1) : ret.get(batchCounter * batchSize);
                 retForCandSetSize[i] = completeKnnSearch(metricSpace, q, k, batchIt, newAnswer, batchCounter * batchSize);
                 incAdditionalParam(qID, getTimeOfQuery(qID), 2 * batchCounter - 1);
                 incAdditionalParam(qID, getDistCompsForQuery(qID), 2 * batchCounter);
@@ -293,8 +296,12 @@ public abstract class SearchingAlgorithm<T> {
 
     private Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> initAnswerMapForCandSetSizes(int candidatesProvided, int queriesCount, int batch) {
         Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = new TreeMap<>();
-        for (int batchCurr = 0; batchCurr <= candidatesProvided; batchCurr += batch) {
-            ret.put(batchCurr, new TreeSet[queriesCount]);
+        if (candidatesProvided == -1) {
+            ret.put(candidatesProvided, new TreeSet[queriesCount]);
+        } else {
+            for (int batchCurr = 0; batchCurr <= candidatesProvided; batchCurr += batch) {
+                ret.put(batchCurr, new TreeSet[queriesCount]);
+            }
         }
         return ret;
     }
