@@ -273,7 +273,7 @@ public abstract class Dataset<T> {
 
     }
 
-    private class IteratorOfMetricObjectsMadeOfKeyValueMap implements Iterator<Object> {
+    protected class IteratorOfMetricObjectsMadeOfKeyValueMap implements Iterator<Object> {
 
         protected final AbstractMetricSpace<T> metricSpace;
         private final int maxCount;
