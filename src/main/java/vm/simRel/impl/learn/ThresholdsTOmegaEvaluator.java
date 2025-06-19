@@ -3,8 +3,8 @@ package vm.simRel.impl.learn;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.search.algorithm.impl.SimRelSeqScanKNNCandSet;
 import vm.simRel.impl.learn.storeLearnt.SimRelEuclidThresholdsTOmegaStorage;
@@ -32,7 +32,7 @@ public class ThresholdsTOmegaEvaluator {
 
     public float[][] learnTOmegaThresholds(Dataset<float[]> pcaDataset, List<Object> pcaOfCandidates, SimRelEuclidThresholdsTOmegaStorage simRelStorage, int dataSampleCount, int pcaLength, float... percentiles) {
         List<Object> pcaQuerySamples = pcaDataset.getPivots(querySampleCount);
-        AbstractMetricSpace<float[]> pcaDatasetMetricSpace = pcaDataset.getMetricSpace();
+        AbstractSearchSpace<float[]> pcaDatasetSearchSpace = pcaDataset.getSearchSpace();
 
         SimRelEuclideanPCAForLearning simRelLearn = new SimRelEuclideanPCAForLearning(pcaLength);
 
@@ -41,9 +41,9 @@ public class ThresholdsTOmegaEvaluator {
         for (int i = 0; i < pcaQuerySamples.size(); i++) {
             Object pcaQueryObj = pcaQuerySamples.get(i);
             simRelLearn.resetCounters(pcaLength);
-            Object queryObjId = pcaDatasetMetricSpace.getIDOfMetricObject(pcaQueryObj);
+            Object queryObjId = pcaDatasetSearchSpace.getIDOfObject(pcaQueryObj);
 
-            simRelAlg.candSetKnnSearch(pcaDataset.getMetricSpace(), pcaQueryObj, kPCA, pcaOfCandidates.iterator());
+            simRelAlg.candSetKnnSearch(pcaDataset.getSearchSpace(), pcaQueryObj, kPCA, pcaOfCandidates.iterator());
             LOG.log(Level.INFO, "Learning tresholds with the query obj {0}, i.e., qID {0}", new Object[]{i + 1, queryObjId});
         }
 
@@ -54,9 +54,9 @@ public class ThresholdsTOmegaEvaluator {
 
 //    public float[] learnTOmegaThresholds(Dataset<float[]> pcaDataset, SimRelEuclidThresholdsTOmegaStorage storage) {
 //        List<Object> querySamples = pcaDataset.getPivots(querySampleCount);
-//        AbstractMetricSpace<float[]> metricSpace = pcaDataset.getMetricSpace();
+//        AbstractsearchSpace<float[]> searchSpace = pcaDataset.getsearchSpace();
 //        List<Object> sampleOfDataset = pcaDataset.getSampleOfDataset(dataSampleCount);
-//        float[] vector = metricSpace.getDataOfMetricObject(sampleOfDataset.get(0));
+//        float[] vector = searchSpace.getDataOfsearchObject(sampleOfDataset.get(0));
 //        int pcaLength = vector.length;
 //        SimRelEuclideanPCAForLearning simRelLearn = new SimRelEuclideanPCAForLearning(pcaLength);
 //        SearchingAlgorithm alg = new SimRelSeqScanKNNCandSet(simRelLearn, kPCA);
@@ -64,9 +64,9 @@ public class ThresholdsTOmegaEvaluator {
 //        simRelLearn.resetLearning(pcaLength);
 //        for (int i = 0; i < querySamples.size(); i++) {
 //            Object queryObj = querySamples.get(i);
-//            String qID = metricSpace.getIDOfMetricObject(queryObj).toString();
+//            String qID = searchSpace.getIDOfsearchObject(queryObj).toString();
 //            simRelLearn.resetCounters(pcaLength);
-//            alg.candSetKnnSearch(pcaDataset.getMetricSpace(), queryObj, kPCA, sampleOfDataset.iterator());
+//            alg.candSetKnnSearch(pcaDataset.getsearchSpace(), queryObj, kPCA, sampleOfDataset.iterator());
 //            LOG.log(Level.INFO, "Learning tresholds with the query obj {0}, i.e., qID {0}", new Object[]{i + 1, qID});
 //        }
 //        float[][] ret = simRelLearn.getDiffWhenWrong(PERCENTILES);

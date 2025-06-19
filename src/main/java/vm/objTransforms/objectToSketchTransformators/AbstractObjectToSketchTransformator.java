@@ -4,32 +4,32 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.objTransforms.MetricObjectTransformerInterface;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
+import vm.objTransforms.SearchObjectTransformerInterface;
 
 /**
  *
  * @author xmic
  */
-public abstract class AbstractObjectToSketchTransformator implements MetricObjectTransformerInterface, Serializable {
+public abstract class AbstractObjectToSketchTransformator implements SearchObjectTransformerInterface, Serializable {
 
     public static final long serialVersionUID = 836012244806410000l;
 
     protected ExecutorService threadPool = null;
 
-    protected final AbstractMetricSpace<Object> metricSpace;
+    protected final AbstractSearchSpace<Object> searchSpace;
     protected Object[] pivots;
     protected final DistanceFunctionInterface distanceFunc;
     protected final Object[] additionalInfo;
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray());
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, Object... additionalInfo) {
+        this(distanceFunc, searchSpace, pivots.toArray());
     }
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, Object... additionalInfo) {
-        this.metricSpace = metricSpace;
+    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, Object... additionalInfo) {
+        this.searchSpace = searchSpace;
         this.pivots = pivots;
         this.distanceFunc = distanceFunc;
         this.additionalInfo = additionalInfo;
@@ -55,12 +55,12 @@ public abstract class AbstractObjectToSketchTransformator implements MetricObjec
     }
 
     @Override
-    public abstract Object transformMetricObject(Object obj, Object... params);
+    public abstract Object transformSearchObject(Object obj, Object... params);
 
     @Override
     public abstract String getTechniqueAbbreviation();
 
-    public abstract List<BitSet> createColumnwiseSketches(AbstractMetricSpace<Object> metricSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df);
+    public abstract List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df);
 
     protected abstract int getSketchLength();
 

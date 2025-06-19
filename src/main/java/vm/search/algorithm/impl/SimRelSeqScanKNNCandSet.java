@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.AbstractMetricSpace;
+import vm.searchSpace.AbstractSearchSpace;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.simRel.SimRelInterface;
 import vm.simRel.impl.SimRelEuclideanPCAImplForTesting;
@@ -40,33 +40,33 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<float[]> pcaMetricSpace, Object pcaQueryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<float[]> pcaSearchSpace, Object pcaQueryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
             SimRelEuclideanPCAImplForTesting euclid = (SimRelEuclideanPCAImplForTesting) simRelFunc;
             euclid.resetEarlyStopsOnCoordsCounts();
         }
-        float[] pcaQueryObjData = pcaMetricSpace.getDataOfMetricObject(pcaQueryObject);
+        float[] pcaQueryObjData = pcaSearchSpace.getDataOfObject(pcaQueryObject);
         List<Comparable> ansOfSimRel = new ArrayList<>();
         Set<Comparable> objIdUnknownRelation = new HashSet<>();
         Map<Comparable, float[]> candSet = new HashMap<>();
         distCompsOfLastExecutedQuery = 0;
         simRelEvalCounter = 0;
-        sequentilScanWithSimRel(pcaMetricSpace, objects, k, pcaQueryObjData, ansOfSimRel, candSet, objIdUnknownRelation);
+        sequentilScanWithSimRel(pcaSearchSpace, objects, k, pcaQueryObjData, ansOfSimRel, candSet, objIdUnknownRelation);
         if (involveObjWithUnknownRelation) {
             ansOfSimRel.addAll(objIdUnknownRelation);
         }
         distCompsOfLastExecutedQuery = ansOfSimRel.size();
-        Comparable qID = pcaMetricSpace.getIDOfMetricObject(pcaQueryObject);
+        Comparable qID = pcaSearchSpace.getIDOfObject(pcaQueryObject);
         incDistsComps(qID, ansOfSimRel.size());
         LOG.log(Level.INFO, "distancesCounter;{0}; simRelCounter;{1}", new Object[]{distCompsOfLastExecutedQuery, simRelEvalCounter});
         return ansOfSimRel;
     }
 
-    private void sequentilScanWithSimRel(AbstractMetricSpace<float[]> metricSpace, Iterator<Object> objects, int k, float[] queryObjectData, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData, Set<Comparable> objIdUnknownRelation, Object... paramsToExtractDataFromMetricObject) {
+    private void sequentilScanWithSimRel(AbstractSearchSpace<float[]> searchSpace, Iterator<Object> objects, int k, float[] queryObjectData, List<Comparable> ansOfSimRel, Map<Comparable, float[]> mapOfData, Set<Comparable> objIdUnknownRelation, Object... paramsToExtractDataFromSearchObject) {
         for (int i = 1; objects.hasNext(); i++) {
-            Object metricObject = objects.next();
-            Comparable oID = metricSpace.getIDOfMetricObject(metricObject);
-            float[] oData = metricSpace.getDataOfMetricObject(metricObject);
+            Object searchObject = objects.next();
+            Comparable oID = searchSpace.getIDOfObject(searchObject);
+            float[] oData = searchSpace.getDataOfObject(searchObject);
             boolean knownRelation = addOToAnswer(k, queryObjectData, oData, oID, ansOfSimRel, mapOfData);
             if (!knownRelation) {
                 objIdUnknownRelation.add(oID);
@@ -148,7 +148,7 @@ public class SimRelSeqScanKNNCandSet extends SearchingAlgorithm<float[]> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... paramsToExtractDataFromMetricObject) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<float[]> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... paramsToExtractDataFromSearchObject) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

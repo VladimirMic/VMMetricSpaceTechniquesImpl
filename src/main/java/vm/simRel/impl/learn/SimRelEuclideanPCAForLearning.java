@@ -8,9 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.distance.impl.L2OnFloatsArray;
+import vm.searchSpace.distance.impl.L2OnFloatsArray;
 import vm.simRel.SimRelInterface;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 
 /**
  *

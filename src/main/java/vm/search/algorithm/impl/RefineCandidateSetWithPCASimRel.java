@@ -12,10 +12,10 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.objTransforms.perform.PCAMetricObjectTransformer;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.ToolsSpaceDomain;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.objTransforms.perform.PCAFloatVectorTransformer;
 import vm.objTransforms.storeLearned.SVDStoreInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.simRel.impl.SimRelEuclideanPCAImpl;
@@ -33,7 +33,7 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
 
     private final TreeSet<AbstractMap.SimpleEntry<Object, float[]>> sortedPCAPreffixesForDataset;
     private final Map<Object, float[]> mapIDpca;
-    private final PCAMetricObjectTransformer pcaTransformer;
+    private final PCAFloatVectorTransformer pcaTransformer;
     private final int pcaPreffixLength;
     private final DistanceFunctionInterface<float[]> fullDistanceFunction;
     private final SimRelEuclideanPCAImpl simRel;
@@ -41,22 +41,22 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
 
     private int objectCheckedFromSet;
 
-    public RefineCandidateSetWithPCASimRel(AbstractMetricSpace<float[]> originalMetricSpace, AbstractMetricSpace<float[]> pcaMetricSpace, DistanceFunctionInterface<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
+    public RefineCandidateSetWithPCASimRel(AbstractSearchSpace<float[]> originalSearchSpace, AbstractSearchSpace<float[]> pcaSearchSpace, DistanceFunctionInterface<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
         this.pcaPreffixLength = pcaPreffixLength;
         this.fullDistanceFunction = fullDistanceFunction;
         this.simRel = simRel;
         tZero = 0.5f * simRel.getTOmega(0);
-        pcaTransformer = initPCA(originalMetricSpace, pcaMetricSpace, svdStorage, pcaFullLength, pcaPreffixLength);
+        pcaTransformer = initPCA(originalSearchSpace, pcaSearchSpace, svdStorage, pcaFullLength, pcaPreffixLength);
         sortedPCAPreffixesForDataset = initSortedMapOfPCAPrefixes();
         mapIDpca = new HashMap<>();
-        loadPCAPrefixesForSimRel(pcaMetricSpace, sortedPCAPreffixesForDataset, mapIDpca, pcaDatasetIterator);
+        loadPCAPrefixesForSimRel(pcaSearchSpace, sortedPCAPreffixesForDataset, mapIDpca, pcaDatasetIterator);
     }
 
-    private static PCAMetricObjectTransformer initPCA(AbstractMetricSpace<float[]> originalMetricSpace, AbstractMetricSpace<float[]> pcaMetricSpace, SVDStoreInterface svdStorage, int pcaFullLength, int pcaPreffixLength) {
+    private static PCAFloatVectorTransformer initPCA(AbstractSearchSpace<float[]> originalSearchSpace, AbstractSearchSpace<float[]> pcaSearchSpace, SVDStoreInterface svdStorage, int pcaFullLength, int pcaPreffixLength) {
         LOG.log(Level.INFO, "Start loading instance of the PCA with length {0}", pcaPreffixLength);
         float[][] vtMatrixFull = svdStorage.getVTMatrix();
         float[][] vtMatrix = Tools.shrinkMatrix(vtMatrixFull, pcaPreffixLength, vtMatrixFull[0].length);
-        return new PCAMetricObjectTransformer(vtMatrix, svdStorage.getMeansOverColumns(), originalMetricSpace, pcaMetricSpace);
+        return new PCAFloatVectorTransformer(vtMatrix, svdStorage.getMeansOverColumns(), originalSearchSpace, pcaSearchSpace);
     }
 
     private TreeSet<AbstractMap.SimpleEntry<Object, float[]>> initSortedMapOfPCAPrefixes() {
@@ -65,12 +65,12 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
         return new TreeSet<>(comp);
     }
 
-    private void loadPCAPrefixesForSimRel(AbstractMetricSpace<float[]> pcaMetricSpace, TreeSet<AbstractMap.SimpleEntry<Object, float[]>> sortedPCAPreffixesForDataset, Map<Object, float[]> mapIDpca, Iterator<Object> pcaDatasetIterator) {
+    private void loadPCAPrefixesForSimRel(AbstractSearchSpace<float[]> pcaSearchSpace, TreeSet<AbstractMap.SimpleEntry<Object, float[]>> sortedPCAPreffixesForDataset, Map<Object, float[]> mapIDpca, Iterator<Object> pcaDatasetIterator) {
         LOG.log(Level.INFO, "Start loading vector prefixes for simRel");
         for (int i = 1; pcaDatasetIterator.hasNext(); i++) {
             Object dataObject = pcaDatasetIterator.next();
-            Comparable id = pcaMetricSpace.getIDOfMetricObject(dataObject);
-            float[] data = pcaMetricSpace.getDataOfMetricObject(dataObject);
+            Comparable id = pcaSearchSpace.getIDOfObject(dataObject);
+            float[] data = pcaSearchSpace.getDataOfObject(dataObject);
             float[] preffixData = Tools.vectorPreffix(data, pcaPreffixLength);
             AbstractMap.SimpleEntry entry = new AbstractMap.SimpleEntry(id, preffixData);
             sortedPCAPreffixesForDataset.add(entry);
@@ -82,10 +82,10 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
         LOG.log(Level.INFO, "Loaded {0} prefixes", mapIDpca.size());
     }
 
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<float[]> fullObjectsMetricSpace, Object queryObject, int k, Map<Comparable, float[]> candidatesToCheck, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<float[]> fullObjectsSearchSpace, Object queryObject, int k, Map<Comparable, float[]> candidatesToCheck, Object... additionalParams) {
         simRel.resetEarlyStopsOnCoordsCounts();
         long time = -System.currentTimeMillis();
-        Comparable qID = fullObjectsMetricSpace.getIDOfMetricObject(queryObject);
+        Comparable qID = fullObjectsSearchSpace.getIDOfObject(queryObject);
         boolean involveObjWithUnknownRelation = true;
         int kPCA = 3 * k;
         if (additionalParams.length > 0 && additionalParams[0] instanceof Integer) {
@@ -95,9 +95,9 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
             }
         }
 
-        AbstractMap.SimpleEntry<Object, float[]> qPCA = (AbstractMap.SimpleEntry<Object, float[]>) pcaTransformer.transformMetricObject(queryObject, pcaPreffixLength);
+        AbstractMap.SimpleEntry<Object, float[]> qPCA = (AbstractMap.SimpleEntry<Object, float[]>) pcaTransformer.transformSearchObject(queryObject, pcaPreffixLength);
         float[] qPCAData = qPCA.getValue();
-        float[] qData = fullObjectsMetricSpace.getDataOfMetricObject(queryObject);
+        float[] qData = fullObjectsSearchSpace.getDataOfObject(queryObject);
 
         AbstractMap.SimpleEntry lowerEntry = sortedPCAPreffixesForDataset.floor(qPCA);
         Iterator<AbstractMap.SimpleEntry<Object, float[]>> lowerQSubset = sortedPCAPreffixesForDataset.subSet(sortedPCAPreffixesForDataset.first(), true, lowerEntry, true).descendingIterator();
@@ -179,16 +179,16 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> candidatesToCheck, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<float[]> searchSpace, Object queryObject, int k, Iterator<Object> candidatesToCheck, Object... additionalParams) {
         Map<Comparable, float[]> fullObjectsWithIDsToCheck = null;
         if (candidatesToCheck != null) {
-            fullObjectsWithIDsToCheck = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, candidatesToCheck);
+            fullObjectsWithIDsToCheck = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, candidatesToCheck);
         }
-        return completeKnnSearch(metricSpace, queryObject, 0, fullObjectsWithIDsToCheck, additionalParams);
+        return completeKnnSearch(searchSpace, queryObject, 0, fullObjectsWithIDsToCheck, additionalParams);
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<float[]> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<float[]> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

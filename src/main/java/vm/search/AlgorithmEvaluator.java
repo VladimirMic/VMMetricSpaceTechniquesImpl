@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
 import vm.queryResults.QueryExecutionStatsStoreInterface;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
 import vm.queryResults.errorOnDistEvaluation.ErrorOnDistEvaluator;
@@ -42,10 +42,10 @@ public class AlgorithmEvaluator {
 
     public void evaluate(Dataset dataset, List queries, int k, Integer kCandSetMaxSize, String resultName, Object... additionalParams) {
         long overallTime = -System.currentTimeMillis();
-        AbstractMetricSpace metricSpace = dataset.getMetricSpace();
+        AbstractSearchSpace searchSpace = dataset.getSearchSpace();
         String datasetName = dataset.getDatasetName();
         String querySetName = dataset.getQuerySetName();
-        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(metricSpace, queries, k, kCandSetMaxSize, dataset.getKeyValueStorage(), additionalParams);
+        TreeSet[] results = alg.completeKnnSearchWithPartitioningForQuerySet(searchSpace, queries, k, kCandSetMaxSize, dataset.getKeyValueStorage(), additionalParams);
         overallTime += System.currentTimeMillis();
 
         LOG.log(Level.INFO, "Storing statistics of queries");
@@ -53,7 +53,7 @@ public class AlgorithmEvaluator {
         statsStorage.save();
 
         LOG.log(Level.INFO, "Storing results of queries");
-        resultsStorage.storeQueryResults(metricSpace, queries, results, k, datasetName, querySetName, resultName);
+        resultsStorage.storeQueryResults(searchSpace, queries, results, k, datasetName, querySetName, resultName);
 
         LOG.log(Level.INFO, "Evaluating accuracy of queries");
         RecallOfCandsSetsEvaluator evaluator = new RecallOfCandsSetsEvaluator(resultsStorage, recallStorage);

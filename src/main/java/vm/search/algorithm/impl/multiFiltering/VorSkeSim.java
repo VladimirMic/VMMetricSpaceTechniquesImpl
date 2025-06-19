@@ -17,9 +17,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.search.algorithm.impl.VoronoiPartitionsCandSetIdentifier;
@@ -41,7 +41,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
     private final int voronoiK;
     private final SecondaryFilteringWithSketches sketchSecondaryFilter;
     private final AbstractObjectToSketchTransformator sketchingTechnique;
-    private final AbstractMetricSpace<long[]> hammingSpaceForSketches;
+    private final AbstractSearchSpace<long[]> hammingSpaceForSketches;
 
     private final SimRelInterface<float[]> simRelFunc;
     private final int simRelMinK;
@@ -53,7 +53,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
 
     private long simRelEvalCounter;
 
-    public VorSkeSim(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
+    public VorSkeSim(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractSearchSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -67,7 +67,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> fullSearchSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         long t = -System.currentTimeMillis();
         int distComps = 0;
         simRelEvalCounter = 0;
@@ -78,8 +78,8 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
             currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) additionalParams[0];
             paramIDX++;
         }
-        Comparable qId = fullMetricSpace.getIDOfMetricObject(fullQ);
-        T fullQData = fullMetricSpace.getDataOfMetricObject(fullQ);
+        Comparable qId = fullSearchSpace.getIDOfObject(fullQ);
+        T fullQData = fullSearchSpace.getDataOfObject(fullQ);
         TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
 
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
@@ -87,13 +87,13 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
             euclid.resetEarlyStopsOnCoordsCounts();
         }
 
-        AbstractMetricSpace<float[]> pcaMetricSpace = (AbstractMetricSpace<float[]>) additionalParams[paramIDX++];
+        AbstractSearchSpace<float[]> pcaSearchSpace = (AbstractSearchSpace<float[]>) additionalParams[paramIDX++];
         Object pcaQ = additionalParams[paramIDX++];
 
-        float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
+        float[] pcaQData = pcaSearchSpace.getDataOfObject(pcaQ);
 
         // first phase: voronoi
-        List<Comparable> candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null);
+        List<Comparable> candSetIDs = voronoiFilter.candSetKnnSearch(fullSearchSpace, fullQ, voronoiK, null);
 
         // simRel preparation
         List<Comparable> simRelAns = new ArrayList<>();
@@ -101,8 +101,8 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
         Map<Comparable, float[]> simRelCandidatesMap = new HashMap<>();
 
         // sketch preparation
-        Object qSketch = sketchingTechnique.transformMetricObject(fullQ);
-        long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
+        Object qSketch = sketchingTechnique.transformSearchObject(fullQ);
+        long[] qSketchData = hammingSpaceForSketches.getDataOfObject(qSketch);
         float range = Float.MAX_VALUE;
         for (int i = 0; i < candSetIDs.size(); i++) {
             Comparable candID = candSetIDs.get(i);
@@ -223,7 +223,7 @@ public class VorSkeSim<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

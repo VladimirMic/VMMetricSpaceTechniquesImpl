@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.ToolsMetricDomain;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.ToolsSpaceDomain;
 import vm.search.algorithm.SearchingAlgorithm;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
 import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.SORT_PIVOTS;
 
 /**
@@ -32,9 +32,9 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     private final int pivotsEndSmallDists;
     private final int pivotsEndBigDists;
 
-    public KNNSearchWithGenericTwoPivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithGenericTwoPivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
         this.filter = filter;
-        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
+        this.pivotsData = searchSpace.getDataOfObjects(pivots);
         this.poDists = poDists;
         this.pivotPivotDists = pivotPivotDists;
         this.df = df;
@@ -44,12 +44,12 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> searchSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
         TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
-        T qData = metricSpace.getDataOfMetricObject(q);
-        Comparable qId = metricSpace.getIDOfMetricObject(q);
+        T qData = searchSpace.getDataOfObject(q);
+        Comparable qId = searchSpace.getIDOfObject(q);
         float[] qpDists = qpDistsCached.get(qId);
         if (qpDists == null) {
             qpDists = new float[pivotsData.size()];
@@ -63,7 +63,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         if (SORT_PIVOTS) {
             pivotPermutation = qPivotPermutationCached.get(qId);
             if (pivotPermutation == null) {
-                pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+                pivotPermutation = ToolsSpaceDomain.getPivotPermutationIndexes(searchSpace, df, pivotsData, qData, -1);
                 qPivotPermutationCached.put(qId, pivotPermutation);
             }
         }
@@ -81,8 +81,8 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Comparable oId = metricSpace.getIDOfMetricObject(o);
-            T oData = metricSpace.getDataOfMetricObject(o);
+            Comparable oId = searchSpace.getIDOfObject(o);
+            T oData = searchSpace.getDataOfObject(o);
             oIdx = rowHeaders.get(oId);
             if (range < Float.MAX_VALUE) {
                 for (p = 0; p < pivotsEndSmallDists; p++) {
@@ -120,7 +120,7 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

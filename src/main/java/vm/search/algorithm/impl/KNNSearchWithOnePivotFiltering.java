@@ -6,12 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.ToolsMetricDomain;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.ToolsSpaceDomain;
 import vm.search.algorithm.SearchingAlgorithm;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
-import vm.metricSpace.distance.impl.DTWOnFloatsArray;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -30,21 +29,21 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
 
-    public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithOnePivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
-        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
+        this.pivotsData = searchSpace.getDataOfObjects(pivots);
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> searchSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
         TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
-        Comparable qId = metricSpace.getIDOfMetricObject(q);
-        T qData = metricSpace.getDataOfMetricObject(q);
+        Comparable qId = searchSpace.getIDOfObject(q);
+        T qData = searchSpace.getDataOfObject(q);
         float[] qpDists = qpDistsCached.get(qId);
         if (qpDists == null) {
             qpDists = new float[pivotsData.size()];
@@ -58,7 +57,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         if (SORT_PIVOTS) {
             pivotPermutation = qPivotPermutationCached.get(qId);
             if (pivotPermutation == null) {
-                pivotPermutation = ToolsMetricDomain.getPivotPermutationIndexes(metricSpace, df, pivotsData, qData, -1);
+                pivotPermutation = ToolsSpaceDomain.getPivotPermutationIndexes(searchSpace, df, pivotsData, qData, -1);
                 qPivotPermutationCached.put(qId, pivotPermutation);
             }
         }
@@ -69,7 +68,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Comparable oId = metricSpace.getIDOfMetricObject(o);
+            Comparable oId = searchSpace.getIDOfObject(o);
             if (range < Float.MAX_VALUE) {
                 oIdx = rowHeaders.get(oId.toString());
                 for (p = 0; p < pivotsData.size(); p++) {
@@ -85,7 +84,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                 lbChecked += p;
             }
             distComps++;
-            T oData = metricSpace.getDataOfMetricObject(o);
+            T oData = searchSpace.getDataOfObject(o);
             distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
@@ -101,7 +100,7 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

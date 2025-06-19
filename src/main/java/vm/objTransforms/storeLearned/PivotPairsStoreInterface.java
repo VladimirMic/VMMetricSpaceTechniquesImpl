@@ -1,7 +1,7 @@
 package vm.objTransforms.storeLearned;
 
 import java.util.List;
-import vm.metricSpace.AbstractMetricSpace;
+import vm.searchSpace.AbstractSearchSpace;
 
 /**
  *
@@ -14,11 +14,11 @@ public interface PivotPairsStoreInterface<T> {
      *
      * @param resultName see
      * @AbstractObjectToSketchTransformator.getNameOfTransformedSetOfObjects
-     * @param metricSpace
+     * @param searchSpace
      * @param pivots
      * @param additionalInfoToStoreWithLearningSketching
      */
-    public void storePivotPairs(String resultName, AbstractMetricSpace<T> metricSpace, List<Object> pivots, Object... additionalInfoToStoreWithLearningSketching);
+    public void storePivotPairs(String resultName, AbstractSearchSpace<T> searchSpace, List<Object> pivots, Object... additionalInfoToStoreWithLearningSketching);
 
     /**
      *

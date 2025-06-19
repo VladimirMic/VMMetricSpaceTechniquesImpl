@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.search.algorithm.impl.VoronoiPartitionsCandSetIdentifier;
@@ -50,7 +50,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     private final int voronoiK;
     private final SecondaryFilteringWithSketches sketchSecondaryFilter;
     private final AbstractObjectToSketchTransformator sketchingTechnique;
-    private final AbstractMetricSpace<long[]> hammingSpaceForSketches;
+    private final AbstractSearchSpace<long[]> hammingSpaceForSketches;
 
     private final SimRelInterface<float[]> simRelFunc;
     private final int simRelMinK;
@@ -60,7 +60,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
     private final DistanceFunctionInterface<T> fullDF;
 
-    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractMetricSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, int datasetSize, DistanceFunctionInterface<T> fullDF) {
+    public CranberryAlgorithm(VoronoiPartitionsCandSetIdentifier voronoiFilter, int voronoiK, SecondaryFilteringWithSketches sketchSecondaryFilter, AbstractObjectToSketchTransformator sketchingTechnique, AbstractSearchSpace<long[]> hammingSpaceForSketches, SimRelInterface<float[]> simRelFunc, int simRelMinK, Map<Object, float[]> pcaPrefixesMap, Map<Object, T> fullObjectsStorage, int datasetSize, DistanceFunctionInterface<T> fullDF) {
         this.voronoiFilter = voronoiFilter;
         this.voronoiK = voronoiK;
         this.sketchSecondaryFilter = sketchSecondaryFilter;
@@ -76,7 +76,7 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 //    private Set<String> ANSWER = null;
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> fullMetricSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> fullSearchSpace, Object fullQ, int k, Iterator<Object> ignored, Object... additionalParams) {
         // preparation
 //        time_addToFull = 0;
         long overallTime = -System.currentTimeMillis();
@@ -89,8 +89,8 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) additionalParams[0];
             paramIDX++;
         }
-        Comparable qId = fullMetricSpace.getIDOfMetricObject(fullQ);
-        T fullQData = fullMetricSpace.getDataOfMetricObject(fullQ);
+        Comparable qId = fullSearchSpace.getIDOfObject(fullQ);
+        T fullQData = fullSearchSpace.getDataOfObject(fullQ);
         TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
 
         if (simRelFunc instanceof SimRelEuclideanPCAImplForTesting) {
@@ -98,15 +98,15 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
             euclid.resetEarlyStopsOnCoordsCounts();
         }
 
-        AbstractMetricSpace<float[]> pcaMetricSpace = (AbstractMetricSpace<float[]>) additionalParams[paramIDX++];
+        AbstractSearchSpace<float[]> pcaSearchSpace = (AbstractSearchSpace<float[]>) additionalParams[paramIDX++];
         Object pcaQ = additionalParams[paramIDX++];
-        float[] pcaQData = pcaMetricSpace.getDataOfMetricObject(pcaQ);
+        float[] pcaQData = pcaSearchSpace.getDataOfObject(pcaQ);
 
         // actual query evaluation
         // first phase: voronoi
 //        long t1 = -System.currentTimeMillis();
         Map<Object, Float> distsQP = new HashMap();
-        List candSetIDs = voronoiFilter.candSetKnnSearch(fullMetricSpace, fullQ, voronoiK, null, distsQP);
+        List candSetIDs = voronoiFilter.candSetKnnSearch(fullSearchSpace, fullQ, voronoiK, null, distsQP);
 //        t1 += System.currentTimeMillis();
 
         // simRel preparation
@@ -116,8 +116,8 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
 
         // sketch preparation
 //        long t2 = -System.currentTimeMillis();
-        Object qSketch = sketchingTechnique.transformMetricObject(fullQ, distsQP);
-        long[] qSketchData = hammingSpaceForSketches.getDataOfMetricObject(qSketch);
+        Object qSketch = sketchingTechnique.transformSearchObject(fullQ, distsQP);
+        long[] qSketchData = hammingSpaceForSketches.getDataOfObject(qSketch);
 //        t2 += System.currentTimeMillis();
         float range = Float.MAX_VALUE;
 
@@ -310,13 +310,13 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnFilteringWithQuerySet(final AbstractMetricSpace<T> metricSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
-        AbstractMetricSpace pcaDatasetMetricSpace = (AbstractMetricSpace) additionalParams[0];
+    public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnFilteringWithQuerySet(final AbstractSearchSpace<T> searchSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
+        AbstractSearchSpace pcaDatasetSearchSpace = (AbstractSearchSpace) additionalParams[0];
         Map<Object, Object> pcaQMap = (Map<Object, Object>) additionalParams[1];
         int queriesCount = -1;
         if (additionalParams.length > 2 && additionalParams[2] instanceof Integer) {
@@ -332,12 +332,12 @@ public class CranberryAlgorithm<T> extends SearchingAlgorithm<T> {
         CountDownLatch latch = new CountDownLatch(queriesCount);
         for (int i = 0; i < queriesCount; i++) {
             Object queryObject = queryObjects.get(i);
-            Comparable qID = metricSpace.getIDOfMetricObject(queryObject);
+            Comparable qID = searchSpace.getIDOfObject(queryObject);
             final Object pcaQueryObject = pcaQMap.get(qID);
             int iFinal = i;
             threadPool.execute(() -> {
                 long tQ = -System.currentTimeMillis();
-                ret[iFinal] = completeKnnSearch(metricSpace, queryObject, k, null, pcaDatasetMetricSpace, pcaQueryObject);
+                ret[iFinal] = completeKnnSearch(searchSpace, queryObject, k, null, pcaDatasetSearchSpace, pcaQueryObject);
                 tQ += System.currentTimeMillis();
                 timesPerQueries.put(qID, new AtomicLong(tQ));
                 latch.countDown();

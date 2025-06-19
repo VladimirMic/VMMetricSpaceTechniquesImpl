@@ -7,8 +7,8 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import vm.datatools.DataTypeConvertor;
-import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.AbstractMetricSpace;
+import vm.searchSpace.ToolsSpaceDomain;
+import vm.searchSpace.AbstractSearchSpace;
 import vm.objTransforms.storeLearned.SVDStoreInterface;
 
 /**
@@ -19,7 +19,7 @@ public class LearnSVD {
 
     private static final Logger LOG = Logger.getLogger(LearnSVD.class.getName());
 
-    private final AbstractMetricSpace<float[]> metricSpace;
+    private final AbstractSearchSpace<float[]> searchSpace;
     private final List<Object> sampleObjects;
     private final Object[] additionalInfoToStoreWithSVD;
     private final SVDStoreInterface storage;
@@ -27,15 +27,15 @@ public class LearnSVD {
     /**
      *
      * @param vectorSpace implementation of your matric space
-     * @param storage Interface used to storeMetricObject the computed PCA
+     * @param storage Interface used to storeSearchObject the computed PCA
      * transformation
-     * @param sampleObjects Metric objects used to learn PCA transform
+     * @param sampleObjects search objects used to learn PCA transform
      * @param additionalInfoToStoreWithSVD ALl other information that you wish
-     * to storeMetricObject with the learned PCA. For instance, dataset
+     * to storeSearchObject with the learned PCA. For instance, dataset
      * identifier, sample set size, etc.
      */
-    public LearnSVD(AbstractMetricSpace<float[]> vectorSpace, SVDStoreInterface storage, List<Object> sampleObjects, Object... additionalInfoToStoreWithSVD) {
-        this.metricSpace = vectorSpace;
+    public LearnSVD(AbstractSearchSpace<float[]> vectorSpace, SVDStoreInterface storage, List<Object> sampleObjects, Object... additionalInfoToStoreWithSVD) {
+        this.searchSpace = vectorSpace;
         this.sampleObjects = sampleObjects;
         this.storage = storage;
         if (additionalInfoToStoreWithSVD != null) {
@@ -46,7 +46,7 @@ public class LearnSVD {
     }
 
     public void execute() {
-        float[][] floatMatrix = ToolsMetricDomain.transformMetricObjectsToVectorMatrix(metricSpace, sampleObjects);
+        float[][] floatMatrix = ToolsSpaceDomain.transformSearchObjectsToVectorMatrix(searchSpace, sampleObjects);
         float[] meansOverColumns = getMeanValuesOfColumns(floatMatrix);
         double[][] normedMatrix = vm.mathtools.Tools.subtractColumnsMeansFromMatrix(floatMatrix, meansOverColumns);
 

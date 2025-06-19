@@ -10,10 +10,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
-import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.ToolsSpaceDomain;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.AbstractSearchSpace;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
@@ -24,23 +23,23 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String pivotPairsFileName, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String pivotPairsFileName, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, searchSpace, pivots.toArray(), false, additionalInfo);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), false, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, searchSpace, pivots.toArray(), false, additionalInfo);
         String pivotPairsFileName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
-        this(distanceFunc, metricSpace, pivots.toArray(), makeAllPivotPairs, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+        this(distanceFunc, searchSpace, pivots.toArray(), makeAllPivotPairs, additionalInfo);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractMetricSpace<Object> metricSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
-        super(distanceFunc, metricSpace, pivots, additionalInfo);
+    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+        super(distanceFunc, searchSpace, pivots, additionalInfo);
         if (makeAllPivotPairs) {
             makeAllPivotsPairs();
         }
@@ -57,7 +56,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     @Override
     public final void setPivotPairsFromStorage(PivotPairsStoreInterface storage, String pivotPairsFileName) {
         List<String[]> pivotPairsIDs = storage.loadPivotPairsIDs(pivotPairsFileName);
-        Map<Comparable, Object> pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdObjectMap(metricSpace, DataTypeConvertor.arrayToList(pivots));
+        Map<Comparable, Object> pivotsMap = ToolsSpaceDomain.getSearchObjectsAsIdObjectMap(searchSpace, DataTypeConvertor.arrayToList(pivots));
         Object[] pivotPairs = new Object[pivotPairsIDs.size() * 2];
         for (int i = 0; i < pivotPairsIDs.size(); i++) {
             String[] pivotPairIDs = pivotPairsIDs.get(i);
@@ -117,7 +116,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     }
 
     @Override
-    public List<BitSet> createColumnwiseSketches(AbstractMetricSpace<Object> metricSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df) {
+    public List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df) {
         LOG.log(Level.INFO, "Start creating inverted sketches for {0} sample objects", sampleObjects.size());
         try {
             List<BitSet> ret = new ArrayList<>();
@@ -128,8 +127,8 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
             if (threadPool == null) {
                 threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
             }
-            List<Object> dataOfSampleObjects = metricSpace.getDataOfMetricObjects(sampleObjects);
-            List<Comparable> idsOfSampleObjects = metricSpace.getIDsOfMetricObjects(sampleObjects.iterator());
+            List<Object> dataOfSampleObjects = searchSpace.getDataOfObjects(sampleObjects);
+            List<Comparable> idsOfSampleObjects = searchSpace.getIDsOfObjects(sampleObjects.iterator());
             final float[][] dists = additionalInfo != null && additionalInfo.length >= 3 ? (float[][]) additionalInfo[0] : null;
             final Map<String, Integer> columns = additionalInfo != null && additionalInfo.length >= 3 ? (Map<String, Integer>) additionalInfo[1] : null;
             final Map<String, Integer> rows = additionalInfo != null && additionalInfo.length >= 3 ? (Map<String, Integer>) additionalInfo[2] : null;
@@ -142,10 +141,10 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
                 final int oIndexF = oIndex;
                 threadPool.execute(() -> {
                     for (int bitIndex = 0; bitIndex < invertedSketchesCount; bitIndex++) {
-                        Object p1Data = metricSpace.getDataOfMetricObject(pivots[2 * bitIndex]);
-                        Object p2Data = metricSpace.getDataOfMetricObject(pivots[2 * bitIndex + 1]);
-                        Comparable p1ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex]);
-                        Comparable p2ID = metricSpace.getIDOfMetricObject(pivots[2 * bitIndex + 1]);
+                        Object p1Data = searchSpace.getDataOfObject(pivots[2 * bitIndex]);
+                        Object p2Data = searchSpace.getDataOfObject(pivots[2 * bitIndex + 1]);
+                        Comparable p1ID = searchSpace.getIDOfObject(pivots[2 * bitIndex]);
+                        Comparable p2ID = searchSpace.getIDOfObject(pivots[2 * bitIndex + 1]);
                         final int p1idx = columns != null && columns.containsKey(p1ID) ? columns.get(p1ID) : -1;
                         final int p2idx = columns != null && columns.containsKey(p2ID) ? columns.get(p2ID) : -1;
                         int oidx = p1idx > -1 && p2idx > -1 && rows.containsKey(oID) ? rows.get(oID) : -1;
@@ -186,19 +185,19 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     }
 
     @Override
-    public Object transformMetricObject(Object obj, Object... params) {
-        Object oID = metricSpace.getIDOfMetricObject(obj);
-        Object oData = metricSpace.getDataOfMetricObject(obj);
+    public Object transformSearchObject(Object obj, Object... params) {
+        Object oID = searchSpace.getIDOfObject(obj);
+        Object oData = searchSpace.getDataOfObject(obj);
         BitSet sketch = new BitSet(pivots.length / 2);
         Map<Object, Float> precomputedDists = null;
         if (params.length != 0 && params[0] instanceof Map) {
             precomputedDists = (Map<Object, Float>) params[0];
         }
         for (int i = 0; i < pivots.length; i += 2) {
-            Object p1Data = metricSpace.getDataOfMetricObject(pivots[i]);
-            Object p2Data = metricSpace.getDataOfMetricObject(pivots[i + 1]);
-            Object p1Id = metricSpace.getIDOfMetricObject(pivots[i]);
-            Object p2Id = metricSpace.getIDOfMetricObject(pivots[i + 1]);
+            Object p1Data = searchSpace.getDataOfObject(pivots[i]);
+            Object p2Data = searchSpace.getDataOfObject(pivots[i + 1]);
+            Object p1Id = searchSpace.getIDOfObject(pivots[i]);
+            Object p2Id = searchSpace.getIDOfObject(pivots[i + 1]);
             float d1;
             if (precomputedDists != null && precomputedDists.containsKey(p1Id)) {
                 d1 = precomputedDists.get(p1Id);

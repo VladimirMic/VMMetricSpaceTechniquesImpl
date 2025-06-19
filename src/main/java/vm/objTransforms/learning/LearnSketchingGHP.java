@@ -14,11 +14,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
@@ -49,14 +49,14 @@ public class LearnSketchingGHP {
         if (balance < 0 || balance > 1) {
             throw new IllegalArgumentException("Set balanced from range (0, 1).");
         }
-        AbstractMetricSpace metricSpace = dataset.getMetricSpace();
+        AbstractSearchSpace searchSpace = dataset.getSearchSpace();
         DistanceFunctionInterface<Object> df = dataset.getDistanceFunction();
         List<Object> sampleOfDataset = dataset.getSampleOfDataset(sampleSetSize);
         List<Object> pivots = dataset.getPivots(numberOfPivotsForMakingAllPairs);
 
-        AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(df, metricSpace, pivots, true, true, additionalInfoForDistF);
+        AbstractObjectToSketchTransformator sketchingTechnique = new SketchingGHP(df, searchSpace, pivots, true, true, additionalInfoForDistF);
 
-        List<BitSet> columnWiseSketches = sketchingTechnique.createColumnwiseSketches(metricSpace, sampleOfDataset, df);
+        List<BitSet> columnWiseSketches = sketchingTechnique.createColumnwiseSketches(searchSpace, sampleOfDataset, df);
         int[] balancedIndexes = getIndexesOfProperlyBalanced(columnWiseSketches, balance, sampleOfDataset.size(), sketchingTechnique);
         columnWiseSketches = Tools.filterList(columnWiseSketches, balancedIndexes);
         sketchingTechnique.preserveJustGivenBits(balancedIndexes);
@@ -79,8 +79,8 @@ public class LearnSketchingGHP {
             String resultName = sketchingTechnique.getNameOfTransformedSetOfObjects(dataset.getDatasetName(), sketchLength, balance);
             int[] lowCorrelatedBits = selectLowCorrelatedBits(sketchLength, columnWiseSketches, sketchesCorrelations);
             sketchingTechnique.preserveJustGivenBits(lowCorrelatedBits);
-            storage.storePivotPairs(resultName, metricSpace, DataTypeConvertor.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
-            sketchingTechnique = new SketchingGHP(df, metricSpace, pivotsBalancedBackup, false, true);
+            storage.storePivotPairs(resultName, searchSpace, DataTypeConvertor.arrayToList(sketchingTechnique.getPivots()), numberOfPivotsForMakingAllPairs, maxNumberOfBalancedForGeneticHeuristic);
+            sketchingTechnique = new SketchingGHP(df, searchSpace, pivotsBalancedBackup, false, true);
         }
     }
 

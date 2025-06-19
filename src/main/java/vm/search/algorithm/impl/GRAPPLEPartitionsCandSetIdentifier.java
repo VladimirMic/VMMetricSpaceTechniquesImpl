@@ -13,12 +13,12 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
-import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
-import vm.metricSpace.datasetPartitioning.impl.GRAPPLEPartitioning;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
+import vm.searchSpace.ToolsSpaceDomain;
+import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
+import vm.searchSpace.datasetPartitioning.impl.GRAPPLEPartitioning;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 
 /**
  *
@@ -81,16 +81,16 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         AtomicLong t = new AtomicLong(-System.currentTimeMillis());
         AtomicInteger distComps = new AtomicInteger();
-        Comparable qID = metricSpace.getIDOfMetricObject(queryObject);
-        T qData = metricSpace.getDataOfMetricObject(queryObject);
+        Comparable qID = searchSpace.getIDOfObject(queryObject);
+        T qData = searchSpace.getDataOfObject(queryObject);
         Map keyValueStorage = (Map) additionalParams[0];
         int kCandSetMaxSize = (int) additionalParams[1];
-        Iterator<Comparable> candSet = candSetKnnSearch(metricSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
+        Iterator<Comparable> candSet = candSetKnnSearch(searchSpace, queryObject, kCandSetMaxSize, objects, additionalParams).iterator();
         TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
-        Map<Comparable, Float> queryToPivotsDists = ToolsMetricDomain.evaluateDistsToPivots(qData, pivotsMap, df);
+        Map<Comparable, Float> queryToPivotsDists = ToolsSpaceDomain.evaluateDistsToPivots(qData, pivotsMap, df);
         float range = Float.MAX_VALUE;
         int total = 0;
         int ok = 0;
@@ -104,9 +104,9 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
             }
             if (add) {
                 Comparable oID = oMetadata.getoID();
-                T metricObjectData;
-                metricObjectData = (T) keyValueStorage.get(oID);
-                float distance = df.getDistance(qData, metricObjectData);
+                T searchObjectData;
+                searchObjectData = (T) keyValueStorage.get(oID);
+                float distance = df.getDistance(qData, searchObjectData);
                 distComps.incrementAndGet();
                 ret.add(new AbstractMap.SimpleEntry<>(oID, distance));
                 if (ret.size() > k) {

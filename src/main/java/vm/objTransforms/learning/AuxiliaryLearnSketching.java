@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.javatools.Tools;
-import vm.objTransforms.MetricObjectsParallelTransformerImpl;
+import vm.objTransforms.SearchObjectsParallelTransformerImpl;
 
 /**
  *

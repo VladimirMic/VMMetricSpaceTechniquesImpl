@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
@@ -13,10 +9,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.algorithm.SearchingAlgorithm;
 
@@ -40,18 +36,18 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> hammingSpace, Object fullQuery, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> hammingSpace, Object fullQuery, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Comparable, Float>> currAnswer = null;
         if (params.length > 0 && params[0] instanceof TreeSet) {
             currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         }
         DistanceFunctionInterface fullDF = fullDataset.getDistanceFunction();
-        AbstractMetricSpace fullDatasetMetricSpace = fullDataset.getMetricSpace();
-        Object qData = fullDatasetMetricSpace.getDataOfMetricObject(fullQuery);
-        Object qSketch = sketchingTechnique.transformMetricObject(fullQuery);
-        long[] qSketchData = (long[]) hammingSpace.getDataOfMetricObject(qSketch);
-        Comparable qId = hammingSpace.getIDOfMetricObject(qSketch);
+        AbstractSearchSpace fullDatasetSearchSpace = fullDataset.getSearchSpace();
+        Object qData = fullDatasetSearchSpace.getDataOfObject(fullQuery);
+        Object qSketch = sketchingTechnique.transformSearchObject(fullQuery);
+        long[] qSketchData = (long[]) hammingSpace.getDataOfObject(qSketch);
+        Comparable qId = hammingSpace.getIDOfObject(qSketch);
         TreeSet<Map.Entry<Comparable, Float>> ret = currAnswer == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : currAnswer;
         AtomicInteger distComps = new AtomicInteger();
         boolean justIDsProvided = params.length > 0 && params[0] instanceof Map;
@@ -66,7 +62,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
             if (justIDsProvided) {
                 oId = (Comparable) fullO;
             } else {
-                oId = hammingSpace.getIDOfMetricObject(fullO);
+                oId = hammingSpace.getIDOfObject(fullO);
             }
             if (range < Float.MAX_VALUE) {
                 float lowerBound = filter.lowerBound(qSketchData, oId, range);
@@ -79,7 +75,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
             if (justIDsProvided) {
                 oData = fullObjectsStorage.get(oId);
             } else {
-                oData = fullDatasetMetricSpace.getDataOfMetricObject(fullO);
+                oData = fullDatasetSearchSpace.getDataOfObject(fullO);
             }
             float distance = fullDF.getDistance(qData, oData);
             if (distance < range) {
@@ -96,7 +92,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
     }
 
     @Override
-    public List candSetKnnSearch(AbstractMetricSpace hammingMetricSpace, Object skQ, int k, Iterator objects, Object... additionalParams) {
+    public List candSetKnnSearch(AbstractSearchSpace hammingSearchSpace, Object skQ, int k, Iterator objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

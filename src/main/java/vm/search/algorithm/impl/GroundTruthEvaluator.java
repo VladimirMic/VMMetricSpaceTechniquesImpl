@@ -10,10 +10,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
-import vm.metricSpace.DatasetOfCandidates;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
+import vm.searchSpace.DatasetOfCandidates;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 import static vm.search.algorithm.SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne;
 
@@ -27,7 +27,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     private static final Logger LOG = Logger.getLogger(GroundTruthEvaluator.class.getName());
 
     public static final Integer K_IMPLICIT_FOR_GROUND_TRUTH = 1000;
-    private final AbstractMetricSpace metricSpace;
+    private final AbstractSearchSpace searchSpace;
     private final DistanceFunctionInterface distanceFunction;
     private final List<Object> queryObjects;
     private final int k;
@@ -49,7 +49,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
      * @param maxQueryCount
      */
     public GroundTruthEvaluator(Dataset<T> dataset, int k, float range, int maxQueryCount) {
-        this.metricSpace = dataset.getMetricSpace();
+        this.searchSpace = dataset.getSearchSpace();
         this.queryObjects = dataset.getQueryObjects(maxQueryCount);
         this.k = k;
         this.range = range;
@@ -58,7 +58,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
 
     public GroundTruthEvaluator(DistanceFunctionInterface<T> distanceFunction) {
         this.distanceFunction = distanceFunction;
-        metricSpace = null;
+        searchSpace = null;
         queryObjects = null;
         k = -1;
         range = Float.MAX_VALUE;
@@ -76,30 +76,30 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
             ret = allWithSteps.get(precomputedDatasetSize);
         } else {
             for (int i = 0; i < repetitions; i++) {
-                ret = completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, dataset.getMetricObjectsFromDataset(), 1);
+                ret = completeKnnFilteringWithQuerySet(searchSpace, queryObjects, k, dataset.getSearchObjectsFromDataset(), 1);
             }
         }
         return ret;
     }
 
-    public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
+    public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverSearchObjects, Object... paramsToStoreWithGroundTruth) {
         Object[] concatArrays = Tools.addToArray(vm.javatools.Tools.PARALELISATION, paramsToStoreWithGroundTruth);
-        return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
+        return completeKnnFilteringWithQuerySet(searchSpace, queryObjects, k, itOverSearchObjects, concatArrays);
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> searchSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
-        T qData = metricSpace.getDataOfMetricObject(q);
-        Comparable qId = metricSpace.getIDOfMetricObject(q);
+        T qData = searchSpace.getDataOfObject(q);
+        Comparable qId = searchSpace.getIDOfObject(q);
         int distComps = 0;
         float qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, range);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();
-            Comparable oId = metricSpace.getIDOfMetricObject(o);
-            T oData = metricSpace.getDataOfMetricObject(o);
+            Comparable oId = searchSpace.getIDOfObject(o);
+            T oData = searchSpace.getDataOfObject(o);
             distComps++;
             float distance = distanceFunction.getDistance(qData, oData);
             if (distance < qRange) {
@@ -114,12 +114,12 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-//    public TreeSet<Entry<Object, Float>>[] evaluateIterator(ExecutorService threadPool, Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
+//    public TreeSet<Entry<Object, Float>>[] evaluateIterator(ExecutorService threadPool, Iterator<Object> itOverSearchObjects, Object... paramsToStoreWithGroundTruth) {
 //        long t = -System.currentTimeMillis();
 //        TreeSet<Entry<Object, Float>>[] queryResults = initKNNResultSets(queryObjectsData.size());
 //        int counter = 0;
-//        while (itOverMetricObjects.hasNext()) {
-//            List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverMetricObjects);
+//        while (itOverSearchObjects.hasNext()) {
+//            List<Object> batch = Tools.getObjectsFromIterator(0, BATCH_SIZE, itOverSearchObjects);
 //            queryResults = processBatch(batch, queryResults, threadPool);
 //            counter += batch.size();
 //            LOG.log(Level.INFO, "Evaluated queries for {0} objects from the dataset", counter);
@@ -141,7 +141,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
 //    }
 //    private TreeSet<Entry<Object, Float>>[] processBatch(List<Object> batch, TreeSet<Entry<Object, Float>>[] queryResults, ExecutorService threadPool) {
 //        try {
-//            LOG.log(Level.INFO, "Start parallel evaluation of queries. Batch size: {0} metric objects", batch.size());
+//            LOG.log(Level.INFO, "Start parallel evaluation of queries. Batch size: {0} search objects", batch.size());
 //            CountDownLatch latch = new CountDownLatch(queryObjectsData.size());
 //            for (int i = 0; i < queryObjectsData.size(); i++) {
 //                final Object queryObjectData = queryObjectsData.get(i);
@@ -163,13 +163,13 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
 //        return null;
 //    }
     private void updateSimQueryAnswer(Object queryObjectData, Object obj, TreeSet<Entry<Object, Float>> queryResult) {
-        Object datasetObjData = metricSpace.getDataOfMetricObject(obj);
+        Object datasetObjData = searchSpace.getDataOfObject(obj);
         float distance = distanceFunction.getDistance(queryObjectData, datasetObjData);
         if (distance > range) {
             return;
         }
-        Object idOfMetricObject = metricSpace.getIDOfMetricObject(obj);
-        Entry entry = new AbstractMap.SimpleEntry<>(idOfMetricObject, distance);
+        Object idOfSearchObject = searchSpace.getIDOfObject(obj);
+        Entry entry = new AbstractMap.SimpleEntry<>(idOfSearchObject, distance);
         if (queryResult.size() < k) {
             queryResult.add(entry);
             return;
@@ -182,7 +182,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List candSetKnnSearch(AbstractMetricSpace metricSpace, Object queryObject, int k, Iterator objects, Object... additionalParams) {
+    public List candSetKnnSearch(AbstractSearchSpace spaceSpace, Object queryObject, int k, Iterator objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

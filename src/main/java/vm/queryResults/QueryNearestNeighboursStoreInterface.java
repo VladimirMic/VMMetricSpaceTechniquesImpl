@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import vm.search.algorithm.impl.GroundTruthEvaluator;
-import vm.metricSpace.AbstractMetricSpace;
+import vm.searchSpace.AbstractSearchSpace;
 
 /**
  * Stores (found) nearest neighbours of the query object
@@ -24,10 +24,10 @@ public abstract class QueryNearestNeighboursStoreInterface {
         }
     }
 
-    public void storeQueryResults(AbstractMetricSpace metricSpace, List<Object> queries, TreeSet<Map.Entry<Comparable, Float>>[] queryResults, Integer k, String datasetName, String querySetName, String resultsName) {
+    public void storeQueryResults(AbstractSearchSpace searchSpace, List<Object> queries, TreeSet<Map.Entry<Comparable, Float>>[] queryResults, Integer k, String datasetName, String querySetName, String resultsName) {
         List<Comparable> queryObjectsIDs = new ArrayList<>();
         for (int i = 0; i < queries.size(); i++) {
-            queryObjectsIDs.add(metricSpace.getIDOfMetricObject(queries.get(i)));
+            queryObjectsIDs.add(searchSpace.getIDOfObject(queries.get(i)));
         }
         storeQueryResults(queryObjectsIDs, queryResults, k, datasetName, querySetName, resultsName);
     }

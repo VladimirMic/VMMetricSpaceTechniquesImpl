@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.Dataset;
-import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.Dataset;
+import vm.searchSpace.ToolsSpaceDomain;
+import vm.searchSpace.distance.DistanceFunctionInterface;
 import vm.search.algorithm.SearchingAlgorithm;
-import vm.metricSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
+import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 
 /**
  *
@@ -27,19 +27,19 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     protected final DistanceFunctionInterface<T> df;
     protected final Map<Comparable, TreeSet<Comparable>> datasetPartitioning;
 
-    public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractMetricSpace<T> metricSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
-        pivotsMap = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, pivots);
+    public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractSearchSpace<T> searchSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
+        pivotsMap = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
         this.df = df;
         datasetPartitioning = voronoiPartitioningStorage.loadAsTreeSets(datasetName, pivotCountUsedForVoronoiLearning);
     }
 
     public VoronoiPartitionsCandSetIdentifier(Dataset dataset, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
-        this(dataset.getPivots(pivotCountUsedForVoronoiLearning), dataset.getDistanceFunction(), dataset.getDatasetName(), dataset.getMetricSpace(), voronoiPartitioningStorage, pivotCountUsedForVoronoiLearning);
+        this(dataset.getPivots(pivotCountUsedForVoronoiLearning), dataset.getDistanceFunction(), dataset.getDatasetName(), dataset.getSearchSpace(), voronoiPartitioningStorage, pivotCountUsedForVoronoiLearning);
     }
 
     /**
      *
-     * @param metricSpace
+     * @param searchSpace
      * @param fullQueryObject
      * @param k maximum size - never returnes bigger answer
      * @param ignored ignored!
@@ -47,8 +47,8 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
      * @return
      */
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object fullQueryObject, int k, Iterator<Object> ignored, Object... additionalParams) {
-        T qData = metricSpace.getDataOfMetricObject(fullQueryObject);
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object fullQueryObject, int k, Iterator<Object> ignored, Object... additionalParams) {
+        T qData = searchSpace.getDataOfObject(fullQueryObject);
         Map<Object, Float> distsToPivots = null;
         for (Object param : additionalParams) {
             if (param instanceof Map) {
@@ -78,7 +78,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         if (params.length > 0) {
             distsToPivots = (Map<Comparable, Float>) params[1];
         }
-        return ToolsMetricDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
+        return ToolsSpaceDomain.getPivotIDsPermutation(df, pivotsMap, qData, -1, distsToPivots);
     }
 
     public int getNumberOfPivots() {

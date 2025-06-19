@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
@@ -14,11 +10,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import vm.datatools.Tools;
-import vm.metricSpace.AbstractMetricSpace;
-import vm.metricSpace.distance.DistanceFunctionInterface;
-import vm.metricSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
-import vm.metricSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
+import vm.searchSpace.AbstractSearchSpace;
+import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
+import vm.searchSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
 
 /**
  *
@@ -42,13 +38,13 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private final Set<String> qSkip = new HashSet<>();
 
-    public KNNSearchWithPtolemaicFiltering(AbstractMetricSpace<T> metricSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
         this.filter = ptolemaicFilter;
         if (ptolemaicFilter instanceof PtolemaicFiltering) {
             PtolemaicFiltering cast = (PtolemaicFiltering) ptolemaicFilter;
             query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
         }
-        this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
+        this.pivotsData = searchSpace.getDataOfObjects(pivots);
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
@@ -59,20 +55,20 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
+    public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractSearchSpace<T> searchSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
-        Comparable qId = metricSpace.getIDOfMetricObject(q);
+        Comparable qId = searchSpace.getIDOfObject(q);
         if (qSkip.contains(qId)) {
             bruteForceAlg.resetDistComps(qId);
-            ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
+            ret = bruteForceAlg.completeKnnSearch(searchSpace, q, k, objects, ret);
             t += System.currentTimeMillis();
             incTime(qId, t);
             incDistsComps(qId, bruteForceAlg.getDistCompsForQuery(qId));
             return ret;
         }
         long lbChecked = 0;
-        T qData = metricSpace.getDataOfMetricObject(q);
+        T qData = searchSpace.getDataOfObject(q);
 
         float[][] qpDistMultipliedByCoefForPivots = qpMultipliedByCoefCached.get(qId);
         if (qpDistMultipliedByCoefForPivots == null) {
@@ -103,7 +99,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
             if (oCounter == objBeforeSeqScan && thresholdOnLBsPerObjForSeqScan > 0) {
                 long avg = lbChecked / oCounter;
                 if (avg >= thresholdOnLBsPerObjForSeqScan) {
-                    ret = bruteForceAlg.completeKnnSearch(metricSpace, q, k, objects, ret);
+                    ret = bruteForceAlg.completeKnnSearch(searchSpace, q, k, objects, ret);
                     t += System.currentTimeMillis();
                     incTime(qId, t);
                     incDistsComps(qId, bruteForceAlg.getDistCompsForQuery(qId) + distComps);
@@ -113,7 +109,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 }
             }
             o = objects.next();
-            oId = metricSpace.getIDOfMetricObject(o);
+            oId = searchSpace.getIDOfObject(o);
             if (range < Float.MAX_VALUE) {
                 oIdx = rowHeaders.get(oId);
                 poDistsArray = poDists[oIdx];
@@ -133,7 +129,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
                 lbChecked += p / 2;
             }
             distComps++;
-            oData = metricSpace.getDataOfMetricObject(o);
+            oData = searchSpace.getDataOfObject(o);
             distance = df.getDistance(qData, oData);
             if (distance < range) {
                 ret.add(new AbstractMap.SimpleEntry<>(oId, distance));
@@ -149,7 +145,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     }
 
     @Override
-    public List<Comparable> candSetKnnSearch(AbstractMetricSpace<T> metricSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
+    public List<Comparable> candSetKnnSearch(AbstractSearchSpace<T> searchSpace, Object queryObject, int k, Iterator<Object> objects, Object... additionalParams) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -164,7 +160,6 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         }
         return ret;
     }
-
 
     public static <T> float[][] computeqpDistMultipliedByCoefForPivots(T qData, List<T> pivotsData, DistanceFunctionInterface<T> df, AbstractPtolemaicBasedFiltering filter) {
         float[][] ret = new float[pivotsData.size()][pivotsData.size()];
