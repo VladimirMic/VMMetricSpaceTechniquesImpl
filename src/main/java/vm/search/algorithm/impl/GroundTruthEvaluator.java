@@ -64,6 +64,11 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         range = Float.MAX_VALUE;
     }
 
+    /**
+     * 
+     * @param dataset
+     * @return For each query objects returns a map of IDs and distances.
+     */
     public TreeSet<Entry<Comparable, Float>>[] evaluateIteratorSequentially(Dataset dataset) {
         TreeSet<Map.Entry<Comparable, Float>>[] ret = null;
         int repetitions = SearchingAlgorithm.getNumberOfRepetitionsDueToCaching(dataset);

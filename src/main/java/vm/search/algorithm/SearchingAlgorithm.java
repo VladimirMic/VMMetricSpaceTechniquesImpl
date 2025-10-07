@@ -73,6 +73,14 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last();
     }
 
+    /**
+     *
+     * @param currAnswer
+     * @param k max size of an answer
+     * @param searchRadius value that is returned if the answer is smaller than
+     * k
+     * @return distance to the kthNN or given searchRadius
+     */
     public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
         if (currAnswer == null) {
             return Float.MAX_VALUE;
@@ -148,15 +156,23 @@ public abstract class SearchingAlgorithm<T> {
      * @param additionalParams -- voluntarily the first one can be the
      * parallelisation.
      * @return evaluates all query objects in parallel. Parallelisation is done
-     * over the query objects
+     * over the query objects. For each query objects returns a map of IDs and
+     * distances.
      */
     public TreeSet<Map.Entry<Comparable, Float>>[] completeKnnFilteringWithQuerySet(AbstractSearchSpace<T> searchSpace, List<Object> queryObjects, int k, Iterator<Object> objects, Object... additionalParams) {
-        final TreeSet<Map.Entry<Comparable, Float>>[] ret = new TreeSet[queryObjects.size()];
+        final TreeSet<Map.Entry<Comparable, Float>>[] ret;
+        if (additionalParams != null && additionalParams.length == queryObjects.size() && additionalParams instanceof TreeSet[]) {
+            ret = (TreeSet<Map.Entry<Comparable, Float>>[]) additionalParams;
+        } else {
+            ret = new TreeSet[queryObjects.size()];
+        }
         final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
             Comparable qID = searchSpace.getIDOfObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
-            ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
+            if (ret[i] == null) {
+                ret[i] = new TreeSet<>(new Tools.MapByFloatValueComparator());
+            }
         }
         ExecutorService threadPool;
         if (additionalParams != null && additionalParams.length > 0 && additionalParams[0] instanceof Integer) {
