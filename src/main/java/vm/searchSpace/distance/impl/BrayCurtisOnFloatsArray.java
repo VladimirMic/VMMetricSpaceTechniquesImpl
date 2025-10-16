@@ -17,8 +17,8 @@ public class BrayCurtisOnFloatsArray extends DistanceFunctionInterface<float[]> 
         float num = 0;
         float denom = 0;
         for (int i = 0; i < obj1.length; i++) {
-            num += obj1[i] - obj2[i];
-            denom += obj1[i] + obj2[i];
+            num += Math.abs(obj1[i] - obj2[i]);
+            denom += Math.abs(obj1[i] + obj2[i]);
         }
         return num / denom;
     }
