@@ -6,7 +6,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  *
  * @author Vlada
  */
-public class CosineDistance extends DistanceFunctionInterface<float[]> {
+public class CosineOnFloatsArray extends DistanceFunctionInterface<float[]> {
 
     private float[] lastO1 = null;
     private float[] lastO2 = null;

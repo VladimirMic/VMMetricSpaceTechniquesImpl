@@ -15,7 +15,7 @@ import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.ToolsSpaceDomain;
 import vm.searchSpace.datasetPartitioning.AbstractDatasetPartitioning;
 import vm.searchSpace.distance.DistanceFunctionInterface;
-import vm.searchSpace.distance.impl.CosineDistance;
+import vm.searchSpace.distance.impl.CosineOnFloatsArray;
 import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.BruteForceVoronoiPartitioningProcessor;
@@ -43,7 +43,7 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
         pivotsData = ToolsSpaceDomain.getDataAsList(pivots.iterator(), searchSpace);
         pivotsIDs = ToolsSpaceDomain.getIDsAsList(pivots.iterator(), searchSpace);
 
-        if (df instanceof CosineDistance) {
+        if (df instanceof CosineOnFloatsArray) {
             lengthOfPivotVectors = ToolsSpaceDomain.getVectorsLengthAsArray(pivots, searchSpace);
         } else {
             lengthOfPivotVectors = null;
@@ -74,7 +74,7 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
                     List batch = Tools.getObjectsFromIterator(dataObjects, BATCH_SIZE);
                     lastTimeOfPartitioning -= System.currentTimeMillis();
                     size += batch.size();
-                    if (df instanceof CosineDistance) {
+                    if (df instanceof CosineOnFloatsArray) {
                         Map<Comparable, Float> lengthOfBatchVectors = ToolsSpaceDomain.getVectorsLength(batch, searchSpace);
                         processes[j].setObjectsLengths(lengthOfBatchVectors);
                     }
