@@ -1,5 +1,7 @@
 package vm.searchSpace.distance;
 
+import java.lang.reflect.ParameterizedType;
+
 /**
  *
  * @author Vlada
@@ -19,6 +21,11 @@ public abstract class DistanceFunctionInterface<T> {
 
     public float getDistance(T obj1, T obj2, Object... additionalParams) {
         return getDistance(obj1, obj2);
+    }
+
+    public Class getClassOfComparedData() {
+        ParameterizedType pt = (ParameterizedType) getClass().getGenericSuperclass();
+        return (Class<?>) pt.getActualTypeArguments()[0];
     }
 
 }

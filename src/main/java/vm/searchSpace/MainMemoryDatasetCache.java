@@ -26,7 +26,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     private static final Logger LOG = Logger.getLogger(MainMemoryDatasetCache.class.getName());
 
     public MainMemoryDatasetCache(String datasetName, AbstractSearchSpacesStorage searchSpacesStorage) {
-        super(datasetName,  searchSpacesStorage);
+        super(datasetName, searchSpacesStorage);
     }
 
     private final List<Object> pivots = new ArrayList();
@@ -70,7 +70,7 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     @Override
-    public List<Object> getPivots(int count) {
+    public List<Object> getPivots(int count, Object... params) {
         if (count < 0) {
             count = pivots.size();
         }
@@ -95,9 +95,9 @@ public class MainMemoryDatasetCache<T> extends Dataset<T> {
     }
 
     @Override
-    public List<Object> getSampleOfDataset(int objCount) {
+    public List<Object> getSampleOfDataset(int objCount, Object... params) {
         if (!dataLoaded()) {
-            return super.getSampleOfDataset(objCount);
+            return super.getSampleOfDataset(objCount, params);
         }
         if (objCount > dataObjects.size()) {
             LOG.log(Level.WARNING, "Just {0} are cached but {1} asked. Returning {0} objects", new Object[]{dataObjects.size(), objCount});

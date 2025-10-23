@@ -148,7 +148,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     }
 
     @Override
-    public List<Object> getSampleOfDataset(int objCount) {
+    public List<Object> getSampleOfDataset(int objCount, Object... params) {
         if (objCount < 0) {
             objCount = Integer.MAX_VALUE;
         }
@@ -168,8 +168,8 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     }
 
     @Override
-    public List<Object> getPivots(int objCount) {
-        return origDataset.getPivots(objCount);
+    public List<Object> getPivots(int objCount, Object... params) {
+        return origDataset.getPivots(objCount, params);
     }
 
     @Override

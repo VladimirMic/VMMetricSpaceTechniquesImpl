@@ -53,21 +53,22 @@ public abstract class Dataset<T> {
      * @param objCount
      * @return
      */
-    public List<Object> getSampleOfDataset(int objCount) {
-        return searchSpacesStorage.getSampleOfDataset(datasetName, objCount);
+    public List<Object> getSampleOfDataset(int objCount, Object... params) {
+        return searchSpacesStorage.getSampleOfDataset(datasetName, objCount, params);
     }
 
     /**
      * Query objects stored under the same name as the dataset
      *
+     * @param params
      * @return uses method getQuerySetName and returns associated query objects
      */
     public List<Object> getQueryObjects(Object... params) {
         return searchSpacesStorage.getQueryObjects(getQuerySetName(), params);
     }
 
-    public List<Object> getPivots(int objCount) {
-        return searchSpacesStorage.getPivots(getPivotSetName(), objCount);
+    public List<Object> getPivots(int objCount, Object... params) {
+        return searchSpacesStorage.getPivots(getPivotSetName(), objCount, params);
     }
 
     /**
@@ -78,6 +79,10 @@ public abstract class Dataset<T> {
      */
     public DistanceFunctionInterface getDistanceFunction() {
         return getSearchSpace().getDistanceFunction();
+    }
+
+    public Class getClassOfData() {
+        return getDistanceFunction().getClassOfComparedData();
     }
 
     public String getDatasetName() {
