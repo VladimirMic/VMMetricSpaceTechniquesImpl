@@ -2,6 +2,9 @@ package vm.searchSpace.distance.impl;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixLoader;
@@ -20,48 +23,59 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
     public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixLoader pd, Dataset dataset, boolean alreadyLocallyUtrametric) {
         super(dataset.getSearchSpace(), pd, dataset, dataset.getDistanceFunction(), dataset.getPrecomputedDatasetSize());
         if (!alreadyLocallyUtrametric) {
-            makeItLocallyUtrametric();
+            try {
+                makeItLocallyUtrametric();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
-    private void makeItLocallyUtrametric() {
+    private void makeItLocallyUtrametric() throws InterruptedException {
         float[][] newDists = new float[dists.length][dists.length];
-
+        ExecutorService threadPool = vm.javatools.Tools.initExecutor();
+        CountDownLatch latch = new CountDownLatch(columnHeaders.size());
         // Compute only for upper triangle
         int counter = 0;
         for (Map.Entry<Comparable, Integer> columnEntry : columnHeaders.entrySet()) {
             counter++;
-            System.out.print(counter + ";");
-            if (counter % 50 == 0) {
-                System.out.println("");
-            }
-            int j = columnEntry.getValue();
-            for (Map.Entry<Comparable, Integer> rowEntry : rowHeaders.entrySet()) {
-                int i = rowEntry.getValue();
-                if (dists[i][j] == 0f) {
-                    newDists[i][j] = 0f;
-                    continue;
-                }
-                float minVal = dists[i][j];
+            final int counterCopy = counter;
+            threadPool.execute(() -> {
+                int j = columnEntry.getValue();
+                for (Map.Entry<Comparable, Integer> rowEntry : rowHeaders.entrySet()) {
+                    int i = rowEntry.getValue();
+                    if (dists[i][j] == 0f) {
+                        newDists[i][j] = 0f;
+                        continue;
+                    }
+                    float minVal = dists[i][j];
 
-                // iterate over k
-                for (int k = 0; k < dists.length; k++) {
-                    if (dists[i][k] == 0f || dists[j][k] == 0f) {
-                        continue; // ignore zeros
+                    // iterate over k
+                    for (int k = 0; k < dists.length; k++) {
+                        if (dists[i][k] == 0f || dists[j][k] == 0f) {
+                            continue; // ignore zeros
+                        }
+                        float maxVal = dists[i][k] > dists[j][k] ? dists[i][k] : dists[j][k];
+                        if (maxVal < minVal) {
+                            minVal = maxVal;
+                        }
                     }
-                    float maxVal = dists[i][k] > dists[j][k] ? dists[i][k] : dists[j][k];
-                    if (maxVal < minVal) {
-                        minVal = maxVal;
-                    }
+                    newDists[i][j] = minVal;
                 }
-                newDists[i][j] = minVal;
-            }
+                System.out.print(counterCopy + ";");
+                if (counterCopy % 50 == 0) {
+                    System.out.println("");
+                }
+                latch.countDown();
+            });
         }
+        latch.await();
 
         // Replace old matrix
         for (int i = 0; i < dists.length; i++) {
             System.arraycopy(newDists[i], 0, dists[i], 0, dists.length);
         }
+        threadPool.shutdown();
     }
 
     public boolean isUltrametric() {
