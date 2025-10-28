@@ -35,7 +35,6 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
         float[][] newDists = new float[dists.length][dists.length];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
         CountDownLatch latch = new CountDownLatch(columnHeaders.size());
-        // Compute only for upper triangle
         int counter = 0;
         for (Map.Entry<Comparable, Integer> columnEntry : columnHeaders.entrySet()) {
             counter++;
@@ -52,10 +51,10 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
 
                     // iterate over k
                     for (int k = 0; k < dists.length; k++) {
-                        if (dists[i][k] == 0f || dists[j][k] == 0f) {
+                        if (dists[i][k] == 0f || dists[k][j] == 0f) {
                             continue; // ignore zeros
                         }
-                        float maxVal = dists[i][k] > dists[j][k] ? dists[i][k] : dists[j][k];
+                        float maxVal = Math.max(dists[i][k], dists[k][j]);
                         if (maxVal < minVal) {
                             minVal = maxVal;
                         }
