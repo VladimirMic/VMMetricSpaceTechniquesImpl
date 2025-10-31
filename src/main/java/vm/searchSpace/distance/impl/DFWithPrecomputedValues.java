@@ -36,9 +36,10 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
             Integer idxRow = origRowHeaders.get(oID);
             Integer idxColumn = origColumnHeaders.get(oID);
             T oData = searchSpace.getDataOfObject(obj);
-            int newKey = Tools.hashArray(oData);
-            newColumnHeaders.put(newKey, idxRow);
-            newRowHeaders.put(newKey, idxColumn);
+            Integer newKey = Tools.hashArray(oData);
+            String newKeyStriong = newKey.toString();
+            newColumnHeaders.put(newKeyStriong, idxRow);
+            newRowHeaders.put(newKeyStriong, idxColumn);
         }
         distsHolder = new MainMemoryStoredPrecomputedDistances(distsHolder.getDists(), newColumnHeaders, newRowHeaders);
         this.df = dataset.getDistanceFunction();
@@ -58,11 +59,13 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
     public float getDistance(T obj1, T obj2) {
         Comparable o1ID = Tools.hashArray(obj1);
         Comparable o2ID = Tools.hashArray(obj2);
+        String o1IDString = o1ID.toString();
+        String o2IDString = o2ID.toString();
         Map<Comparable, Integer> columnHeaders = distsHolder.getColumnHeaders();
         Map<Comparable, Integer> rowHeaders = distsHolder.getRowHeaders();
-        if (columnHeaders.containsKey(o1ID) && rowHeaders.containsKey(o2ID)) {
-            int o1idx = columnHeaders.get(o1ID);
-            int o2idx = rowHeaders.get(o2ID);
+        if (columnHeaders.containsKey(o1IDString) && rowHeaders.containsKey(o2IDString)) {
+            int o1idx = columnHeaders.get(o1IDString);
+            int o2idx = rowHeaders.get(o2IDString);
             return distsHolder.getDists()[o1idx][o2idx];
         }
         T obj1Data = searchSpace.getDataOfObject(obj1);
