@@ -13,6 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
+import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
 /**
  *
@@ -119,6 +121,12 @@ public abstract class Dataset<T> {
 
     public void storeQueryObjects(List<Object> queryObjs, String querySetName, Object... additionalParamsToStoreWithNewQuerySet) {
         searchSpacesStorage.storeQueryObjects(queryObjs, querySetName, additionalParamsToStoreWithNewQuerySet);
+    }
+
+    public MainMemoryStoredPrecomputedDistances getPrecomputedDistsToPivots(AbstractPrecomputedDistancesMatrixSerializator loader) {
+        float[][] dists = loader.loadPrecomPivotsToObjectsDists(this);
+        MainMemoryStoredPrecomputedDistances ret = new MainMemoryStoredPrecomputedDistances(dists, loader.getColumnHeaders(), loader.getRowHeaders());
+        return ret;
     }
 
     @Override
@@ -312,7 +320,6 @@ public abstract class Dataset<T> {
             Map.Entry<Comparable, T> next = it.next();
             return searchSpace.createSearchObject(next.getKey(), next.getValue());
         }
-
     }
 
 }

@@ -1,5 +1,7 @@
 package vm.searchSpace.distance.storedPrecomputedDistances;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +14,7 @@ import vm.searchSpace.Dataset;
  *
  * @author Vlada
  */
-public abstract class AbstractPrecomputedDistancesMatrixLoader {
+public abstract class AbstractPrecomputedDistancesMatrixSerializator {
 
     /*
     Mapping of object IDs to column indexes
@@ -23,7 +25,7 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
      */
     protected Map<Comparable, Integer> rowHeaders;
 
-    public AbstractPrecomputedDistancesMatrixLoader() {
+    public AbstractPrecomputedDistancesMatrixSerializator() {
         this.rowHeaders = new HashMap<>();
         this.columnHeaders = new HashMap<>();
     }
@@ -39,7 +41,7 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
     public abstract float[][] loadPrecomPivotsToObjectsDists(Dataset dataset, int pivotCount);
 
     public float[][] loadPrecomPivotsToObjectsDists(Dataset dataset) {
-        return this.loadPrecomPivotsToObjectsDists(dataset, -1);
+        return this.loadPrecomPivotsToObjectsDists(dataset, dataset.getRecommendedNumberOfPivotsForFiltering());
     }
 
     public Map<Comparable, Integer> getRowHeaders() {
@@ -64,5 +66,14 @@ public abstract class AbstractPrecomputedDistancesMatrixLoader {
             }
         }
     }
+
+    public int serialize(OutputStream outputStream, Map<Comparable, Integer> rowKeys, Map<Comparable, Integer> columnKeys, float[][] distsInRow, int rowCounter) throws IOException {
+        serializeColumnsHeaders(outputStream, columnKeys);
+        return serializeRows(outputStream, rowKeys, columnKeys, distsInRow, rowCounter);
+    }
+
+    public abstract void serializeColumnsHeaders(OutputStream outputStream, Map<Comparable, Integer> columnKeys) throws IOException;
+
+    public abstract int serializeRows(OutputStream outputStream, Map<Comparable, Integer> rowKeys, Map<Comparable, Integer> columnKeys, float[][] distsInRow, int rowCounter) throws IOException;
 
 }

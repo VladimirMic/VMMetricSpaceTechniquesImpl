@@ -7,7 +7,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.distance.DistanceFunctionInterface;
-import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixLoader;
+import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
 
 /**
  *
@@ -23,8 +23,7 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
     protected final DistanceFunctionInterface<T> df;
     protected final AbstractSearchSpace<T> searchSpace;
 
-// modified - check usage!
-    public DFWithPrecomputedValues(AbstractSearchSpace<T> searchSpace, AbstractPrecomputedDistancesMatrixLoader pd, Dataset dataset, DistanceFunctionInterface<T> encapsulatedDF, int numberOfPivots) {
+    public DFWithPrecomputedValues(AbstractSearchSpace<T> searchSpace, AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset, DistanceFunctionInterface<T> encapsulatedDF, int numberOfPivots) {
         this.dists = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
         this.columnHeaders = new HashMap<>();
         this.rowHeaders = new HashMap<>();

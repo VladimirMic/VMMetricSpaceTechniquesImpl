@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.Dataset;
-import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixLoader;
+import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
 
 /**
  * This method does not work with symmetry of distances, i.e., rows and columns
@@ -20,7 +20,7 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
 
     private static final Logger LOG = Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName());
 
-    public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixLoader pd, Dataset dataset, boolean alreadyLocallyUtrametric) {
+    public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset, boolean alreadyLocallyUtrametric) {
         super(dataset.getSearchSpace(), pd, dataset, dataset.getDistanceFunction(), dataset.getPrecomputedDatasetSize());
         if (!alreadyLocallyUtrametric) {
             try {
@@ -51,10 +51,10 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
 
                     // iterate over k
                     for (int k = 0; k < dists.length; k++) {
-                        if (dists[i][k] == 0f || dists[k][j] == 0f) {
+                        if (dists[i][k] == 0f || dists[j][k] == 0f) {
                             continue; // ignore zeros
                         }
-                        float maxVal = Math.max(dists[i][k], dists[k][j]);
+                        float maxVal = Math.max(dists[i][k], dists[j][k]);
                         if (maxVal < minVal) {
                             minVal = maxVal;
                         }
