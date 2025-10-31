@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
+import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
 /**
  * This method does not work with symmetry of distances, i.e., rows and columns
@@ -18,24 +19,27 @@ import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDis
  */
 public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecomputedValues<Object> {
 
+    public static final String NAME = "LocallyUltraMetric";
     private static final Logger LOG = Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName());
 
-    public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset, boolean alreadyLocallyUtrametric) {
-        super(dataset.getSearchSpace(), pd, dataset, dataset.getDistanceFunction(), dataset.getPrecomputedDatasetSize());
-        if (!alreadyLocallyUtrametric) {
-            try {
-                makeItLocallyUtrametric();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset) {
+        super(dataset, pd, dataset.getPrecomputedDatasetSize());
+        try {
+            makeItLocallyUtrametric();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private void makeItLocallyUtrametric() throws InterruptedException {
-        float[][] newDists = new float[dists.length][dists.length];
+        int columnCount = getColumnCount();
+        float[][] newDists = new float[columnCount][columnCount];
         ExecutorService threadPool = vm.javatools.Tools.initExecutor();
-        CountDownLatch latch = new CountDownLatch(columnHeaders.size());
+        CountDownLatch latch = new CountDownLatch(columnCount);
         int counter = 0;
+        Map<Comparable, Integer> columnHeaders = getColumnHeaders();
+        Map<Comparable, Integer> rowHeaders = getRowHeaders();
+        float[][] dists = getDists();
         for (Map.Entry<Comparable, Integer> columnEntry : columnHeaders.entrySet()) {
             counter++;
             final int counterCopy = counter;
@@ -69,15 +73,14 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
             });
         }
         latch.await();
-
         // Replace old matrix
-        for (int i = 0; i < dists.length; i++) {
-            System.arraycopy(newDists[i], 0, dists[i], 0, dists.length);
-        }
+        MainMemoryStoredPrecomputedDistances newinstance = new MainMemoryStoredPrecomputedDistances(newDists, columnHeaders, rowHeaders);
+        setDistsHolder(newinstance);
         threadPool.shutdown();
     }
 
     public boolean isUltrametric() {
+        float[][] dists = getDists();
         int n = dists.length;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -94,6 +97,7 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
     public float getRatioOfTripletsViolatingUltraMetricRule() {
         int denom = 0;
         int num = 0;
+        float[][] dists = getDists();
         for (int i = 0; i < dists.length - 2; i++) {
             System.err.print(i + ";");
             if (i % 50 == 0) {

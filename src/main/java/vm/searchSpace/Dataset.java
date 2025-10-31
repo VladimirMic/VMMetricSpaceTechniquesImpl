@@ -124,8 +124,7 @@ public abstract class Dataset<T> {
     }
 
     public MainMemoryStoredPrecomputedDistances getPrecomputedDistsToPivots(AbstractPrecomputedDistancesMatrixSerializator loader) {
-        float[][] dists = loader.loadPrecomPivotsToObjectsDists(this);
-        MainMemoryStoredPrecomputedDistances ret = new MainMemoryStoredPrecomputedDistances(dists, loader.getColumnHeaders(), loader.getRowHeaders());
+        MainMemoryStoredPrecomputedDistances ret = loader.loadPrecomPivotsToObjectsDists(this);
         return ret;
     }
 
