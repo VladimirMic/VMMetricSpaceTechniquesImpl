@@ -17,7 +17,7 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  * @author au734419
  * @param <T>
  */
-public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecomputedValues<Object> {
+public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
 
     public static final String NAME = "LocallyUltraMetric";
     private static final Logger LOG = Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName());

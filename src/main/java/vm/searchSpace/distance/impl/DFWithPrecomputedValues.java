@@ -35,7 +35,7 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
         this.df = dataset.getDistanceFunction();
     }
 
-    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, int numberOfPivots) {
+    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder) {
         this.distsHolder = distsHolder;
         this.df = dataset.getDistanceFunction();
         this.searchSpace = dataset.getSearchSpace();
