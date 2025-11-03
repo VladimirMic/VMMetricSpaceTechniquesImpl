@@ -22,11 +22,10 @@ public class DFAdjustedByCertaintyWithPrecomputedValues<T> extends DFWithPrecomp
     public DFAdjustedByCertaintyWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights) {
         super(dataset, distsHolder, NAME);
         float[][] dists = distsHolder.getDists();
-        for (int i = 0; i < dists.length - 1; i++) {
-            for (int j = i + 1; j < dists[i].length; j++) {
+        for (int i = 0; i < dists.length; i++) {
+            for (int j = 0; j < dists[i].length; j++) {
                 float newDist = (float) (dists[i][j] * (1 + Math.pow(1 - weights[i][j], DFAdjustedByCertaintyWithPrecomputedValues.POWER)));
                 distsHolder.modify(i, j, newDist);
-                distsHolder.modify(j, i, newDist);
             }
         }
     }
