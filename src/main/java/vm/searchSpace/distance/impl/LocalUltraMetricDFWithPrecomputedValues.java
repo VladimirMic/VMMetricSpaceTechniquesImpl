@@ -40,30 +40,31 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
         Map<Comparable, Integer> columnHeaders = getColumnHeaders();
         Map<Comparable, Integer> rowHeaders = getRowHeaders();
         float[][] dists = getDists();
-        for (Map.Entry<Comparable, Integer> columnEntry : columnHeaders.entrySet()) {
+        for (Map.Entry<Comparable, Integer> rowEntry : rowHeaders.entrySet()) {
             counter++;
             final int counterCopy = counter;
             threadPool.execute(() -> {
-                int j = columnEntry.getValue();
-                for (Map.Entry<Comparable, Integer> rowEntry : rowHeaders.entrySet()) {
-                    int i = rowEntry.getValue();
-                    if (dists[i][j] == 0f) {
-                        newDists[i][j] = 0f;
+                int rowIdx = rowEntry.getValue();
+                for (Map.Entry<Comparable, Integer> columnEntry : columnHeaders.entrySet()) {
+                    int columnIdx = columnEntry.getValue();
+                    int rowIdxOfColumn = rowHeaders.get(columnEntry.getKey());
+                    if (dists[rowIdx][columnIdx] == 0f) {
+                        newDists[rowIdx][columnIdx] = 0f;
                         continue;
                     }
-                    float minVal = dists[i][j];
+                    float minVal = dists[rowIdx][columnIdx];
 
                     // iterate over k
                     for (int k = 0; k < dists.length; k++) {
-                        if (dists[i][k] == 0f || dists[j][k] == 0f) {
+                        if (dists[rowIdx][k] == 0f || dists[rowIdxOfColumn][k] == 0f) {
                             continue; // ignore zeros
                         }
-                        float maxVal = Math.max(dists[i][k], dists[j][k]);
+                        float maxVal = Math.max(dists[rowIdx][k], dists[rowIdxOfColumn][k]);
                         if (maxVal < minVal) {
                             minVal = maxVal;
                         }
                     }
-                    newDists[i][j] = minVal;
+                    newDists[rowIdx][columnIdx] = minVal;
                 }
                 System.out.print(counterCopy + ";");
                 if (counterCopy % 50 == 0) {
