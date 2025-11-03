@@ -23,8 +23,9 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
     protected final AbstractSearchSpace<T> searchSpace;
     protected final Map<Comparable, Integer> newColumnHeaders;
     protected final Map<Comparable, Integer> newRowHeaders;
+    protected final String name;
 
-    public DFWithPrecomputedValues(Dataset dataset, AbstractPrecomputedDistancesMatrixSerializator pd, int numberOfPivots) {
+    public DFWithPrecomputedValues(Dataset dataset, AbstractPrecomputedDistancesMatrixSerializator pd, int numberOfPivots, String name) {
         distsHolder = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
         searchSpace = dataset.getSearchSpace();
         newColumnHeaders = new HashMap<>();
@@ -33,15 +34,17 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
         Map<Comparable, Integer> origColumnHeaders = pd.getColumnHeaders();
         createNewHeaders(dataset, origRowHeaders, origColumnHeaders);
         this.df = dataset.getDistanceFunction();
+        this.name = name;
     }
 
-    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder) {
+    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, String name) {
         this.distsHolder = distsHolder;
         this.df = dataset.getDistanceFunction();
         this.searchSpace = dataset.getSearchSpace();
         newColumnHeaders = new HashMap<>();
         newRowHeaders = new HashMap<>();
         createNewHeaders(dataset, distsHolder.getRowHeaders(), distsHolder.getColumnHeaders());
+        this.name = name;
     }
 
     public void setDistsHolder(MainMemoryStoredPrecomputedDistances distsHolder) {
@@ -95,6 +98,11 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
             newColumnHeaders.put(newKeyStriong, idxRow);
             newRowHeaders.put(newKeyStriong, idxColumn);
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "_" + name;
     }
 
 }

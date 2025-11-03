@@ -23,7 +23,7 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
     private static final Logger LOG = Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName());
 
     public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset) {
-        super(dataset, pd, dataset.getPrecomputedDatasetSize());
+        super(dataset, pd, dataset.getPrecomputedDatasetSize(), LocalUltraMetricDFWithPrecomputedValues.NAME);
         try {
             makeItLocallyUtrametric();
         } catch (InterruptedException ex) {

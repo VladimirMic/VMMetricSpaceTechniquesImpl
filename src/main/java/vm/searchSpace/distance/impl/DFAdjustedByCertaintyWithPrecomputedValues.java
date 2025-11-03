@@ -20,7 +20,7 @@ public class DFAdjustedByCertaintyWithPrecomputedValues<T> extends DFWithPrecomp
      * @param weights symmetric!
      */
     public DFAdjustedByCertaintyWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights) {
-        super(dataset, distsHolder);
+        super(dataset, distsHolder, NAME);
         float[][] dists = distsHolder.getDists();
         for (int i = 0; i < dists.length - 1; i++) {
             for (int j = i + 1; j < dists[i].length; j++) {
