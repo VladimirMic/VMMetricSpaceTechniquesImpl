@@ -23,7 +23,7 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
     protected final AbstractSearchSpace<T> searchSpace;
     protected final Map<Comparable, Integer> newColumnHeaders;
     protected final Map<Comparable, Integer> newRowHeaders;
-    protected final String name;
+    protected final String namePrefix;
 
     public DFWithPrecomputedValues(Dataset dataset, AbstractPrecomputedDistancesMatrixSerializator pd, int numberOfPivots, String name) {
         distsHolder = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
@@ -34,17 +34,17 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
         Map<Comparable, Integer> origColumnHeaders = pd.getColumnHeaders();
         createNewHeaders(dataset, origRowHeaders, origColumnHeaders);
         this.df = dataset.getDistanceFunction();
-        this.name = name;
+        this.namePrefix = name;
     }
 
-    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, String name) {
+    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, String namePrefix) {
         this.distsHolder = distsHolder;
         this.df = dataset.getDistanceFunction();
         this.searchSpace = dataset.getSearchSpace();
         newColumnHeaders = new HashMap<>();
         newRowHeaders = new HashMap<>();
         createNewHeaders(dataset, distsHolder.getRowHeaders(), distsHolder.getColumnHeaders());
-        this.name = name;
+        this.namePrefix = namePrefix;
     }
 
     public void setDistsHolder(MainMemoryStoredPrecomputedDistances distsHolder) {
@@ -102,7 +102,11 @@ public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "_" + name;
+        return namePrefix + getSuffix();
+    }
+
+    public String getSuffix() {
+        return "";
     }
 
 }
