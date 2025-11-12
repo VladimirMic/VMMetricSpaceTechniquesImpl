@@ -46,4 +46,9 @@ public class Sapir3DistanceFunction extends DistanceFunctionInterface<Map<String
         return ret;
     }
 
+    @Override
+    public String getName() {
+        return "MPEG7 Sapir3 Distance";
+    }
+
 }

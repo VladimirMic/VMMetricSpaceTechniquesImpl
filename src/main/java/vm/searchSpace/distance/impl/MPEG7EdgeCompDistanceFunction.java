@@ -118,4 +118,9 @@ public class MPEG7EdgeCompDistanceFunction extends DistanceFunctionInterface<byt
         }
     }
 
+    @Override
+    public String getName() {
+        return "MPEG7 EdgeComp Distance";
+    }
+
 }

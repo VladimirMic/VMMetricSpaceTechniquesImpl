@@ -19,7 +19,7 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  */
 public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
 
-    public static final String NAME = "LocallyUltraMetric";
+    public static final String NAME = "Locally ultra-metric distance";
     private static final Logger LOG = Logger.getLogger(LocalUltraMetricDFWithPrecomputedValues.class.getName());
 
     public LocalUltraMetricDFWithPrecomputedValues(AbstractPrecomputedDistancesMatrixSerializator pd, Dataset dataset) {

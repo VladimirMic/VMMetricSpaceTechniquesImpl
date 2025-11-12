@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package vm.searchSpace.distance.impl;
 
 import vm.searchSpace.distance.DistanceFunctionInterface;
@@ -21,6 +17,11 @@ public class BrayCurtisOnFloatsArray extends DistanceFunctionInterface<float[]> 
             denom += Math.abs(obj1[i] + obj2[i]);
         }
         return num / denom;
+    }
+
+    @Override
+    public String getName() {
+        return "Bray Curtis distance";
     }
 
 }

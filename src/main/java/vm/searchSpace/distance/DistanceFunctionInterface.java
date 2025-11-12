@@ -28,4 +28,6 @@ public abstract class DistanceFunctionInterface<T> {
         return (Class<?>) pt.getActualTypeArguments()[0];
     }
 
+    public abstract String getName();
+
 }

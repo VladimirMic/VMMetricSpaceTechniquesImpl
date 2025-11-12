@@ -10,7 +10,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  *
  * @author au734419
  */
-public class L2OnLongsArray  extends DistanceFunctionInterface<long[]> {
+public class L2OnLongsArray extends DistanceFunctionInterface<long[]> {
 
     @Override
     public float getDistance(long[] o1, long[] o2) {
@@ -24,5 +24,10 @@ public class L2OnLongsArray  extends DistanceFunctionInterface<long[]> {
         }
         return (float) Math.sqrt(powSum);
     }
-    
+
+    @Override
+    public String getName() {
+        return "Euclidean distance";
+    }
+
 }

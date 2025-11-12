@@ -23,4 +23,9 @@ public class DotProduct extends DistanceFunctionInterface<float[]> {
         return 1 - ret;
     }
 
+    @Override
+    public String getName() {
+        return "Dot product distance";
+    }
+
 }

@@ -32,4 +32,9 @@ public class HammingDistanceLongs extends DistanceFunctionInterface<long[]> {
         return ret;
     }
 
+    @Override
+    public String getName() {
+        return "Hamming distance";
+    }
+
 }

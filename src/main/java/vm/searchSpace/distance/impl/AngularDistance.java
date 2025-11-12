@@ -68,4 +68,9 @@ public class AngularDistance extends DistanceFunctionInterface<float[]> {
         return 1 - numerator / denominator;
     }
 
+    @Override
+    public String getName() {
+        return "Angular distance";
+    }
+
 }

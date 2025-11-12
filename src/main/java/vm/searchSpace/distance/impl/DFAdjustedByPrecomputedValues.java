@@ -11,7 +11,6 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  */
 public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
 
-    public static final String NAME_PREFFIX = "DFAdjustedByPrecomputedValues";
     public final float[][] origDists;
 
     /**
@@ -20,8 +19,8 @@ public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T>
      * @param distsHolder
      * @param weights
      */
-    public DFAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights) {
-        super(dataset, distsHolder, NAME_PREFFIX);
+    public DFAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, String name) {
+        super(dataset, distsHolder, name);
         this.origDists = Tools.copyArray(distsHolder.getDists());
         for (int i = 0; i < weights.length; i++) {
             for (int j = 0; j < weights[i].length; j++) {
@@ -29,11 +28,6 @@ public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T>
                 distsHolder.modify(i, j, newDist);
             }
         }
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
     }
 
     @Override
@@ -48,6 +42,20 @@ public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T>
             float weight = distsHolder.getDists()[o1idx][o2idx];
             float orig = origDists[o1idx][o2idx];
             return modifyDist(orig, weight);
+        }
+        throw new IllegalArgumentException();
+    }
+
+    public float getOrigDistance(T obj1, T obj2) {
+        Comparable o1ID = Tools.hashArray(obj1);
+        Comparable o2ID = Tools.hashArray(obj2);
+        String o1IDString = o1ID.toString();
+        String o2IDString = o2ID.toString();
+        if (newColumnHeaders.containsKey(o1IDString) && newRowHeaders.containsKey(o2IDString)) {
+            int o1idx = newColumnHeaders.get(o1IDString);
+            int o2idx = newRowHeaders.get(o2IDString);
+            float orig = origDists[o1idx][o2idx];
+            return orig;
         }
         return df.getDistance(obj1, obj2);
     }

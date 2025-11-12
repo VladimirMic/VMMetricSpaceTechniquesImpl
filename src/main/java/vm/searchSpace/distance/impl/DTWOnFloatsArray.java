@@ -76,4 +76,9 @@ public class DTWOnFloatsArray extends DistanceFunctionInterface<List<float[][]>>
         return ret;
     }
 
+    @Override
+    public String getName() {
+        return "DTW distance";
+    }
+
 }

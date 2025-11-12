@@ -21,4 +21,9 @@ public class L2OnFloatsArray extends DistanceFunctionInterface<float[]> {
         return (float) Math.sqrt(powSum);
     }
 
+    @Override
+    public String getName() {
+        return "Euclidean distance";
+    }
+
 }

@@ -30,6 +30,11 @@ public class QScore extends DistanceFunctionInterface<String> {
         return 1 - stats[0];
     }
 
+    @Override
+    public String getName() {
+        return "Q-Score";
+    }
+
     private static class ProteinNativeQScoreDistance {
 
         private static final Logger LOG = Logger.getLogger(ProteinNativeQScoreDistance.class.getName());
@@ -79,11 +84,6 @@ public class QScore extends DistanceFunctionInterface<String> {
                 LOG.log(Level.SEVERE, "Unsuccessful attempt to evaluate distance between protein structures with IDs {0}, {1}. Original exception: {2}", new Object[]{o1, o2, e.getMessage()});
                 throw new IllegalArgumentException("Unsuccessful attempt to evaluate distance between protein structures with IDs " + o1 + ", " + o2);
             }
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName();
         }
 
         public float getMaxDistance() {

@@ -20,4 +20,9 @@ public class L1OnShortsArray extends DistanceFunctionInterface<short[]> {
         return sum;
     }
 
+    @Override
+    public String getName() {
+        return "Mahnattan distance";
+    }
+
 }

@@ -37,4 +37,9 @@ public class MPEG7ColorLayoutDistanceFunction extends DistanceFunctionInterface<
         return rtv;
     }
 
+    @Override
+    public String getName() {
+        return "MPEG7 ColorLayout Distance";
+    }
+
 }
