@@ -18,6 +18,7 @@ public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T>
      * @param dataset
      * @param distsHolder
      * @param weights
+     * @param name
      */
     public DFAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, String name) {
         super(dataset, distsHolder, name);
