@@ -1,7 +1,8 @@
-package vm.searchSpace.distance.impl;
+package vm.searchSpace.distance.impl.modifiedByMatrix;
 
 import vm.datatools.Tools;
 import vm.searchSpace.Dataset;
+import vm.searchSpace.distance.impl.DFWithPrecomputedValues;
 import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
 /**
@@ -9,7 +10,7 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  * @author au734419
  * @param <T>
  */
-public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
+public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
 
     public final float[][] origDists;
 
@@ -20,7 +21,7 @@ public class DFAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValues<T>
      * @param weights
      * @param name
      */
-    public DFAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, String name) {
+    public DFBasicAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, String name) {
         super(dataset, distsHolder, name);
         this.origDists = Tools.copyArray(distsHolder.getDists());
         for (int i = 0; i < weights.length; i++) {
