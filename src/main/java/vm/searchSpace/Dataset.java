@@ -196,13 +196,16 @@ public abstract class Dataset<T> {
     }
 
     public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
+        return evaluateSampleOfRandomDistances(getDistanceFunction(), objectCount, distCount, listWhereAddExaminedPairs);
+    }
+
+    public float[] evaluateSampleOfRandomDistances(DistanceFunctionInterface distanceFunction, int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         List<Object> searchObjectsSample = getSampleOfDataset(objectCount);
         Random r = new Random();
         int counter = 0;
         float[] distances = new float[distCount];
         int size = searchObjectsSample.size();
         AbstractSearchSpace<T> searchSpace = getSearchSpace();
-        DistanceFunctionInterface distanceFunction = getDistanceFunction();
         while (counter < distCount) {
             Object o1 = searchObjectsSample.get(r.nextInt(size));
             Object o2 = searchObjectsSample.get(r.nextInt(size));

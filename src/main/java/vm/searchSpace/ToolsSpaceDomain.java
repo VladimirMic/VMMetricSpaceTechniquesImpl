@@ -68,6 +68,13 @@ public class ToolsSpaceDomain {
         return createDistanceDensityPlot(distances);
     }
 
+    public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, DistanceFunctionInterface distanceFunction, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
+        DistanceFunctionInterface df = distanceFunction == null ? dataset.getDistanceFunction() : distanceFunction;
+        float[] distances = dataset.evaluateSampleOfRandomDistances(df, objCount, distCount, idsOfRandomPairs);
+        vm.mathtools.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
+        return createDistanceDensityPlot(distances);
+    }
+
     /**
      * Evaluates distCount distances of random pairs of objects from the list
      * searchObjectsSample
