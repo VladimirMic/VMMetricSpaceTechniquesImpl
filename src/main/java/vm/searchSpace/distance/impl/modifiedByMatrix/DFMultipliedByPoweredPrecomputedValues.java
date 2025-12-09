@@ -10,24 +10,24 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  */
 public class DFMultipliedByPoweredPrecomputedValues<T> extends DFBasicAdjustedByPrecomputedValues<T> {
 
-    public static final String NAME = "Distance Multiplied by Powered Ratio of Closest Pivots";
-    private final float base;
+    public static final String NAME = "Multiplied by Powered Div To Best Pivot";
+    private final float addition;
     private final float power;
 
-    public DFMultipliedByPoweredPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, float base, float power) {
+    public DFMultipliedByPoweredPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, float addition, float power) {
         super(dataset, distsHolder, weights, null);
-        this.base = base;
+        this.addition = addition;
         this.power = power;
     }
 
     @Override
     protected float modifyDist(float orig, float weight) {
-        return (float) (orig * Math.pow((base + weight), power));
+        return (float) (orig * Math.pow((addition + weight), power));
     }
 
     @Override
     public String getName() {
-        return NAME + "(" + base + "," + power + ")";
+        return NAME + "(" + addition + "," + power + ")";
     }
 
 }

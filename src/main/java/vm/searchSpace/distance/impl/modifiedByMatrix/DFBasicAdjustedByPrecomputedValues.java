@@ -26,7 +26,7 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
         this.origDists = Tools.copyArray(distsHolder.getDists());
         for (int i = 0; i < weights.length; i++) {
             for (int j = 0; j < weights[i].length; j++) {
-                float newDist = 1 - weights[i][j];
+                float newDist = weights[i][j];
                 distsHolder.modify(i, j, newDist);
             }
         }
