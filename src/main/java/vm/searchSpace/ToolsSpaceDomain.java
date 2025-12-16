@@ -331,6 +331,15 @@ public class ToolsSpaceDomain {
         return evaluateMatrixOfDistances(searchObjectsFromDataset, pivots, searchSpace, df, -1);
     }
 
+    public static Map<Comparable, Integer> getMapOfIDsToIndex(Iterator objects, AbstractSearchSpace searchSpace) {
+        Map<Comparable, Integer> ret = new HashMap<>();
+        for (int i = 0; objects.hasNext(); i++) {
+            Object next = objects.next();
+            ret.put(searchSpace.getIDOfObject(next), i);
+        }
+        return ret;
+    }
+
     public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, DistanceFunctionInterface df, int objCount) {
         final Map<Comparable, Integer> columnHeaders = new ConcurrentHashMap<>();
         final Map<Comparable, Integer> rowHeaders = new ConcurrentHashMap<>();
