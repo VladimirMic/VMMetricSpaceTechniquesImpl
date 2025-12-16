@@ -26,6 +26,15 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
         dists[rowIdx][columnIdx] = newValue;
     }
 
+    public float getDistance(Comparable rowOID, Comparable columnPID) {
+        Integer i = rowHeaders.get(rowOID);
+        Integer j = columnHeaders.get(columnPID);
+        if (i != null && j != null) {
+            return dists[i][j];
+        }
+        throw new IllegalArgumentException("At least ine idx is null: " + i + ", " + j);
+    }
+
     @Override
     public void serializeColumnsHeaders(Dataset dataset, int pivotCount, String additionalName, Map<Comparable, Integer> columnKeys) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -40,6 +49,5 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
     public MainMemoryStoredPrecomputedDistances loadPrecomPivotsToObjectsDists(Dataset dataset, String dfModification, int pivotCount) {
         return this;
     }
-
 
 }
