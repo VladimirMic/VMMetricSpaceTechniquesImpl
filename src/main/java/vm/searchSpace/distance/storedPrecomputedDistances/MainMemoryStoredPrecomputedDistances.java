@@ -32,7 +32,7 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
         if (i != null && j != null) {
             return dists[i][j];
         }
-        throw new IllegalArgumentException("At least ine idx is null: " + i + ", " + j);
+        throw new IllegalArgumentException("At least one idx is null: " + i + ", " + j);
     }
 
     @Override
