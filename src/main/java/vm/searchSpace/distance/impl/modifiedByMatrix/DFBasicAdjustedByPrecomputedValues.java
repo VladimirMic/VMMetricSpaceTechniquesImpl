@@ -1,5 +1,6 @@
 package vm.searchSpace.distance.impl.modifiedByMatrix;
 
+import java.util.Map;
 import vm.datatools.Tools;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.distance.impl.DFWithPrecomputedValues;
@@ -21,13 +22,27 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
      * @param weights
      * @param name
      */
-    public DFBasicAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, String name) {
+    public DFBasicAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, MainMemoryStoredPrecomputedDistances weights, String name) {
         super(dataset, distsHolder, name);
         this.origDists = Tools.copyArray(distsHolder.getDists());
-        for (int i = 0; i < weights.length; i++) {
-            for (int j = 0; j < weights[i].length; j++) {
-                float newDist = weights[i][j];
-                distsHolder.modify(i, j, newDist);
+        Map<Comparable, Integer> origRows = distsHolder.getRowHeaders();
+        Map<Comparable, Integer> origColumns = distsHolder.getColumnHeaders();
+        Map<Comparable, Integer> newRows = weights.getRowHeaders();
+        Map<Comparable, Integer> newColumns = weights.getColumnHeaders();
+        float[][] newDists = weights.getDists();
+        for (Map.Entry<Comparable, Integer> origRow : origRows.entrySet()) {
+            Comparable origRowKey = origRow.getKey();
+            int origRowIdx = origRow.getValue();
+            if (origRowKey.equals("100")) {
+                String s = "";
+            }
+            int newRowIdx = newRows.get(origRowKey);
+            for (Map.Entry<Comparable, Integer> origColumn : origColumns.entrySet()) {
+                Comparable origColumnKey = origColumn.getKey();
+                int origColumnIdx = origColumn.getValue();
+                int newColumnIdx = newColumns.get(origColumnKey);
+                float newDist = newDists[newRowIdx][newColumnIdx];
+                distsHolder.modify(origRowIdx, origColumnIdx, newDist);
             }
         }
     }

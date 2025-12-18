@@ -14,7 +14,7 @@ public class DFMultipliedByPoweredPrecomputedValues<T> extends DFBasicAdjustedBy
     private final float addition;
     private final float power;
 
-    public DFMultipliedByPoweredPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, float[][] weights, float addition, float power) {
+    public DFMultipliedByPoweredPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, MainMemoryStoredPrecomputedDistances weights, float addition, float power) {
         super(dataset, distsHolder, weights, null);
         this.addition = addition;
         this.power = power;
