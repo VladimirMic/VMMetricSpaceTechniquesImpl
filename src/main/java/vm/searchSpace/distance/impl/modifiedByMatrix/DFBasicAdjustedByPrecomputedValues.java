@@ -33,9 +33,6 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
         for (Map.Entry<Comparable, Integer> origRow : origRows.entrySet()) {
             Comparable origRowKey = origRow.getKey();
             int origRowIdx = origRow.getValue();
-            if (origRowKey.equals("100")) {
-                String s = "";
-            }
             int newRowIdx = newRows.get(origRowKey);
             for (Map.Entry<Comparable, Integer> origColumn : origColumns.entrySet()) {
                 Comparable origColumnKey = origColumn.getKey();
