@@ -8,7 +8,7 @@ import vm.searchSpace.Dataset;
  *
  * @author xmic
  */
-public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDistancesMatrixSerializator{
+public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDistancesMatrixSerializator {
 
     protected final float[][] dists;
 

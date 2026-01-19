@@ -2,7 +2,7 @@ package vm.searchSpace.distance.bounding.twopivots.impl;
 
 import java.util.List;
 import vm.search.algorithm.impl.KNNSearchWithPtolemaicFiltering;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -15,7 +15,7 @@ public class PtolemaicFilteringForStreamKNNClassifier<T> extends PtolemaicFilter
     private final float[][] coefsForLB;
     private final int pivotCount;
 
-    public PtolemaicFilteringForStreamKNNClassifier(String resultNamePrefix, List<T> pivotsData, List<T> centroidsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
+    public PtolemaicFilteringForStreamKNNClassifier(String resultNamePrefix, List<T> pivotsData, List<T> centroidsData, AbstractDistanceFunction<T> df, boolean queryDynamicPivotPairs) {
         super(resultNamePrefix, pivotsData, df, queryDynamicPivotPairs);
         pivotCount = pivotsData.size();
         int centroidCount = centroidsData.size();

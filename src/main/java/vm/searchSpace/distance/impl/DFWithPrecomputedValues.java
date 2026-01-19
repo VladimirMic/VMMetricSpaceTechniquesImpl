@@ -6,7 +6,7 @@ import java.util.Map;
 import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
 import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
@@ -16,10 +16,10 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  * @param <T> the data type for the distance function, e.g. float[] for the
  * float vector.
  */
-public class DFWithPrecomputedValues<T> extends DistanceFunctionInterface<T> {
+public class DFWithPrecomputedValues<T> extends AbstractDistanceFunction<T> {
 
     protected MainMemoryStoredPrecomputedDistances distsHolder;
-    protected final DistanceFunctionInterface<T> df;
+    protected final AbstractDistanceFunction<T> df;
     protected final AbstractSearchSpace<T> searchSpace;
     protected final Map<Comparable, Integer> newColumnHeaders;
     protected final Map<Comparable, Integer> newRowHeaders;

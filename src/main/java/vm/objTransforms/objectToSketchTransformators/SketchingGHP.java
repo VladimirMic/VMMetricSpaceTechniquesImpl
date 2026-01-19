@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
@@ -23,22 +23,22 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
 
     private static final Logger LOG = Logger.getLogger(SketchingGHP.class.getName());
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String pivotPairsFileName, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String pivotPairsFileName, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, searchSpace, pivots.toArray(), false, additionalInfo);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, String fullDatasetName, float balance, int sketchLength, PivotPairsStoreInterface storageOfPivotPairs, Object... additionalInfo) {
         this(distanceFunc, searchSpace, pivots.toArray(), false, additionalInfo);
         String pivotPairsFileName = getNameOfTransformedSetOfObjects(fullDatasetName, sketchLength, balance);
         setPivotPairsFromStorage(storageOfPivotPairs, pivotPairsFileName);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
         this(distanceFunc, searchSpace, pivots.toArray(), makeAllPivotPairs, additionalInfo);
     }
 
-    public SketchingGHP(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
+    public SketchingGHP(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, boolean makeAllPivotPairs, Object... additionalInfo) {
         super(distanceFunc, searchSpace, pivots, additionalInfo);
         if (makeAllPivotPairs) {
             makeAllPivotsPairs();
@@ -116,7 +116,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
     }
 
     @Override
-    public List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df) {
+    public List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, AbstractDistanceFunction<Object> df) {
         LOG.log(Level.INFO, "Start creating inverted sketches for {0} sample objects", sampleObjects.size());
         try {
             List<BitSet> ret = new ArrayList<>();
@@ -175,7 +175,7 @@ public class SketchingGHP extends AbstractObjectToSketchTransformator {
         return null;
     }
 
-    private float getDistance(DistanceFunctionInterface df, Map<Object, Float> cacheDistsOfPivotsToO, Object oData, Object pData) {
+    private float getDistance(AbstractDistanceFunction df, Map<Object, Float> cacheDistsOfPivotsToO, Object oData, Object pData) {
         if (cacheDistsOfPivotsToO.containsKey(pData)) {
             return cacheDistsOfPivotsToO.get(pData);
         }

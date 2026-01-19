@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.objTransforms.perform.PCAFloatVectorTransformer;
 import vm.objTransforms.storeLearned.SVDStoreInterface;
 import vm.search.algorithm.SearchingAlgorithm;
@@ -35,13 +35,13 @@ public class RefineCandidateSetWithPCASimRel extends SearchingAlgorithm<float[]>
     private final Map<Object, float[]> mapIDpca;
     private final PCAFloatVectorTransformer pcaTransformer;
     private final int pcaPreffixLength;
-    private final DistanceFunctionInterface<float[]> fullDistanceFunction;
+    private final AbstractDistanceFunction<float[]> fullDistanceFunction;
     private final SimRelEuclideanPCAImpl simRel;
     private final float tZero;
 
     private int objectCheckedFromSet;
 
-    public RefineCandidateSetWithPCASimRel(AbstractSearchSpace<float[]> originalSearchSpace, AbstractSearchSpace<float[]> pcaSearchSpace, DistanceFunctionInterface<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
+    public RefineCandidateSetWithPCASimRel(AbstractSearchSpace<float[]> originalSearchSpace, AbstractSearchSpace<float[]> pcaSearchSpace, AbstractDistanceFunction<float[]> fullDistanceFunction, SimRelEuclideanPCAImpl simRel, SVDStoreInterface svdStorage, Iterator<Object> pcaDatasetIterator, int pcaPreffixLength, int pcaFullLength) {
         this.pcaPreffixLength = pcaPreffixLength;
         this.fullDistanceFunction = fullDistanceFunction;
         this.simRel = simRel;

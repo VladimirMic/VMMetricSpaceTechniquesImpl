@@ -1,12 +1,12 @@
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author au734419
  */
-public class BrayCurtisOnFloatsArray extends DistanceFunctionInterface<float[]> {
+public class BrayCurtisOnFloatsArray extends AbstractDistanceFunction<float[]> {
 
     @Override
     public float getDistance(float[] obj1, float[] obj2) {

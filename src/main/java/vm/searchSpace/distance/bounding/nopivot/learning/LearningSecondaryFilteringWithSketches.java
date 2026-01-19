@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import vm.mathtools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringWithSketchesStoreInterface;
 
 /**
@@ -87,7 +87,7 @@ public class LearningSecondaryFilteringWithSketches<T> {
         Random r = new Random();
         int i = 0;
         AbstractSearchSpace<long[]> searchSpaceOfSketches = sketchesDataset.getSearchSpace();
-        DistanceFunctionInterface hammingDF = sketchesDataset.getDistanceFunction();
+        AbstractDistanceFunction hammingDF = sketchesDataset.getDistanceFunction();
         while (i < numberOfDists) {
             Object sk1 = sketches.get(r.nextInt(sketches.size()));
             Object sk2 = sketches.get(r.nextInt(sketches.size()));

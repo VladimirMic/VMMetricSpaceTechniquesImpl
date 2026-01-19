@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.VoronoiPartitioningWithFilterProcessor;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.BoundsOnDistanceEstimation;
 
 /**
@@ -21,7 +21,7 @@ public class Stream1NNClassifierWithFilter<T> extends VoronoiPartitioningWithout
     protected final int pivotCountForFilter;
     protected final float[][] pivotPivotDists;
 
-    public Stream1NNClassifierWithFilter(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface<T> df, int pivotCountForFilter, List<Object> centroids, BoundsOnDistanceEstimation filter) {
+    public Stream1NNClassifierWithFilter(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction<T> df, int pivotCountForFilter, List<Object> centroids, BoundsOnDistanceEstimation filter) {
         super(searchSpace, df, centroids);
         this.filter = filter;
         this.pivotCountForFilter = pivotCountForFilter;

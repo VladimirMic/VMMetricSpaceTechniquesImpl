@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import vm.javatools.Tools;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.nopivot.NoPivotFilter;
 import vm.searchSpace.distance.bounding.nopivot.storeLearned.SecondaryFilteringWithSketchesStoreInterface;
 import vm.searchSpace.distance.impl.HammingDistanceLongs;
@@ -36,7 +36,7 @@ public class SecondaryFilteringWithSketches extends NoPivotFilter {
     private final ExecutorService threadPool;
 
     private final Map<Comparable, long[]> sketches;
-    private final DistanceFunctionInterface hamDistFunc;
+    private final AbstractDistanceFunction hamDistFunc;
     private final double[] primDistsThreshold;
     private final int[] hamDistsThresholds;
 

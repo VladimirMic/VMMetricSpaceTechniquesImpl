@@ -13,7 +13,7 @@ import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -60,7 +60,7 @@ public abstract class AbstractDatasetPartitioning<T> {
         return vm.javatools.Tools.PARALELISATION;
     }
 
-    public List<Float> computeInterClusterDistances(Map<Comparable, Collection<Comparable>> partitioning, Map<Comparable, T> keyValueStorage, DistanceFunctionInterface<T> df) {
+    public List<Float> computeInterClusterDistances(Map<Comparable, Collection<Comparable>> partitioning, Map<Comparable, T> keyValueStorage, AbstractDistanceFunction<T> df) {
         LOG.log(Level.INFO, "Computing inter cluster distances");
         List<Float> ret = new ArrayList<>();
         Map<Comparable, Comparable> mappingToCells = createMappingToPartitionsID(partitioning);
@@ -99,7 +99,7 @@ public abstract class AbstractDatasetPartitioning<T> {
         return ret;
     }
 
-    public Map<Comparable, List<Float>> computeIntraClusterDistances(Map<Comparable, Collection<Comparable>> partitioning, Map<Comparable, T> keyValueStorage, DistanceFunctionInterface<T> df) {
+    public Map<Comparable, List<Float>> computeIntraClusterDistances(Map<Comparable, Collection<Comparable>> partitioning, Map<Comparable, T> keyValueStorage, AbstractDistanceFunction<T> df) {
         LOG.log(Level.INFO, "Computing intra cluster distances");
         Map<Comparable, List<Float>> ret = new TreeMap<>();
         Set<Comparable> keySet = partitioning.keySet();

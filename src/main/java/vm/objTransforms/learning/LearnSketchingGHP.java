@@ -18,7 +18,7 @@ import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.objTransforms.objectToSketchTransformators.SketchingGHP;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 
 /**
@@ -50,7 +50,7 @@ public class LearnSketchingGHP {
             throw new IllegalArgumentException("Set balanced from range (0, 1).");
         }
         AbstractSearchSpace searchSpace = dataset.getSearchSpace();
-        DistanceFunctionInterface<Object> df = dataset.getDistanceFunction();
+        AbstractDistanceFunction<Object> df = dataset.getDistanceFunction();
         List<Object> sampleOfDataset = dataset.getSampleOfDataset(sampleSetSize);
         List<Object> pivots = dataset.getPivots(numberOfPivotsForMakingAllPairs);
 

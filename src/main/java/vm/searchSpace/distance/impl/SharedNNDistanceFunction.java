@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import vm.datatools.Tools;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author au734419
  * @param <T>
  */
-public class SharedNNDistanceFunction<T> extends DistanceFunctionInterface<T> {
+public class SharedNNDistanceFunction<T> extends AbstractDistanceFunction<T> {
 
     public final Map<String, List<String>> mapOfNNs;
     public final int k;

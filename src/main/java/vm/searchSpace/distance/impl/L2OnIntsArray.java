@@ -4,13 +4,13 @@
  */
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author au734419
  */
-public class L2OnIntsArray extends DistanceFunctionInterface<int[]> {
+public class L2OnIntsArray extends AbstractDistanceFunction<int[]> {
 
     @Override
     public float getDistance(int[] o1, int[] o2) {

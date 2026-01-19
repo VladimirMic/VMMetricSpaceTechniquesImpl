@@ -19,7 +19,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.DatasetOfCandidates;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -120,7 +120,7 @@ public abstract class SearchingAlgorithm<T> {
         return currAnswer.last().getValue();
     }
 
-    public TreeSet<Map.Entry<Comparable, Float>> rerankCandidateSet(AbstractSearchSpace<T> searchSpace, Object queryObj, int k, DistanceFunctionInterface df, Map<Comparable, T> mapOfAllFullObjects, List<Comparable> candsIDs) {
+    public TreeSet<Map.Entry<Comparable, Float>> rerankCandidateSet(AbstractSearchSpace<T> searchSpace, Object queryObj, int k, AbstractDistanceFunction df, Map<Comparable, T> mapOfAllFullObjects, List<Comparable> candsIDs) {
         T queryObjData = searchSpace.getDataOfObject(queryObj);
         TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new Tools.MapByFloatValueComparator());
         if (mapOfAllFullObjects == null) {

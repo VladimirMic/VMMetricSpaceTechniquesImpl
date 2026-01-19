@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.AbstractSearchSpace;
 import static vm.searchSpace.datasetPartitioning.impl.batchProcessor.VoronoiPartitioningWithFilterProcessor.tCheck;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -25,7 +25,7 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
     public static final Logger LOG = Logger.getLogger(AbstractPivotBasedPartitioningProcessor.class.getName());
 
     protected Iterator batch;
-    protected final DistanceFunctionInterface df;
+    protected final AbstractDistanceFunction df;
     protected final List<Comparable>[] ret;
     protected final AbstractSearchSpace<T> searchSpace;
     protected final List<T> pivotData;
@@ -39,7 +39,7 @@ public abstract class AbstractPivotBasedPartitioningProcessor<T> implements Runn
     protected int lbCheckedBatch;
     protected int dcOfPartitioningBatch;
 
-    public AbstractPivotBasedPartitioningProcessor(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface df, List<T> pivotData, int numberOfPivotsUsedInFiltering, float[] pivotLengths) {
+    public AbstractPivotBasedPartitioningProcessor(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction df, List<T> pivotData, int numberOfPivotsUsedInFiltering, float[] pivotLengths) {
         this.df = df;
         this.pivotData = pivotData;
         this.numberOfPivotsUsedInFiltering = numberOfPivotsUsedInFiltering;

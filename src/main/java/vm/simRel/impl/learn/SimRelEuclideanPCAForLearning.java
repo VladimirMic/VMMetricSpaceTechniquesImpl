@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.searchSpace.distance.impl.L2OnFloatsArray;
 import vm.simRel.SimRelInterface;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -89,7 +89,7 @@ public class SimRelEuclideanPCAForLearning implements SimRelInterface<float[]> {
         float diffQO1 = 0;
         float diffQO2 = 0;
 
-        DistanceFunctionInterface<float[]> df = new L2OnFloatsArray();
+        AbstractDistanceFunction<float[]> df = new L2OnFloatsArray();
         float d1 = df.getDistance(q, o1);
         float d2 = df.getDistance(q, o2);
         short realOrder = Tools.booleanToShort(d1 < d2, 1, 2);

@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.onepivot.storeLearned.TriangleInequalityWithLimitedAnglesCoefsStoreInterface;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
 
@@ -56,7 +56,7 @@ public class LearningTriangleInequalityWithLimitedAngles<T> {
         Set<Comparable> setOfIDs = AbstractPrecomputedPairsOfDistancesStorage.getIDsOfObjects(smallDistsOfSampleObjectsAndQueries);
         List objectsWithSmallestDists = ToolsSpaceDomain.getObjectsForIDs(setOfIDs, dataset);
         Map<Object, T> oMap = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, objectsWithSmallestDists);
-        DistanceFunctionInterface df = dataset.getDistanceFunction();
+        AbstractDistanceFunction df = dataset.getDistanceFunction();
 
         for (Object pivot : pivots) {
             T pivotData = searchSpace.getDataOfObject(pivot);

@@ -1,7 +1,7 @@
 package vm.searchSpace;
 
 import java.util.Map;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -20,7 +20,7 @@ public class SearchSpaceWithDiskBasedMap<T> extends AbstractSearchSpace<T> {
     }
 
     @Override
-    public DistanceFunctionInterface<T> getDistanceFunction() {
+    public AbstractDistanceFunction<T> getDistanceFunction() {
         return origSearchSpace.getDistanceFunction();
     }
 

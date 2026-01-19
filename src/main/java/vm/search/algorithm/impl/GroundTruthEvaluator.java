@@ -13,7 +13,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.DatasetOfCandidates;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.search.algorithm.SearchingAlgorithm;
 import static vm.search.algorithm.SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne;
 
@@ -28,7 +28,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
 
     public static final Integer K_IMPLICIT_FOR_GROUND_TRUTH = 1000;
     private final AbstractSearchSpace searchSpace;
-    private final DistanceFunctionInterface distanceFunction;
+    private final AbstractDistanceFunction distanceFunction;
     private final List<Object> queryObjects;
     private final int k;
     private final float range;
@@ -56,7 +56,7 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         this.distanceFunction = dataset.getDistanceFunction();
     }
 
-    public GroundTruthEvaluator(DistanceFunctionInterface<T> distanceFunction) {
+    public GroundTruthEvaluator(AbstractDistanceFunction<T> distanceFunction) {
         this.distanceFunction = distanceFunction;
         searchSpace = null;
         queryObjects = null;

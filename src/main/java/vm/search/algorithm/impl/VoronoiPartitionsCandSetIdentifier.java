@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 
@@ -24,10 +24,10 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
     private static final Logger LOG = Logger.getLogger(VoronoiPartitionsCandSetIdentifier.class.getName());
 
     protected final Map<Comparable, T> pivotsMap;
-    protected final DistanceFunctionInterface<T> df;
+    protected final AbstractDistanceFunction<T> df;
     protected final Map<Comparable, TreeSet<Comparable>> datasetPartitioning;
 
-    public VoronoiPartitionsCandSetIdentifier(List pivots, DistanceFunctionInterface<T> df, String datasetName, AbstractSearchSpace<T> searchSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
+    public VoronoiPartitionsCandSetIdentifier(List pivots, AbstractDistanceFunction<T> df, String datasetName, AbstractSearchSpace<T> searchSpace, StorageDatasetPartitionsInterface voronoiPartitioningStorage, int pivotCountUsedForVoronoiLearning) {
         pivotsMap = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
         this.df = df;
         datasetPartitioning = voronoiPartitioningStorage.loadAsTreeSets(datasetName, pivotCountUsedForVoronoiLearning);
@@ -73,7 +73,7 @@ public class VoronoiPartitionsCandSetIdentifier<T> extends SearchingAlgorithm<T>
         return ret;
     }
 
-    public Comparable[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
+    public Comparable[] evaluateKeyOrdering(AbstractDistanceFunction<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
         Map<Comparable, Float> distsToPivots = null;
         if (params.length > 0) {
             distsToPivots = (Map<Comparable, Float>) params[1];

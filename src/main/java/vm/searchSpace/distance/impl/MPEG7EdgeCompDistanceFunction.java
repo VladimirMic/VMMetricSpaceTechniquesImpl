@@ -1,6 +1,6 @@
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -11,7 +11,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class MPEG7EdgeCompDistanceFunction extends DistanceFunctionInterface<byte[]> {
+public class MPEG7EdgeCompDistanceFunction extends AbstractDistanceFunction<byte[]> {
 
     /**
      * Class id for Java serialization.

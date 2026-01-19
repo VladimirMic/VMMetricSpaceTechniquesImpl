@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
 import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
@@ -79,7 +79,7 @@ public abstract class Dataset<T> {
      *
      * @return
      */
-    public DistanceFunctionInterface getDistanceFunction() {
+    public AbstractDistanceFunction getDistanceFunction() {
         return getSearchSpace().getDistanceFunction();
     }
 
@@ -167,7 +167,7 @@ public abstract class Dataset<T> {
         AbstractSearchSpace<T> searchSpace = getSearchSpace();
         List<Object> sampleObjects = searchObjects.subList(0, objectCount);
         List<Object> queriesSamples = searchObjects.subList(objectCount, objectCount + queriesCount);
-        DistanceFunctionInterface df = getDistanceFunction();
+        AbstractDistanceFunction df = getDistanceFunction();
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
         TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         for (int i = 0; i < sampleObjects.size(); i++) {
@@ -199,7 +199,7 @@ public abstract class Dataset<T> {
         return evaluateSampleOfRandomDistances(getDistanceFunction(), objectCount, distCount, listWhereAddExaminedPairs);
     }
 
-    public float[] evaluateSampleOfRandomDistances(DistanceFunctionInterface distanceFunction, int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
+    public float[] evaluateSampleOfRandomDistances(AbstractDistanceFunction distanceFunction, int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         List<Object> searchObjectsSample = getSampleOfDataset(objectCount);
         Random r = new Random();
         int counter = 0;

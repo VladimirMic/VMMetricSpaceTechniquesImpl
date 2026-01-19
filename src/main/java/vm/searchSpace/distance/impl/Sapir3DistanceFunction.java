@@ -1,7 +1,7 @@
 package vm.searchSpace.distance.impl;
 
 import java.util.Map;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  * Distance function for Sapir (CoPhIR) objects.
@@ -9,12 +9,12 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic, copied form
  * the MESSIF library, xmic@fi.muni.cz
  */
-public class Sapir3DistanceFunction extends DistanceFunctionInterface<Map<String, Object>> {
+public class Sapir3DistanceFunction extends AbstractDistanceFunction<Map<String, Object>> {
 
-    private final DistanceFunctionInterface<Map<String, byte[]>> colorLayoutDF = new MPEG7ColorLayoutDistanceFunction();
-    private final DistanceFunctionInterface<short[]> colorStructureDF = new L1OnShortsArray();
-    private final DistanceFunctionInterface<byte[]> edgeHistogramDF = new MPEG7EdgeCompDistanceFunction();
-    private final DistanceFunctionInterface<int[]> scalableColorDF = new L1OnIntsArray();
+    private final AbstractDistanceFunction<Map<String, byte[]>> colorLayoutDF = new MPEG7ColorLayoutDistanceFunction();
+    private final AbstractDistanceFunction<short[]> colorStructureDF = new L1OnShortsArray();
+    private final AbstractDistanceFunction<byte[]> edgeHistogramDF = new MPEG7EdgeCompDistanceFunction();
+    private final AbstractDistanceFunction<int[]> scalableColorDF = new L1OnIntsArray();
 
     @Override
     public float getDistance(Map<String, Object> obj1, Map<String, Object> obj2) {

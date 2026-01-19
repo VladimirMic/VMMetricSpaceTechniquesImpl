@@ -16,7 +16,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import static vm.searchSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering.CONSTANT_FOR_PRECISION;
 import vm.searchSpace.distance.bounding.twopivots.storeLearned.PtolemyInequalityWithLimitedAnglesCoefsStoreInterface;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
@@ -32,7 +32,7 @@ public class LearningCoefsForPtolemyInequalityWithLimitedAngles<T> {
 
     private final String resultName;
     private final AbstractSearchSpace<T> searchSpace;
-    private final DistanceFunctionInterface<T> df;
+    private final AbstractDistanceFunction<T> df;
     private final List<Object> pivots;
     private final PtolemyInequalityWithLimitedAnglesCoefsStoreInterface storage;
     private final List dataPairsForSmallestDists;

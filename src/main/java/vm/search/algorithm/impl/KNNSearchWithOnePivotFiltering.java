@@ -9,7 +9,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.ToolsSpaceDomain;
 import vm.search.algorithm.SearchingAlgorithm;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
 
 /**
@@ -27,9 +27,9 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final List<T> pivotsData;
     private final float[][] poDists;
     private final Map<Object, Integer> rowHeaders;
-    private final DistanceFunctionInterface<T> df;
+    private final AbstractDistanceFunction<T> df;
 
-    public KNNSearchWithOnePivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithOnePivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, AbstractDistanceFunction<T> df) {
         this.filter = filter;
         this.pivotsData = searchSpace.getDataOfObjects(pivots);
         this.poDists = poDists;

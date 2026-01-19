@@ -3,7 +3,7 @@ package vm.searchSpace.distance.impl;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  * Based on the file that is a part of Subsequence Mathing Framework (SMF)
@@ -18,7 +18,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  *
  * @author Vladimir Mic
  */
-public class DTWOnFloatsArray extends DistanceFunctionInterface<List<float[][]>> {
+public class DTWOnFloatsArray extends AbstractDistanceFunction<List<float[][]>> {
 
     private static final Logger LOG = Logger.getLogger(DTWOnFloatsArray.class.getName());
     public static long counter = 0;

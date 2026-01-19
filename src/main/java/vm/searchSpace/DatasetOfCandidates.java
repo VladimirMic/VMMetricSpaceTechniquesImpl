@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.queryResults.QueryNearestNeighboursStoreInterface;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -173,7 +173,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     }
 
     @Override
-    public DistanceFunctionInterface getDistanceFunction() {
+    public AbstractDistanceFunction getDistanceFunction() {
         return origDataset.getDistanceFunction();
     }
 
@@ -215,7 +215,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
     @Override
     public float[] evaluateSampleOfRandomDistances(int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         float[] ret = new float[distCount];
-        DistanceFunctionInterface df = getDistanceFunction();
+        AbstractDistanceFunction df = getDistanceFunction();
         List<Object> queries = new ArrayList<>(mapOfTrainingQueriesToCandidates.keySet());
 
         Random r = new Random();
@@ -259,7 +259,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 // random dists between queries and objects. Produces really small distances
 //    @Override
 //    public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
-//        DistanceFunctionInterface df = getDistanceFunction();
+//        AbstractDistanceFunction df = getDistanceFunction();
 //        List<Object> queries = getQueryObjects(Math.min(mapOfQueriesToCandidates.size(), queriesCount));
 //        Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
 //        TreeSet<Map.Entry<String, Float>> ret = new TreeSet(comp);
@@ -318,7 +318,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
 //        int qRetSize = MAX_RETURNED_SMALLEST_DISTS_PER_Q;
 //        List<Object> queries = origDataset.getSampleOfDataset(Math.min(mapOfTrainingQueriesToCandidates.size(), queriesCount));
 //        Map<Object, Object> qMap = ToolsSearchDomain.getSearchObjectsAsIdObjectMap(searchSpace, queries, true);
-//        DistanceFunctionInterface df = getDistanceFunction();
+//        AbstractDistanceFunction df = getDistanceFunction();
 //        Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
 //        TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
 //        Map<Object, T> cache = new HashMap<>();
@@ -364,7 +364,7 @@ public abstract class DatasetOfCandidates<T> extends Dataset<T> {
         // objectCount is used as the maximum of the candidate set size per query
         queriesCount = QUERIES_COUNT_FOR_SMALLEST_DISTS;
         int qRetSize = MAX_RETURNED_SMALLEST_DISTS_PER_Q;
-        DistanceFunctionInterface df = getDistanceFunction();
+        AbstractDistanceFunction df = getDistanceFunction();
         Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
         TreeSet<Map.Entry<String, Float>> result = new TreeSet(comp);
         Map<Object, T> cache = new HashMap<>();

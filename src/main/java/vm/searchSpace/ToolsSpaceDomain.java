@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.mathtools.Tools;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
 /**
@@ -68,8 +68,8 @@ public class ToolsSpaceDomain {
         return createDistanceDensityPlot(distances);
     }
 
-    public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, DistanceFunctionInterface distanceFunction, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
-        DistanceFunctionInterface df = distanceFunction == null ? dataset.getDistanceFunction() : distanceFunction;
+    public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, AbstractDistanceFunction distanceFunction, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
+        AbstractDistanceFunction df = distanceFunction == null ? dataset.getDistanceFunction() : distanceFunction;
         float[] distances = dataset.evaluateSampleOfRandomDistances(df, objCount, distCount, idsOfRandomPairs);
         vm.mathtools.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
         return createDistanceDensityPlot(distances);
@@ -227,7 +227,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static <T> Object[] getPivotPermutation(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface df, List<Object> pivots, Object referent, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
+    public static <T> Object[] getPivotPermutation(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction df, List<Object> pivots, Object referent, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
         Map<Comparable, T> pivotsMap = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
         Object referentData = searchSpace.getDataOfObject(referent);
         return getPivotIDsPermutation(df, pivotsMap, referentData, prefixLength, distsToPivotsStorage);
@@ -253,7 +253,7 @@ public class ToolsSpaceDomain {
 
     }
 
-    public static int[] getPivotPermutationIndexes(AbstractSearchSpace searchSpace, DistanceFunctionInterface df, List pivotsData, Object referentData, int prefixLength) {
+    public static int[] getPivotPermutationIndexes(AbstractSearchSpace searchSpace, AbstractDistanceFunction df, List pivotsData, Object referentData, int prefixLength) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
@@ -281,7 +281,7 @@ public class ToolsSpaceDomain {
      * @param distsToPivotsStorage
      * @return ids of the closest pivots
      */
-    public static <T> Comparable[] getPivotIDsPermutation(DistanceFunctionInterface df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
+    public static <T> Comparable[] getPivotIDsPermutation(AbstractDistanceFunction df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength, Map<Comparable, Float> distsToPivotsStorage) {
         if (prefixLength < 0) {
             prefixLength = Integer.MAX_VALUE;
         }
@@ -300,7 +300,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static <T> TreeSet<Map.Entry<Comparable, Float>> getPivotIDsPermutationWithDists(DistanceFunctionInterface df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength) {
+    public static <T> TreeSet<Map.Entry<Comparable, Float>> getPivotIDsPermutationWithDists(AbstractDistanceFunction df, Map<Comparable, T> pivotsMap, Object referentData, int prefixLength) {
         TreeSet<Map.Entry<Comparable, Float>> ret = new TreeSet<>(new vm.datatools.Tools.MapByFloatValueComparator());
         for (Map.Entry<Comparable, T> pivot : pivotsMap.entrySet()) {
             Float dist = df.getDistance(referentData, pivot.getValue());
@@ -327,7 +327,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, DistanceFunctionInterface df) {
+    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, AbstractDistanceFunction df) {
         return evaluateMatrixOfDistances(searchObjectsFromDataset, pivots, searchSpace, df, -1);
     }
 
@@ -340,7 +340,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, DistanceFunctionInterface df, int objCount) {
+    public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, AbstractDistanceFunction df, int objCount) {
         final Map<Comparable, Integer> columnHeaders = new ConcurrentHashMap<>();
         final Map<Comparable, Integer> rowHeaders = new ConcurrentHashMap<>();
         for (int i = 0; i < pivots.size(); i++) {
@@ -445,7 +445,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static final float[] getPairwiseDistsOfFourObjects(DistanceFunctionInterface df, boolean enforceEFgeqBD, Object... fourObjects) {
+    public static final float[] getPairwiseDistsOfFourObjects(AbstractDistanceFunction df, boolean enforceEFgeqBD, Object... fourObjects) {
         if (fourObjects.length < 4) {
             throw new IllegalArgumentException("At least four objects must be provided");
         }
@@ -473,7 +473,7 @@ public class ToolsSpaceDomain {
         return ret;
     }
 
-    public static <T> Map<Comparable, Float> evaluateDistsToPivots(T qData, Map<Comparable, T> pivotsMap, DistanceFunctionInterface<T> df) {
+    public static <T> Map<Comparable, Float> evaluateDistsToPivots(T qData, Map<Comparable, T> pivotsMap, AbstractDistanceFunction<T> df) {
         Map<Comparable, Float> ret = new HashMap<>();
         for (Map.Entry<Comparable, T> entry : pivotsMap.entrySet()) {
             float dist = df.getDistance(qData, entry.getValue());

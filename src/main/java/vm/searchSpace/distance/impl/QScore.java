@@ -2,13 +2,13 @@ package vm.searchSpace.distance.impl;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author xmic
  */
-public class QScore extends DistanceFunctionInterface<String> {
+public class QScore extends AbstractDistanceFunction<String> {
 
     public static final Float IMPLICIT_INNER_PARAMETER_ON_SIZE_CHECK = 0.6f;
 

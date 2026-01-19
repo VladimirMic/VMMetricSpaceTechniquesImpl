@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
 
 /**
@@ -24,14 +24,14 @@ public class GRAPPLEPartitioning<T> extends VoronoiPartitioningWithoutFilter<T> 
     public static final Integer LB_COUNT = 24;
     private final DataDependentPtolemaicFiltering filter;
 
-    public GRAPPLEPartitioning(DataDependentPtolemaicFiltering filter, AbstractSearchSpace searchSpace, DistanceFunctionInterface df, List<Object> pivots) {
+    public GRAPPLEPartitioning(DataDependentPtolemaicFiltering filter, AbstractSearchSpace searchSpace, AbstractDistanceFunction df, List<Object> pivots) {
         super(searchSpace, df, pivots);
         this.filter = filter;
     }
 
     private class ProcessBatch extends AbstractPivotBasedPartitioningProcessor<T> {
 
-        public ProcessBatch(AbstractSearchSpace searchSpace, DistanceFunctionInterface df, float[] pivotLengths) {
+        public ProcessBatch(AbstractSearchSpace searchSpace, AbstractDistanceFunction df, float[] pivotLengths) {
             super(searchSpace, df, pivotsData, pivots.size(), pivotLengths);
         }
 

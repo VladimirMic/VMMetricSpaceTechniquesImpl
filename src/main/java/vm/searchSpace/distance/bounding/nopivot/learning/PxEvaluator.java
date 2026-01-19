@@ -12,7 +12,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -28,7 +28,7 @@ public class PxEvaluator {
     private final float distInterval;
     private final int sketchLength;
     private final Dataset fullDataset;
-    private final DistanceFunctionInterface<long[]> hammingDF;
+    private final AbstractDistanceFunction<long[]> hammingDF;
     private final Map<Comparable, long[]> sketches;
 
     public PxEvaluator(Dataset fullDataset, Dataset<long[]> sketchesDataset, int objCount, int sketchLength, float distInterval) {
@@ -66,7 +66,7 @@ public class PxEvaluator {
             }
             final int distComparisons = distCount;
             CountDownLatch latch = new CountDownLatch(distCount);
-            DistanceFunctionInterface fullDistFunc = fullDataset.getDistanceFunction();
+            AbstractDistanceFunction fullDistFunc = fullDataset.getDistanceFunction();
             AbstractSearchSpace fullSearchSpace = fullDataset.getSearchSpace();
             for (int i = 0; i < distCount; i++) {
                 final int idx = i + 1;

@@ -5,7 +5,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import vm.searchSpace.AbstractSearchSpace;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.objTransforms.storeLearned.PivotPairsStoreInterface;
 import vm.objTransforms.SearchObjectTransformerInterface;
 
@@ -21,14 +21,14 @@ public abstract class AbstractObjectToSketchTransformator implements SearchObjec
 
     protected final AbstractSearchSpace<Object> searchSpace;
     protected Object[] pivots;
-    protected final DistanceFunctionInterface distanceFunc;
+    protected final AbstractDistanceFunction distanceFunc;
     protected final Object[] additionalInfo;
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, Object... additionalInfo) {
+    public AbstractObjectToSketchTransformator(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, List<Object> pivots, Object... additionalInfo) {
         this(distanceFunc, searchSpace, pivots.toArray());
     }
 
-    public AbstractObjectToSketchTransformator(DistanceFunctionInterface<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, Object... additionalInfo) {
+    public AbstractObjectToSketchTransformator(AbstractDistanceFunction<Object> distanceFunc, AbstractSearchSpace<Object> searchSpace, Object[] pivots, Object... additionalInfo) {
         this.searchSpace = searchSpace;
         this.pivots = pivots;
         this.distanceFunc = distanceFunc;
@@ -60,7 +60,7 @@ public abstract class AbstractObjectToSketchTransformator implements SearchObjec
     @Override
     public abstract String getTechniqueAbbreviation();
 
-    public abstract List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, DistanceFunctionInterface<Object> df);
+    public abstract List<BitSet> createColumnwiseSketches(AbstractSearchSpace<Object> searchSpace, List<Object> sampleObjects, AbstractDistanceFunction<Object> df);
 
     protected abstract int getSketchLength();
 

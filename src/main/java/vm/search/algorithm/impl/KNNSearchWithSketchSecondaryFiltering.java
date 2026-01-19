@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.Dataset;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.nopivot.impl.SecondaryFilteringWithSketches;
 import vm.objTransforms.objectToSketchTransformators.AbstractObjectToSketchTransformator;
 import vm.search.algorithm.SearchingAlgorithm;
@@ -42,7 +42,7 @@ public class KNNSearchWithSketchSecondaryFiltering<T> extends SearchingAlgorithm
         if (params.length > 0 && params[0] instanceof TreeSet) {
             currAnswer = (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         }
-        DistanceFunctionInterface fullDF = fullDataset.getDistanceFunction();
+        AbstractDistanceFunction fullDF = fullDataset.getDistanceFunction();
         AbstractSearchSpace fullDatasetSearchSpace = fullDataset.getSearchSpace();
         Object qData = fullDatasetSearchSpace.getDataOfObject(fullQuery);
         Object qSketch = sketchingTechnique.transformSearchObject(fullQuery);

@@ -1,6 +1,6 @@
 package vm.searchSpace;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -9,7 +9,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  */
 public class SearchSpaceWithIDsAsObjects<T> extends AbstractSearchSpace<T> {
 
-    public SearchSpaceWithIDsAsObjects(DistanceFunctionInterface<T> df) {
+    public SearchSpaceWithIDsAsObjects(AbstractDistanceFunction<T> df) {
         super(df);
     }
 

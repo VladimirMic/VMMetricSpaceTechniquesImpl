@@ -1,7 +1,7 @@
 package vm.searchSpace.distance.bounding.twopivots.impl;
 
 import java.util.List;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 
 /**
@@ -14,7 +14,7 @@ public class PtolemaicFiltering<T> extends AbstractPtolemaicBasedFiltering {
     protected final float[][] coefsPivotPivot;
     private final boolean queryDynamicPivotPairs;
 
-    public PtolemaicFiltering(String resultNamePrefix, List<T> pivotsData, DistanceFunctionInterface<T> df, boolean queryDynamicPivotPairs) {
+    public PtolemaicFiltering(String resultNamePrefix, List<T> pivotsData, AbstractDistanceFunction<T> df, boolean queryDynamicPivotPairs) {
         super(resultNamePrefix);
         coefsPivotPivot = new float[pivotsData.size()][pivotsData.size()];
         for (int i = 0; i < pivotsData.size() - 1; i++) {

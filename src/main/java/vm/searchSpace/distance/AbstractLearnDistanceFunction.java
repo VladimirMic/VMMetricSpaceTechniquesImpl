@@ -6,7 +6,7 @@ package vm.searchSpace.distance;
  */
 public abstract class AbstractLearnDistanceFunction {
 
-    public abstract DistanceFunctionInterface getDF();
+    public abstract AbstractDistanceFunction getDF();
 
     public abstract void storeDF();
 }

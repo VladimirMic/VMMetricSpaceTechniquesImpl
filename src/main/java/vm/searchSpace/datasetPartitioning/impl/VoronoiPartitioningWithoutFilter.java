@@ -14,7 +14,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.ToolsSpaceDomain;
 import vm.searchSpace.datasetPartitioning.AbstractDatasetPartitioning;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.impl.CosineOnFloatsArray;
 import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.searchSpace.datasetPartitioning.impl.batchProcessor.AbstractPivotBasedPartitioningProcessor;
@@ -30,13 +30,13 @@ public class VoronoiPartitioningWithoutFilter<T> extends AbstractDatasetPartitio
 
     public static final Logger LOG = Logger.getLogger(VoronoiPartitioningWithoutFilter.class.getName());
 
-    protected final DistanceFunctionInterface df;
+    protected final AbstractDistanceFunction df;
     protected final List<Object> pivots;
     protected final List<T> pivotsData;
     protected final List<Comparable> pivotsIDs;
     protected final float[] lengthOfPivotVectors;
 
-    public VoronoiPartitioningWithoutFilter(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface<T> df, List<Object> pivots) {
+    public VoronoiPartitioningWithoutFilter(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction<T> df, List<Object> pivots) {
         super(searchSpace);
         this.df = df;
         this.pivots = pivots;

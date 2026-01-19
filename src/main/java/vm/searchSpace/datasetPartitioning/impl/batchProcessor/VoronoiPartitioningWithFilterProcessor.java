@@ -3,7 +3,7 @@ package vm.searchSpace.datasetPartitioning.impl.batchProcessor;
 import java.util.List;
 import java.util.Random;
 import vm.searchSpace.AbstractSearchSpace;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.BoundsOnDistanceEstimation;
 import vm.searchSpace.distance.bounding.onepivot.impl.TriangleInequality;
 import vm.searchSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
@@ -21,11 +21,11 @@ public class VoronoiPartitioningWithFilterProcessor<T> extends AbstractPivotBase
     protected final float[][] pivotPivotDists;
     private final short filterType;
 
-    public VoronoiPartitioningWithFilterProcessor(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering) {
+    public VoronoiPartitioningWithFilterProcessor(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering) {
         this(searchSpace, df, pivotData, pivotPivotDists, pivotLengths, filter, numberOfPivotsUsedInFiltering, numberOfPivotsUsedInFiltering);
     }
 
-    public VoronoiPartitioningWithFilterProcessor(AbstractSearchSpace<T> searchSpace, DistanceFunctionInterface df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering, int maxLBCount) {
+    public VoronoiPartitioningWithFilterProcessor(AbstractSearchSpace<T> searchSpace, AbstractDistanceFunction df, List<T> pivotData, float[][] pivotPivotDists, float[] pivotLengths, BoundsOnDistanceEstimation filter, int numberOfPivotsUsedInFiltering, int maxLBCount) {
         super(searchSpace, df, pivotData, numberOfPivotsUsedInFiltering, pivotLengths);
         this.filter = filter;
         this.maxLBCount = maxLBCount;

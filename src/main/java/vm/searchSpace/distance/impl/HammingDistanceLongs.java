@@ -1,6 +1,6 @@
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  * Class evaluates the Hamming distance on arrays of longs. They do not have to
@@ -9,7 +9,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class HammingDistanceLongs extends DistanceFunctionInterface<long[]> {
+public class HammingDistanceLongs extends AbstractDistanceFunction<long[]> {
 
     @Override
     public float getDistance(long[] o1, long[] o2) {

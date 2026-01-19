@@ -18,7 +18,7 @@ import vm.searchSpace.Dataset;
 import vm.searchSpace.ToolsSpaceDomain;
 import vm.searchSpace.datasetPartitioning.StorageDatasetPartitionsInterface;
 import vm.searchSpace.datasetPartitioning.impl.GRAPPLEPartitioning;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -48,7 +48,7 @@ public class GRAPPLEPartitionsCandSetIdentifier<T> extends VoronoiPartitionsCand
     }
 
     @Override
-    public Comparable[] evaluateKeyOrdering(DistanceFunctionInterface<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
+    public Comparable[] evaluateKeyOrdering(AbstractDistanceFunction<T> df, Map<Comparable, T> pivotsMap, T qData, Object... params) {
         Object[] pivotsArray = pivotsMap.entrySet().toArray();
         SortedSet<AbstractMap.SimpleEntry<Comparable, Float>> pivotPairs = new TreeSet(new Tools.MapByFloatValueComparator<>());
         for (int idx1 = 0; idx1 < pivotsArray.length - 1; idx1++) {

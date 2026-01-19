@@ -3,7 +3,7 @@ package vm.searchSpace;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -12,13 +12,13 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  */
 public abstract class AbstractSearchSpace<T> {
 
-    private final DistanceFunctionInterface<T> df;
+    private final AbstractDistanceFunction<T> df;
 
-    public AbstractSearchSpace(DistanceFunctionInterface<T> df) {
+    public AbstractSearchSpace(AbstractDistanceFunction<T> df) {
         this.df = df;
     }
 
-    public DistanceFunctionInterface<T> getDistanceFunction() {
+    public AbstractDistanceFunction<T> getDistanceFunction() {
         return df;
     }
 
@@ -54,7 +54,7 @@ public abstract class AbstractSearchSpace<T> {
         return ToolsSpaceDomain.getDataAsList(searchObjects.iterator(), this);
     }
 
-    public float[][] getDistanceMap(DistanceFunctionInterface<T> df, List<Object> list1, List<Object> list2) {
+    public float[][] getDistanceMap(AbstractDistanceFunction<T> df, List<Object> list1, List<Object> list2) {
         float[][] ret = new float[list1.size()][list2.size()];
         for (int i = 0; i < list1.size(); i++) {
             Object o1 = list1.get(i);
@@ -69,7 +69,7 @@ public abstract class AbstractSearchSpace<T> {
         return ret;
     }
 
-    public float[][] getDistanceMap(DistanceFunctionInterface<T> df, List<T> list1, List<T> list2, int list1ObjCount, int list2ObjCount) {
+    public float[][] getDistanceMap(AbstractDistanceFunction<T> df, List<T> list1, List<T> list2, int list1ObjCount, int list2ObjCount) {
         float[][] ret = new float[list1ObjCount][list2ObjCount];
         for (int i = 0; i < list1ObjCount; i++) {
             T o1Data = list1.get(i);

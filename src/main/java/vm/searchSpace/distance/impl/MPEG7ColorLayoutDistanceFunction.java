@@ -1,7 +1,7 @@
 package vm.searchSpace.distance.impl;
 
 import java.util.Map;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  * Distance function for Sapir (CoPhIR) MPEG7 object - ColorLayout. Copied from
@@ -10,7 +10,7 @@ import vm.searchSpace.distance.DistanceFunctionInterface;
  * @author Vladimir Mic, Masaryk University, Brno, Czech Republic,
  * xmic@fi.muni.cz
  */
-public class MPEG7ColorLayoutDistanceFunction extends DistanceFunctionInterface<Map<String, byte[]>> {
+public class MPEG7ColorLayoutDistanceFunction extends AbstractDistanceFunction<Map<String, byte[]>> {
 
     /**
      * Class id for Java serialization.

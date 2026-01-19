@@ -1,12 +1,12 @@
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author Vlada
  */
-public class AngularDistance extends DistanceFunctionInterface<float[]> {
+public class AngularDistance extends AbstractDistanceFunction<float[]> {
 
     private float[] lastO1 = null;
     private float[] lastO2 = null;

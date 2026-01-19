@@ -6,7 +6,7 @@ package vm.searchSpace.datasetPartitioning.impl.batchProcessor;
 
 import java.util.List;
 import vm.searchSpace.AbstractSearchSpace;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
@@ -17,7 +17,7 @@ public class BruteForceVoronoiPartitioningProcessor<T> extends AbstractPivotBase
 
     public BruteForceVoronoiPartitioningProcessor(
             AbstractSearchSpace<T> searchSpace,
-            DistanceFunctionInterface df,
+            AbstractDistanceFunction df,
             List<T> pivotData,
             float[] pivotLengths) {
         super(searchSpace, df, pivotData, pivotData.size(), pivotLengths);

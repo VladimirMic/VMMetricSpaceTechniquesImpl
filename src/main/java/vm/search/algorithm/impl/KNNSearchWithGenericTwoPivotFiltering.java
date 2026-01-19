@@ -9,7 +9,7 @@ import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.ToolsSpaceDomain;
 import vm.search.algorithm.SearchingAlgorithm;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.AbstractTwoPivotsFilter;
 import static vm.search.algorithm.impl.KNNSearchWithOnePivotFiltering.SORT_PIVOTS;
 
@@ -27,12 +27,12 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     private final float[][] poDists;
     private final Map<Comparable, Integer> rowHeaders;
     private final float[][] pivotPivotDists;
-    private final DistanceFunctionInterface<T> df;
+    private final AbstractDistanceFunction<T> df;
 
     private final int pivotsEndSmallDists;
     private final int pivotsEndBigDists;
 
-    public KNNSearchWithGenericTwoPivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithGenericTwoPivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, AbstractDistanceFunction<T> df) {
         this.filter = filter;
         this.pivotsData = searchSpace.getDataOfObjects(pivots);
         this.poDists = poDists;

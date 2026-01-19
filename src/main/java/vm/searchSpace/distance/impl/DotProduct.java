@@ -1,12 +1,12 @@
 package vm.searchSpace.distance.impl;
 
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 
 /**
  *
  * @author xmic
  */
-public class DotProduct extends DistanceFunctionInterface<float[]> {
+public class DotProduct extends AbstractDistanceFunction<float[]> {
 
     @Override
     public float getDistance(float[] o1, float[] o2) {

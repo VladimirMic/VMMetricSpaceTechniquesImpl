@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import vm.datatools.Tools;
 import vm.searchSpace.AbstractSearchSpace;
-import vm.searchSpace.distance.DistanceFunctionInterface;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.searchSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
@@ -32,13 +32,13 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
     protected final List<T> pivotsData;
     protected final float[][] poDists;
     protected final Map<Comparable, Integer> rowHeaders;
-    protected final DistanceFunctionInterface<T> df;
+    protected final AbstractDistanceFunction<T> df;
     protected final ConcurrentHashMap<Object, float[][]> qpMultipliedByCoefCached = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<Object, int[]> qPivotArraysCached;
 
     private final Set<String> qSkip = new HashSet<>();
 
-    public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, DistanceFunctionInterface<T> df) {
+    public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, AbstractDistanceFunction<T> df) {
         this.filter = ptolemaicFilter;
         if (ptolemaicFilter instanceof PtolemaicFiltering) {
             PtolemaicFiltering cast = (PtolemaicFiltering) ptolemaicFilter;
@@ -161,7 +161,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         return ret;
     }
 
-    public static <T> float[][] computeqpDistMultipliedByCoefForPivots(T qData, List<T> pivotsData, DistanceFunctionInterface<T> df, AbstractPtolemaicBasedFiltering filter) {
+    public static <T> float[][] computeqpDistMultipliedByCoefForPivots(T qData, List<T> pivotsData, AbstractDistanceFunction<T> df, AbstractPtolemaicBasedFiltering filter) {
         float[][] ret = new float[pivotsData.size()][pivotsData.size()];
         for (int i = 0; i < pivotsData.size(); i++) {
             T pData = pivotsData.get(i);
