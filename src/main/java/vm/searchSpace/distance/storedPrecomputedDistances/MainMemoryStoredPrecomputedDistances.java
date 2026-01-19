@@ -10,7 +10,7 @@ import vm.searchSpace.Dataset;
  */
 public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDistancesMatrixSerializator{
 
-    private final float[][] dists;
+    protected final float[][] dists;
 
     public MainMemoryStoredPrecomputedDistances(float[][] dists, Map<Comparable, Integer> columnHeaders, Map<Comparable, Integer> rowHeaders) {
         super.columnHeaders = columnHeaders;
