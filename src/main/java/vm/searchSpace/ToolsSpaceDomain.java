@@ -146,6 +146,19 @@ public class ToolsSpaceDomain {
         return getSearchObjectsAsIdObjectMap(searchSpace, searchObjects.iterator());
     }
 
+    public static <T> Map<T, Comparable> createDataToIdMainMemoryMap(Dataset<T> dataset) {
+        Map<T, Comparable> ret = new HashMap<>();
+        AbstractSearchSpace<T> searchSpace = dataset.getSearchSpace();
+        Iterator<Object> searchObjectsFromDataset = dataset.getSearchObjectsFromDataset();
+        while (searchObjectsFromDataset.hasNext()) {
+            Object o = searchObjectsFromDataset.next();
+            T data = searchSpace.getDataOfObject(o);
+            Comparable id = searchSpace.getIDOfObject(o);
+            ret.put(data, id);
+        }
+        return ret;
+    }
+
     private static final Map cache = new HashMap<>();
 
     public static <T> Map<Comparable, T> getObjectsAsIdDataMap(Dataset<T> dataset) {
