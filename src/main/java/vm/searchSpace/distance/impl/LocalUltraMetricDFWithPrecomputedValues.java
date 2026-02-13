@@ -17,6 +17,7 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  * @author au734419
  * @param <T>
  */
+@Deprecated
 public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecomputedValues<T> {
 
     public static final String NAME = "Locally ultra-metric distance";
