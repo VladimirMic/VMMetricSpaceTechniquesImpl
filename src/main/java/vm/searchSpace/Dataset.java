@@ -109,7 +109,7 @@ public abstract class Dataset<T> {
     }
 
     public int getPrecomputedDatasetSize() {
-        return searchSpacesStorage.getPrecomputedDatasetSize(datasetName);
+        return searchSpacesStorage.getPrecomputedDatasetSize(datasetName, getDistanceFunction());
     }
 
     public int updateDatasetSize() {

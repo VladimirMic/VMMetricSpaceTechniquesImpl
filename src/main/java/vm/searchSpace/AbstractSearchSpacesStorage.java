@@ -69,7 +69,7 @@ public abstract class AbstractSearchSpacesStorage<T> {
 
     public abstract void storeQueryObjects(List<Object> queryObjs, String querySetName, Object... additionalParamsToStoreWithNewQuerySet);
 
-    public abstract int getPrecomputedDatasetSize(String datasetName);
+    public abstract int getPrecomputedDatasetSize(String datasetName, Object ... params);
 
     public int getNumberOfPivots(String pivotSetName, Object... params) {
         List<Object> pivots = getPivots(pivotSetName, params);
@@ -82,7 +82,7 @@ public abstract class AbstractSearchSpacesStorage<T> {
     }
 
     public int reevaluatetNumberOfObjectsInDataset(String datasetName, Object... params) {
-        Iterator<Object> searchObjects = getObjectsFromDataset(datasetName);
+        Iterator<Object> searchObjects = getObjectsFromDataset(datasetName, params);
         int ret;
         for (ret = 0; searchObjects.hasNext(); ret++) {
             searchObjects.next();
@@ -96,8 +96,8 @@ public abstract class AbstractSearchSpacesStorage<T> {
 
     protected abstract void updateDatasetSize(String datasetName, int count);
 
-    public int updateDatasetSize(String datasetName) {
-        int count = reevaluatetNumberOfObjectsInDataset(datasetName);
+    public int updateDatasetSize(String datasetName, Object... params) {
+        int count = reevaluatetNumberOfObjectsInDataset(datasetName, params);
         updateDatasetSize(datasetName, count);
         return count;
     }
