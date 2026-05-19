@@ -75,7 +75,7 @@ public abstract class AbstractPrecomputedDistancesMatrixSerializator {
     }
 
     public int serialize(Dataset dataset, int pivotCount, String additionalName, Map<Comparable, Integer> rowKeys, Map<Comparable, Integer> columnKeys, float[][] distsInRow) throws IOException {
-        return serialize(dataset, pivotCount, additionalName, rowKeys, columnKeys, distsInRow, 0);
+         return serialize(dataset, pivotCount, additionalName, rowKeys, columnKeys, distsInRow, 0);
     }
 
     public abstract void serializeColumnsHeaders(Dataset dataset, int pivotCount, String additionalName, Map<Comparable, Integer> columnKeys) throws IOException;

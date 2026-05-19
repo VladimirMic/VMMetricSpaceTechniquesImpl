@@ -18,15 +18,15 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
     /**
      *
      * @param dataset
-     * @param distsHolder
+     * @param primaryDistances
      * @param weights
      * @param name
      */
-    public DFBasicAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, MainMemoryStoredPrecomputedDistances weights, String name) {
-        super(dataset, distsHolder, name);
-        this.origDists = Tools.copyArray(distsHolder.getDists());
-        Map<Comparable, Integer> origRows = distsHolder.getRowHeaders();
-        Map<Comparable, Integer> origColumns = distsHolder.getColumnHeaders();
+    public DFBasicAdjustedByPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances primaryDistances, MainMemoryStoredPrecomputedDistances weights, String name) {
+        super(dataset, primaryDistances, name);
+        this.origDists = Tools.copyArray(primaryDistances.getDists());
+        Map<Comparable, Integer> origRows = primaryDistances.getRowHeaders();
+        Map<Comparable, Integer> origColumns = primaryDistances.getColumnHeaders();
         Map<Comparable, Integer> newRows = weights.getRowHeaders();
         Map<Comparable, Integer> newColumns = weights.getColumnHeaders();
         float[][] newDists = weights.getDists();
@@ -39,7 +39,7 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
                 int origColumnIdx = origColumn.getValue();
                 int newColumnIdx = newColumns.get(origColumnKey);
                 float newDist = newDists[newRowIdx][newColumnIdx];
-                distsHolder.modify(origRowIdx, origColumnIdx, newDist);
+                primaryDistances.modify(origRowIdx, origColumnIdx, newDist);
             }
         }
     }
@@ -53,7 +53,7 @@ public class DFBasicAdjustedByPrecomputedValues<T> extends DFWithPrecomputedValu
         if (newColumnHeaders.containsKey(o1IDString) && newRowHeaders.containsKey(o2IDString)) {
             int o1idx = newColumnHeaders.get(o1IDString);
             int o2idx = newRowHeaders.get(o2IDString);
-            float weight = distsHolder.getDists()[o1idx][o2idx];
+            float weight = primaryDistances.getDists()[o1idx][o2idx];
             float orig = origDists[o1idx][o2idx];
             return modifyDist(orig, weight);
         }

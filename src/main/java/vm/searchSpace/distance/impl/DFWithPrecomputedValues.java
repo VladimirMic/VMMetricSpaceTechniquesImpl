@@ -18,7 +18,7 @@ import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecom
  */
 public class DFWithPrecomputedValues<T> extends AbstractDistanceFunction<T> {
 
-    protected MainMemoryStoredPrecomputedDistances distsHolder;
+    protected MainMemoryStoredPrecomputedDistances primaryDistances;
     protected final AbstractDistanceFunction<T> df;
     protected final AbstractSearchSpace<T> searchSpace;
     protected final Map<Comparable, Integer> newColumnHeaders;
@@ -26,7 +26,7 @@ public class DFWithPrecomputedValues<T> extends AbstractDistanceFunction<T> {
     protected final String name;
 
     public DFWithPrecomputedValues(Dataset dataset, AbstractPrecomputedDistancesMatrixSerializator pd, int numberOfPivots, String name) {
-        distsHolder = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
+        primaryDistances = pd.loadPrecomPivotsToObjectsDists(dataset, numberOfPivots);
         searchSpace = dataset.getSearchSpace();
         newColumnHeaders = new HashMap<>();
         newRowHeaders = new HashMap<>();
@@ -37,18 +37,18 @@ public class DFWithPrecomputedValues<T> extends AbstractDistanceFunction<T> {
         this.name = name;
     }
 
-    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances distsHolder, String name) {
-        this.distsHolder = distsHolder;
+    public DFWithPrecomputedValues(Dataset dataset, MainMemoryStoredPrecomputedDistances primaryDistances, String name) {
+        this.primaryDistances = primaryDistances;
         this.df = dataset.getDistanceFunction();
         this.searchSpace = dataset.getSearchSpace();
         newColumnHeaders = new HashMap<>();
         newRowHeaders = new HashMap<>();
-        createNewHeaders(dataset, distsHolder.getRowHeaders(), distsHolder.getColumnHeaders());
+        createNewHeaders(dataset, primaryDistances.getRowHeaders(), primaryDistances.getColumnHeaders());
         this.name = name;
     }
 
     public void setDistsHolder(MainMemoryStoredPrecomputedDistances distsHolder) {
-        this.distsHolder = distsHolder;
+        this.primaryDistances = distsHolder;
     }
 
     @Override
@@ -60,29 +60,29 @@ public class DFWithPrecomputedValues<T> extends AbstractDistanceFunction<T> {
         if (newColumnHeaders.containsKey(o1IDString) && newRowHeaders.containsKey(o2IDString)) {
             int o1idx = newColumnHeaders.get(o1IDString);
             int o2idx = newRowHeaders.get(o2IDString);
-            return distsHolder.getDists()[o1idx][o2idx];
+            return primaryDistances.getDists()[o1idx][o2idx];
         }
         return df.getDistance(obj1, obj2);
     }
 
     public int getColumnCount() {
-        return distsHolder.getColumnHeaders().size();
+        return primaryDistances.getColumnHeaders().size();
     }
 
     public int getRowCount() {
-        return distsHolder.getRowHeaders().size();
+        return primaryDistances.getRowHeaders().size();
     }
 
     public Map<Comparable, Integer> getColumnHeaders() {
-        return distsHolder.getColumnHeaders();
+        return primaryDistances.getColumnHeaders();
     }
 
     public Map<Comparable, Integer> getRowHeaders() {
-        return distsHolder.getRowHeaders();
+        return primaryDistances.getRowHeaders();
     }
 
     public float[][] getDists() {
-        return distsHolder.getDists();
+        return primaryDistances.getDists();
     }
 
     private void createNewHeaders(Dataset dataset, Map<Comparable, Integer> origRowHeaders, Map<Comparable, Integer> origColumnHeaders) {
