@@ -18,8 +18,26 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
         this.dists = dists;
     }
 
+    @Deprecated // be careful that the order of rows and column is not the same as in the case of the dataset! You must check the headers. See @getDistance method
     public float[][] getDists() {
         return dists;
+    }
+
+    @Deprecated // assumes that columnHeaders and rowHeaders are indexes (numbers) of rows and columns from 1 to n. Returns sorted matrix of distances
+    public float[][] getSortedDists() {
+        float[][] ret = new float[dists.length][dists[0].length];
+        for (Comparable cKey : columnHeaders.keySet()) {
+            Integer cIdx = columnHeaders.get(cKey);
+            int cKeyInt = Integer.parseInt(cKey.toString()) - 1;
+            for (Comparable rKey : rowHeaders.keySet()) {
+                Integer rIdx = rowHeaders.get(rKey);
+                int rKeyInt = Integer.parseInt(rKey.toString()) - 1;
+                ret[cKeyInt][rKeyInt] = dists[cIdx][rIdx];
+                String s = "";
+            }
+
+        }
+        return ret;
     }
 
     public void modify(int rowIdx, int columnIdx, float newValue) {
