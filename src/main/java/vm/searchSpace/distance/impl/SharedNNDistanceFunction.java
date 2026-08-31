@@ -38,10 +38,8 @@ public class SharedNNDistanceFunction<T> extends AbstractDistanceFunction<T> {
             while (list.size() < k) {
                 Map.Entry<Comparable, Float> next = nnsIt.next();
                 float dist = next.getValue();
-                if (dist != 0) {
-                    list.add(next.getKey().toString());
-                    knnRadius = dist;
-                }
+                list.add(next.getKey().toString());
+                knnRadius = dist;
             }
             T qData = keyValueStorage.get(qID);
             Comparable qDataID = Tools.hashArray(qData);
