@@ -33,7 +33,6 @@ public class MainMemoryStoredPrecomputedDistances extends AbstractPrecomputedDis
                 Integer rIdx = rowHeaders.get(rKey);
                 int rKeyInt = Integer.parseInt(rKey.toString()) - 1;
                 ret[cKeyInt][rKeyInt] = dists[cIdx][rIdx];
-                String s = "";
             }
 
         }
