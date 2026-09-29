@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.searchSpace.Dataset;
+import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.storedPrecomputedDistances.AbstractPrecomputedDistancesMatrixSerializator;
 import vm.searchSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
@@ -97,9 +98,12 @@ public class LocalUltraMetricDFWithPrecomputedValues<T> extends DFWithPrecompute
     }
 
     public float getRatioOfTripletsViolatingUltraMetricRule() {
+        return getRatioOfTripletsViolatingUltraMetricRule(getDists());
+    }
+
+    public static float getRatioOfTripletsViolatingUltraMetricRule(float[][] dists) {
         int denom = 0;
         int num = 0;
-        float[][] dists = getDists();
         for (int i = 0; i < dists.length - 2; i++) {
             System.err.print(i + ";");
             if (i % 50 == 0) {

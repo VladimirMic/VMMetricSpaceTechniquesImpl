@@ -2,10 +2,8 @@ package vm.searchSpace.distance.impl;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import vm.datatools.Tools;
