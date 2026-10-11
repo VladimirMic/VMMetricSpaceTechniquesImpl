@@ -1,6 +1,7 @@
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,19 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
 
     public KNNSearchWithOnePivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, AbstractDistanceFunction<T> df) {
         this.filter = filter;
-        this.pivotsData = searchSpace.getDataOfObjects(pivots);
+        pivotsData = new ArrayList<>();
+        Map<Comparable, T> mapOfPivots = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
+        for (Map.Entry<Object, Integer> columntHeader : columnHeaders.entrySet()) {
+            Object pivotId = columntHeader.getKey();
+            int idx = columntHeader.getValue();
+            while (pivotsData.size() < idx) {
+                pivotsData.add(null);
+            }
+            if (pivotsData.size() > idx) {
+                pivotsData.remove(idx);
+            }
+            pivotsData.add(idx, mapOfPivots.get(pivotId));
+        }
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;

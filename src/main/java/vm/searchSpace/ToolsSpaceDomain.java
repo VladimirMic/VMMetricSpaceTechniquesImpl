@@ -356,10 +356,12 @@ public class ToolsSpaceDomain {
     public static MainMemoryStoredPrecomputedDistances evaluateMatrixOfDistances(Iterator searchObjectsFromDataset, List pivots, AbstractSearchSpace searchSpace, AbstractDistanceFunction df, int objCount) {
         final Map<Comparable, Integer> columnHeaders = new ConcurrentHashMap<>();
         final Map<Comparable, Integer> rowHeaders = new ConcurrentHashMap<>();
+        List pivotData = new ArrayList<>();
         for (int i = 0; i < pivots.size(); i++) {
             Object p = pivots.get(i);
             Comparable pID = searchSpace.getIDOfObject(p);
             columnHeaders.put(pID.toString(), i);
+            pivotData.add(searchSpace.getDataOfObject(p));
         }
         ExecutorService threadPool = vm.javatools.Tools.initExecutor(vm.javatools.Tools.PARALELISATION);
         float[][] ret = null;
@@ -390,8 +392,7 @@ public class ToolsSpaceDomain {
                         rowHeaders.put(oID.toString(), rowCounterFinal);
                         float[] row = new float[pivots.size()];
                         for (int i = 0; i < pivots.size(); i++) {
-                            Object p = pivots.get(i);
-                            Object pData = searchSpace.getDataOfObject(p);
+                            Object pData = pivotData.get(i);
                             row[i] = df.getDistance(oData, pData);
                         }
                         distsForBatch[batchRowCounter] = row;
