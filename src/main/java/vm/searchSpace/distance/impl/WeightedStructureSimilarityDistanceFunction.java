@@ -14,6 +14,7 @@ import vm.searchSpace.distance.AbstractDistanceFunction;
  * @author Vlada
  * @param <T>
  */
+@Deprecated // Error is here - must use similarity, not distance
 public class WeightedStructureSimilarityDistanceFunction<T> extends AbstractDistanceFunction<T> {
 
     private Boolean insistOnMutual;
@@ -74,8 +75,8 @@ public class WeightedStructureSimilarityDistanceFunction<T> extends AbstractDist
             float distance = primaryDF.getDistance(obj1, obj2);
             SortedSet<AbstractMap.SimpleEntry<String, Float>> dists1 = kNNDistsSet.get(o1IDString);
             SortedSet<AbstractMap.SimpleEntry<String, Float>> dists2 = kNNDistsSet.get(o2IDString);
-            Float r1 = dists1.getLast().getValue();
-            Float r2 = dists2.getLast().getValue();
+            Float r1 = dists1.last().getValue();
+            Float r2 = dists2.last().getValue();
             if (r1 < distance || r2 < distance) {
                 return 1;
             }
