@@ -41,7 +41,7 @@ public class PxEvaluator {
         this.distInterval = distInterval;
         this.sketchLength = sketchLength;
         this.minNumberOfDistsPerBucket = minNumberOfExampleForBitToCount;
-        sketches = ToolsSpaceDomain.getObjectsAsIdDataMap(sketchesDataset);
+        sketches = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(sketchesDataset);
         hammingDF = sketchesDataset.getDistanceFunction();
     }
 

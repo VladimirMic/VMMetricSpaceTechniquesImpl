@@ -1,6 +1,7 @@
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
+import vm.searchSpace.ToolsSpaceDomain;
 import vm.searchSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
 import vm.searchSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
 
@@ -39,7 +41,7 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     private final Set<String> qSkip = new HashSet<>();
 
-    public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, AbstractDistanceFunction<T> df) {
+    public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, Map<Comparable, Integer> columnHeaders, AbstractDistanceFunction<T> df) {
         this.filter = ptolemaicFilter;
         if (ptolemaicFilter instanceof PtolemaicFiltering cast) {
             query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
@@ -47,7 +49,19 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
         if (ptolemaicFilter instanceof DataDependentPtolemaicFiltering cast) {
             query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
         }
-        this.pivotsData = searchSpace.getDataOfObjects(pivots);
+        pivotsData = new ArrayList<>();
+        Map<Comparable, T> mapOfPivots = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
+        for (Map.Entry<Comparable, Integer> columntHeader : columnHeaders.entrySet()) {
+            Object pivotId = columntHeader.getKey();
+            int idx = columntHeader.getValue();
+            while (pivotsData.size() < idx) {
+                pivotsData.add(null);
+            }
+            if (pivotsData.size() > idx) {
+                pivotsData.remove(idx);
+            }
+            pivotsData.add(idx, mapOfPivots.get(pivotId));
+        }
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;

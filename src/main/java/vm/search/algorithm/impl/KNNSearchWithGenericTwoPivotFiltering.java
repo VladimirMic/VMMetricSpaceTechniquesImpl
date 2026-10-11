@@ -1,6 +1,7 @@
 package vm.search.algorithm.impl;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,21 @@ public class KNNSearchWithGenericTwoPivotFiltering<T> extends SearchingAlgorithm
     private final int pivotsEndSmallDists;
     private final int pivotsEndBigDists;
 
-    public KNNSearchWithGenericTwoPivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, float[][] pivotPivotDists, AbstractDistanceFunction<T> df) {
+    public KNNSearchWithGenericTwoPivotFiltering(AbstractSearchSpace<T> searchSpace, AbstractTwoPivotsFilter filter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders,  Map<Comparable, Integer> columnHeaders, float[][] pivotPivotDists, AbstractDistanceFunction<T> df) {
         this.filter = filter;
-        this.pivotsData = searchSpace.getDataOfObjects(pivots);
+        pivotsData = new ArrayList<>();
+        Map<Comparable, T> mapOfPivots = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, pivots);
+        for (Map.Entry<Comparable, Integer> columntHeader : columnHeaders.entrySet()) {
+            Object pivotId = columntHeader.getKey();
+            int idx = columntHeader.getValue();
+            while (pivotsData.size() < idx) {
+                pivotsData.add(null);
+            }
+            if (pivotsData.size() > idx) {
+                pivotsData.remove(idx);
+            }
+            pivotsData.add(idx, mapOfPivots.get(pivotId));
+        }
         this.poDists = poDists;
         this.pivotPivotDists = pivotPivotDists;
         this.df = df;

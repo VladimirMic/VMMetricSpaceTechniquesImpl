@@ -139,7 +139,7 @@ public class ToolsSpaceDomain {
     }
 
     public static <T> Map<Comparable, T> getSearchObjectsAsIdDataMap(AbstractSearchSpace<T> searchSpace, Collection<Object> searchObjects) {
-        return getSearchObjectsAsIdDataMap(searchSpace, searchObjects.iterator());
+        return ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, searchObjects.iterator());
     }
 
     public static <T> Map<Comparable, Object> getSearchObjectsAsIdObjectMap(AbstractSearchSpace<T> searchSpace, Collection<Object> searchObjects) {
@@ -161,13 +161,13 @@ public class ToolsSpaceDomain {
 
     private static final Map cache = new HashMap<>();
 
-    public static <T> Map<Comparable, T> getObjectsAsIdDataMap(Dataset<T> dataset) {
+    public static <T> Map<Comparable, T> getSearchObjectsAsIdDataMap(Dataset<T> dataset) {
         if (cache.containsKey(dataset)) {
             return (Map<Comparable, T>) cache.get(dataset);
         }
         AbstractSearchSpace<T> searchSpace = dataset.getSearchSpace();
         Iterator<Object> it = dataset.getSearchObjectsFromDataset(-1);
-        Map<Comparable, T> ret = getSearchObjectsAsIdDataMap(searchSpace, it);
+        Map<Comparable, T> ret = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(searchSpace, it);
         cache.put(dataset, ret);
         return ret;
     }
@@ -546,7 +546,7 @@ public class ToolsSpaceDomain {
             keyValueStorage = dataset.getKeyValueStorage();
         }
         if (keyValueStorage == null) {
-            keyValueStorage = ToolsSpaceDomain.getObjectsAsIdDataMap(dataset);
+            keyValueStorage = ToolsSpaceDomain.getSearchObjectsAsIdDataMap(dataset);
         }
         List<Object> ret = new ArrayList<>();
         for (Comparable id : setOfIDs) {
