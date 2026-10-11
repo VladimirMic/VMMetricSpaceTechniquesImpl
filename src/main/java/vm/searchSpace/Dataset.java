@@ -1,15 +1,18 @@
 package vm.searchSpace;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
@@ -202,31 +205,63 @@ public abstract class Dataset<T> {
 
     public float[] evaluateSampleOfRandomDistances(AbstractDistanceFunction distanceFunction, int objectCount, int distCount, List<Object[]> listWhereAddExaminedPairs) {
         List<Object> searchObjectsSample = getSampleOfDataset(objectCount);
-        Random r = new Random();
-        int counter = 0;
-        float[] distances = new float[distCount];
         int size = searchObjectsSample.size();
         AbstractSearchSpace<T> searchSpace = getSearchSpace();
-        while (counter < distCount) {
-            Object o1 = searchObjectsSample.get(r.nextInt(size));
-            Object o2 = searchObjectsSample.get(r.nextInt(size));
-            Comparable id1 = searchSpace.getIDOfObject(o1);
-            Comparable id2 = searchSpace.getIDOfObject(o2);
-            if (id1.equals(id2)) {
-                continue;
-            }
-            if (listWhereAddExaminedPairs != null) {
-                listWhereAddExaminedPairs.add(new Object[]{id1, id2});
-            }
-            o1 = searchSpace.getDataOfObject(o1);
-            o2 = searchSpace.getDataOfObject(o2);
-            distances[counter] = distanceFunction.getDistance(o1, o2);
-            counter++;
-            if (counter % 1000000 == 0) {
-                LOG.log(Level.INFO, "Computed {0} distances out of {1}", new Object[]{counter, distCount});
-            }
+        float[] ret = new float[distCount];
+        ExecutorService executor = vm.javatools.Tools.initExecutor();
+        int numThreads = vm.javatools.Tools.PARALELISATION;
+        List<Future<List<Object[]>>> futures = new ArrayList<>();
+        int chunkSize = distCount / numThreads;
+        for (int t = 0; t < numThreads; t++) {
+            final int startIndex = t * chunkSize;
+            final int endIndex = (t == numThreads - 1) ? distCount : startIndex + chunkSize;
+            futures.add(executor.submit(() -> {
+                ThreadLocalRandom rand = ThreadLocalRandom.current();
+                List<Object[]> localPairs = (listWhereAddExaminedPairs != null) ? new ArrayList<>() : null;
+                for (int i = startIndex; i < endIndex; i++) {
+                    Object o1, o2;
+                    Comparable id1, id2;
+                    while (true) {
+                        o1 = searchObjectsSample.get(rand.nextInt(size));
+                        o2 = searchObjectsSample.get(rand.nextInt(size));
+                        id1 = searchSpace.getIDOfObject(o1);
+                        id2 = searchSpace.getIDOfObject(o2);
+                        if (!id1.equals(id2)) {
+                            break;
+                        }
+                    }
+
+                    if (localPairs != null) {
+                        localPairs.add(new Object[]{id1, id2});
+                    }
+
+                    T o1Data = searchSpace.getDataOfObject(o1);
+                    T o2Data = searchSpace.getDataOfObject(o2);
+                    ret[i] = distanceFunction.getDistance(o1Data, o2Data);
+                }
+                return localPairs;
+            }));
         }
-        return distances;
+        try {
+            if (listWhereAddExaminedPairs != null) {
+                for (Future<List<Object[]>> future : futures) {
+                    listWhereAddExaminedPairs.addAll(future.get());
+                }
+            } else {
+                for (Future<List<Object[]>> future : futures) {
+                    future.get();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Výpočet byl přerušen", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Chyba při výpočtu ve vlákně", e.getCause());
+        } finally {
+            executor.shutdown();
+        }
+
+        return ret;
     }
 
     /**

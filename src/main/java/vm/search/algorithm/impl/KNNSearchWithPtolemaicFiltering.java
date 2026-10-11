@@ -14,6 +14,7 @@ import vm.searchSpace.AbstractSearchSpace;
 import vm.searchSpace.distance.AbstractDistanceFunction;
 import vm.searchSpace.distance.bounding.twopivots.AbstractPtolemaicBasedFiltering;
 import vm.search.algorithm.SearchingAlgorithm;
+import vm.searchSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
 import vm.searchSpace.distance.bounding.twopivots.impl.PtolemaicFiltering;
 
 /**
@@ -40,8 +41,10 @@ public class KNNSearchWithPtolemaicFiltering<T> extends SearchingAlgorithm<T> {
 
     public KNNSearchWithPtolemaicFiltering(AbstractSearchSpace<T> searchSpace, AbstractPtolemaicBasedFiltering ptolemaicFilter, List<Object> pivots, float[][] poDists, Map<Comparable, Integer> rowHeaders, AbstractDistanceFunction<T> df) {
         this.filter = ptolemaicFilter;
-        if (ptolemaicFilter instanceof PtolemaicFiltering) {
-            PtolemaicFiltering cast = (PtolemaicFiltering) ptolemaicFilter;
+        if (ptolemaicFilter instanceof PtolemaicFiltering cast) {
+            query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
+        }
+        if (ptolemaicFilter instanceof DataDependentPtolemaicFiltering cast) {
             query_dynamic_pivots = cast.isQueryDynamicPivotPairs();
         }
         this.pivotsData = searchSpace.getDataOfObjects(pivots);

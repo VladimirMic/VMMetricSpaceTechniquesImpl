@@ -166,7 +166,6 @@ public abstract class SearchingAlgorithm<T> {
         } else {
             ret = new TreeSet[queryObjects.size()];
         }
-        final List<Object> batch = new ArrayList<>();
         for (int i = 0; i < queryObjects.size(); i++) {
             Comparable qID = searchSpace.getIDOfObject(queryObjects.get(i));
             timesPerQueries.put(qID, new AtomicLong());
@@ -180,6 +179,7 @@ public abstract class SearchingAlgorithm<T> {
         } else {
             threadPool = vm.javatools.Tools.initExecutor();
         }
+        final List<Object> batch = new ArrayList<>();
         int batchCounter = 0;
         while (objects.hasNext()) {
             try {
