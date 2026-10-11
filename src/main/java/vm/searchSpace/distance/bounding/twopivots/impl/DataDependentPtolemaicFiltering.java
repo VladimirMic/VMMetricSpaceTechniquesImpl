@@ -34,7 +34,11 @@ public class DataDependentPtolemaicFiltering extends AbstractPtolemaicBasedFilte
 
     @Override
     public String getTechName() {
-        return "data-dependent_ptolemaic_filtering";
+        String ret = "data-dependent_ptolemaic_filtering";
+        if (!queryDynamicPivotPairs) {
+            ret += "_randomPivots";
+        }
+        return ret;
     }
 
     @Override
